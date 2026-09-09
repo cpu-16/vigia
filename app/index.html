@@ -26,6 +26,7 @@
   .nodo{font-size:12px;color:var(--tinta-suave);display:flex;align-items:center;gap:6px;white-space:nowrap}
   .punto{width:8px;height:8px;border-radius:50%;background:var(--alerta)}
   .nodo.si .punto{background:var(--confirmado)}
+  .nodo.aviso .punto{background:var(--estimado)}
 
   /* credencial de quien reporta */
   .credencial{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--raya)}
@@ -130,6 +131,7 @@
 
   <!-- 1 · capturar -->
   <section id="p1">
+    <div id="aviso"></div>
     <div class="captura">
       <button type="button" class="anillo" id="anillo" aria-pressed="false">
         <b id="anilloTexto">Iniciar grabación<em>toca y cuenta la visita</em></b>
@@ -180,14 +182,26 @@ const inicial = () => $('#avatar').textContent = ($('#quien').value.trim()[0] ??
 inicial(); $('#quien').oninput = () => { localStorage.setItem('quien', $('#quien').value); inicial(); };
 
 // ── nodo: ¿hay quien infiera? ──
-let hayNodo = false;
+let hayNodo = false, degradado = false, avisoNodo = null;
+const pintarNodo = () => { $('#nodo').classList.toggle('si', hayNodo && !degradado);
+                           $('#nodo').classList.toggle('aviso', hayNodo && degradado); };
 async function sondear() {
   try { const r = await fetch('/api/evidencia', { cache: 'no-store' });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    hayNodo = true; const e = await r.json();
-    $('#nodoTexto').textContent = e.modo === 'local' ? `nodo local · ${e.modelo}` : `nodo ${e.modo}`; }
-  catch { hayNodo = false; $('#nodoTexto').textContent = 'sin nodo · se guarda aquí'; }
-  $('#nodo').classList.toggle('si', hayNodo);
+    const e = await r.json();
+    // El nodo del teléfono contesta 200 aunque no pueda interpretar: `respaldo:false` es que no
+    // tiene modelo a bordo, y con el par caído encima /api/extraer responde 503. Para la persona
+    // eso es «sin nodo», y la captura tiene que ir a la cola en vez de perderse.
+    const sinRespaldo = e.respaldo === false && /par ca[ií]do|sin_respaldo/i.test(e.modo ?? '');
+    hayNodo = !sinRespaldo;
+    degradado = hayNodo && /par ca[ií]do|sin_respaldo/i.test(e.modo ?? '');
+    avisoNodo = sinRespaldo ? 'Este nodo no tiene par a la vista ni modelo a bordo: la captura queda pendiente.' : null;
+    $('#nodoTexto').textContent = sinRespaldo ? 'sin par ni modelo · se guarda aquí'
+      : e.modo === 'local' ? `nodo local · ${e.modelo}` : `nodo ${e.modo}`; }
+  catch { hayNodo = false; degradado = false;
+    avisoNodo = 'No hay ningún nodo a la vista: la captura queda guardada en el teléfono.';
+    $('#nodoTexto').textContent = 'sin nodo · se guarda aquí'; }
+  pintarNodo();
   pintarPendientes();
 }
 sondear(); setInterval(sondear, 5000);
@@ -226,6 +240,7 @@ $('#anillo').onclick = async () => {
       try {
         const r = await fetch('/api/dictar', { method: 'POST', body: blob });
         const t = await r.json();
+        if (!r.ok || t.error) { $('#anilloTexto').innerHTML = 'No se pudo transcribir<em>toca para reintentar</em>'; return; }
         if (t.silencio) { $('#anilloTexto').innerHTML = 'No se oyó nada<em>acércate al micrófono</em>'; return; }
         estado.texto = t.texto; await revisar();
       } catch { $('#anilloTexto').innerHTML = 'No se pudo<em>toca para reintentar</em>'; }
@@ -272,11 +287,30 @@ $('#volver').onclick = () => { $('#p1').classList.remove('oculto'); $('#p2').cla
   $('#volver').classList.add('oculto'); $('#accion').textContent = 'Revisar la visita';
   $('#texto').classList.remove('oculto'); $('#texto').value = estado.texto; };
 
+// La captura no se pierde ni se pinta a medias: entra a la misma cola de IndexedDB que ya procesa
+// «Procesar», la pantalla de captura se queda como estaba y se dice por qué, con las palabras del
+// nodo. Pasa cuando el teléfono no tiene par a la vista NI modelo a bordo (503).
+async function pendiente(texto, aviso) {
+  await encolar({ tipo: 'texto', texto });
+  $('#aviso').innerHTML = `<div class="aviso"><b>Captura pendiente</b>${esc(aviso ?? 'El nodo no pudo interpretarla ahora. Queda guardada en el teléfono hasta que vuelva.')}</div>`;
+  $('#accion').textContent = 'Revisar la visita'; $('#accion').disabled = false;
+  await pintarPendientes();
+}
+
 async function revisar() {
-  if (!hayNodo) { await encolar({ tipo: 'texto', texto: estado.texto }); return pintarPendientes(); }
+  if (!hayNodo) return pendiente(estado.texto, avisoNodo);
+  $('#aviso').innerHTML = '';
   $('#accion').disabled = true; $('#accion').textContent = 'Interpretando…';
-  const r = await fetch('/api/extraer', { method: 'POST', headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ texto: estado.texto, respuestas: estado.respuestas }) }).then(r => r.json());
+  let r;
+  try {
+    const res = await fetch('/api/extraer', { method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ texto: estado.texto, respuestas: estado.respuestas }) });
+    // 503 = ni par ni modelo a bordo. El cuerpo trae el aviso, no un borrador: pintarlo revienta.
+    if (!res.ok) return pendiente(estado.texto, (await res.json().catch(() => null))?.aviso);
+    r = await res.json();
+  } catch { return pendiente(estado.texto); }
+  if (!r?.borrador) return pendiente(estado.texto, r?.aviso ?? r?.error);
+  if (r.degradado) { degradado = true; pintarNodo(); }
   Object.assign(estado, { borrador: r.borrador, id: r.id, ms: r.ms, fila: r.fila, dups: r.duplicados ?? [] });
   $('#p1').classList.add('oculto'); $('#p2').classList.remove('oculto'); $('#volver').classList.remove('oculto');
   pintar(r);
@@ -381,8 +415,9 @@ $('#archivoFoto').onchange = async e => {
   const f = e.target.files?.[0]; if (!f) return;
   $('#placa').innerHTML = '<div class="pregunta"><p>Leyendo la placa…</p></div>';
   try {
-    const r = await fetch('/api/placa', { method: 'POST', body: f }).then(r => r.json());
-    if (r.error) { $('#placa').innerHTML = `<div class="aviso"><b>No se pudo leer</b>${esc(r.error)}</div>`; return; }
+    const res = await fetch('/api/placa', { method: 'POST', body: f });
+    const r = await res.json();
+    if (!res.ok || r.error) { $('#placa').innerHTML = `<div class="aviso"><b>No se pudo leer</b>${esc(r.aviso ?? r.error ?? `el nodo respondió ${res.status}`)}</div>`; return; }
     const orden = [['manufacturer', 'Marca'], ['model', 'Modelo'], ['modality', 'Tipo'], ['serial', 'Serie'], ['mfg', 'Fabricación']];
     $('#placa').innerHTML = `<div class="placa-campos">
       ${orden.map(([k, n]) => `<div class="fila"><div class="que"><b>${n}: ${esc(r.campos[k] ?? '—')}</b>
@@ -405,9 +440,10 @@ $('#btnPreguntar').onclick = async () => {
   if (!q?.trim()) return;
   $('#respuesta').innerHTML = '<div class="pregunta"><p>Consultando…</p></div>';
   try {
-    const r = await fetch('/api/consulta', { method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ pregunta: q }) }).then(r => r.json());
-    if (r.error) { $('#respuesta').innerHTML = `<div class="aviso">${esc(r.error)}</div>`; return; }
+    const res = await fetch('/api/consulta', { method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ pregunta: q }) });
+    const r = await res.json();
+    if (!res.ok || r.error) { $('#respuesta').innerHTML = `<div class="aviso">${esc(r.aviso ?? r.error ?? `el nodo respondió ${res.status}`)}</div>`; return; }
     const usados = Object.entries(r.filtro ?? {}).filter(([, v]) => v !== null && v !== false && v !== 'cliente');
     $('#respuesta').innerHTML = `<div class="placa-campos">
       <b>${r.total_unidades} unidad(es) en ${r.grupos.length} grupo(s)</b>
