@@ -96,6 +96,7 @@ periodicidad no prueba mando y control.
 
 - El teléfono captura y delega; hoy no infiere a bordo (el worker de Bare cae al cargar el modelo). Sin par a la vista, el nodo responde 503 diciendo que la captura queda pendiente; la app la deja en cola desde el navegador (`evidencia/telefono-puente-9sep.md`).
 - Cuando el par delegado se apaga, la laptop lo nota y recalcula local; cuando el par vuelve, no vuelve a delegar sola: hay que reiniciar el nodo.
+- La cola sin conexión de la app reenvía capturas de texto; una captura de voz que quedó pendiente no se procesa después.
 - La latencia y los códigos de respuesta DNS son sintéticos, porque el registro entregado solo trae consultas; cada fila lo marca.
 - El beaconing tiene 57 % de precisión: la periodicidad no prueba mando y control. Las reglas detectan; el modelo explica y no decide bloqueos.
 - El endpoint `/events` de Wazuh admite 100 eventos por petición y 30 peticiones por minuto, fijo en el manager: el agente agrupa hasta 100 alertas o 2,5 s. El JSONL local se escribe siempre, antes de cualquier envío, y es el respaldo si la API no responde.
