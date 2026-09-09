@@ -1,16 +1,18 @@
-# Stream continuo: dos procesos, una tubería local (9-sep-2026, 16:07-16:09)
+# Stream continuo: dos procesos, una tubería local (9-sep-2026, 16:10:31 → 16:11:37)
 
 Comando exacto, desde la raíz de hackpty:
 
-    export WAZUH_API_URL=https://127.0.0.1:55000 WAZUH_API_USER=wazuh-wui WAZUH_API_PASS=... CLICKHOUSE_LOCAL=1
+    export WAZUH_API_URL=https://127.0.0.1:55000 WAZUH_API_USER=wazuh-wui WAZUH_API_PASS=<API_PASSWORD>
+    export CLICKHOUSE_LOCAL=1 VENTANA_QOE_MS=5000
     node src/red/productor.js --velocidad 1 | node src/red/demo.js --stdin
 
 El productor y el consumidor son PROCESOS DISTINTOS unidos por una tubería. El
 consumidor imprime su primera línea y sus primeras alertas mientras el productor
 todavía está reproduciendo: eso es lo que separa un flujo de un archivo estático.
-La línea 'productor · fin' aparece al final, después de decenas de alertas.
+La línea 'productor · fin' aparece al final, después de más de cien alertas.
+Velocidad 1 = tiempo real del registro: 66 segundos, ~215 consultas/s.
 
-Salida completa, sin cortes (2>&1, las dos primeras líneas son del productor):
+Salida completa, sin cortes (2>&1; las tres primeras líneas son del productor):
 ----------------------------------------------------------------------------
 productor · /home/gar16/datos/HACKATHON-ISD-2026/hackpty/fixtures/red/benigno.bind.log
   perfil 4000 consultas sin espera · evaluación a ritmo temporal ÷ 1
@@ -20,71 +22,72 @@ Vigía · Red (Ovnicom) — consumidor adicional del stream DNS
 Replay temporal · transporte de demo (tubería local); en producción, consumidor Kafka.
 Lista blanca congelada: 64 SLD · Alertas → API local 127.0.0.1:55000 + JSONL local · QoE → ClickHouse local
 
-16:07:50 ·    276 eventos ·   272 c/s · dga 0 typo 2 túnel 0 beacon 0 · → API 1 + JSONL 2
-16:07:51 ·    536 eventos ·   259 c/s · dga 3 typo 4 túnel 0 beacon 0 · → API 1 + JSONL 7
-16:07:52 ·    806 eventos ·   269 c/s · dga 3 typo 5 túnel 0 beacon 0 · → API 8 + JSONL 8
-16:07:53 ·   1076 eventos ·   268 c/s · dga 5 typo 8 túnel 1 beacon 0 · → API 8 + JSONL 14
-16:07:54 ·   1252 eventos ·   173 c/s · dga 10 typo 11 túnel 1 beacon 0 · → API 22 + JSONL 22
-16:07:55 ·   1513 eventos ·   261 c/s · dga 14 typo 12 túnel 1 beacon 0 · → API 22 + JSONL 27
-16:07:56 ·   1693 eventos ·   177 c/s · dga 18 typo 12 túnel 1 beacon 0 · → API 22 + JSONL 31
-16:07:57 ·   1904 eventos ·   210 c/s · dga 22 typo 12 túnel 1 beacon 2 · → API 35 + JSONL 37
-16:07:58 ·   2105 eventos ·   199 c/s · dga 23 typo 12 túnel 1 beacon 2 · → API 35 + JSONL 38
-16:07:59 ·   2330 eventos ·   223 c/s · dga 25 typo 12 túnel 1 beacon 2 · → API 40 + JSONL 40
-16:08:00 ·   2514 eventos ·   184 c/s · dga 27 typo 12 túnel 1 beacon 2 · → API 40 + JSONL 42
-16:08:01 ·   2791 eventos ·   273 c/s · dga 29 typo 12 túnel 1 beacon 2 · → API 40 + JSONL 44
-16:08:02 ·   2959 eventos ·   166 c/s · dga 31 typo 12 túnel 1 beacon 2 · → API 44 + JSONL 46
-16:08:03 ·   3184 eventos ·   225 c/s · dga 33 typo 12 túnel 1 beacon 3 · → API 44 + JSONL 49
-16:08:04 ·   3355 eventos ·   171 c/s · dga 35 typo 12 túnel 1 beacon 3 · → API 50 + JSONL 51
-16:08:05 ·   3569 eventos ·   213 c/s · dga 35 typo 12 túnel 1 beacon 3 · → API 50 + JSONL 51
-16:08:06 ·   3790 eventos ·   220 c/s · dga 36 typo 12 túnel 1 beacon 3 · → API 50 + JSONL 52
-16:08:07 ·   4034 eventos ·   243 c/s · dga 37 typo 12 túnel 1 beacon 3 · → API 53 + JSONL 53
-16:08:08 ·   4297 eventos ·   262 c/s · dga 39 typo 12 túnel 1 beacon 3 · → API 53 + JSONL 55
-16:08:09 ·   4502 eventos ·   205 c/s · dga 40 typo 12 túnel 1 beacon 3 · → API 56 + JSONL 56
-16:08:10 ·   4735 eventos ·   228 c/s · dga 42 typo 12 túnel 1 beacon 3 · → API 56 + JSONL 58
-16:08:11 ·   4916 eventos ·   180 c/s · dga 44 typo 12 túnel 1 beacon 3 · → API 56 + JSONL 60
-16:08:12 ·   5096 eventos ·   178 c/s · dga 45 typo 12 túnel 1 beacon 3 · → API 60 + JSONL 61
-16:08:13 ·   5292 eventos ·   195 c/s · dga 48 typo 12 túnel 1 beacon 3 · → API 60 + JSONL 64
-16:08:14 ·   5486 eventos ·   192 c/s · dga 49 typo 12 túnel 1 beacon 3 · → API 65 + JSONL 65
-16:08:15 ·   5702 eventos ·   211 c/s · dga 53 typo 12 túnel 1 beacon 3 · → API 65 + JSONL 69
-16:08:16 ·   5967 eventos ·   263 c/s · dga 55 typo 12 túnel 1 beacon 3 · → API 65 + JSONL 71
-16:08:17 ·   6180 eventos ·   211 c/s · dga 57 typo 12 túnel 1 beacon 3 · → API 72 + JSONL 73
-16:08:18 ·   6388 eventos ·   206 c/s · dga 59 typo 12 túnel 1 beacon 3 · → API 72 + JSONL 75
-16:08:19 ·   6606 eventos ·   215 c/s · dga 61 typo 12 túnel 1 beacon 3 · → API 77 + JSONL 77
-16:08:20 ·   6830 eventos ·   224 c/s · dga 61 typo 12 túnel 1 beacon 3 · → API 77 + JSONL 77
-16:08:21 ·   7061 eventos ·   226 c/s · dga 67 typo 12 túnel 1 beacon 4 · → API 77 + JSONL 84
-16:08:22 ·   7328 eventos ·   266 c/s · dga 69 typo 12 túnel 1 beacon 4 · → API 84 + JSONL 86
-16:08:23 ·   7513 eventos ·   184 c/s · dga 72 typo 12 túnel 1 beacon 4 · → API 84 + JSONL 89
-16:08:24 ·   7729 eventos ·   215 c/s · dga 75 typo 12 túnel 1 beacon 4 · → API 91 + JSONL 92
-16:08:25 ·   7934 eventos ·   205 c/s · dga 77 typo 12 túnel 1 beacon 4 · → API 91 + JSONL 94
-16:08:26 ·   8220 eventos ·   286 c/s · dga 80 typo 12 túnel 1 beacon 4 · → API 91 + JSONL 97
-16:08:27 ·   8408 eventos ·   187 c/s · dga 82 typo 12 túnel 1 beacon 4 · → API 98 + JSONL 99
-16:08:28 ·   8608 eventos ·   200 c/s · dga 83 typo 12 túnel 1 beacon 4 · → API 98 + JSONL 100
-16:08:29 ·   8881 eventos ·   272 c/s · dga 85 typo 12 túnel 1 beacon 4 · → API 102 + JSONL 102
-16:08:30 ·   9101 eventos ·   219 c/s · dga 87 typo 12 túnel 1 beacon 4 · → API 102 + JSONL 104
-16:08:31 ·   9290 eventos ·   184 c/s · dga 90 typo 12 túnel 1 beacon 4 · → API 102 + JSONL 107
-16:08:32 ·   9509 eventos ·   219 c/s · dga 92 typo 12 túnel 1 beacon 6 · → API 107 + JSONL 111
-16:08:33 ·   9691 eventos ·   182 c/s · dga 93 typo 12 túnel 1 beacon 7 · → API 107 + JSONL 113
-16:08:34 ·   9916 eventos ·   225 c/s · dga 95 typo 12 túnel 1 beacon 9 · → API 117 + JSONL 117
-16:08:35 ·  10217 eventos ·   299 c/s · dga 97 typo 12 túnel 1 beacon 9 · → API 117 + JSONL 119
-16:08:36 ·  10295 eventos ·    72 c/s · dga 98 typo 12 túnel 1 beacon 10 · → API 117 + JSONL 121
-16:08:37 ·  10302 eventos ·     7 c/s · dga 99 typo 12 túnel 1 beacon 11 · → API 121 + JSONL 123
-16:08:38 ·  10309 eventos ·     7 c/s · dga 101 typo 12 túnel 1 beacon 11 · → API 121 + JSONL 125
-16:08:39 ·  10315 eventos ·     5 c/s · dga 102 typo 12 túnel 1 beacon 11 · → API 126 + JSONL 126
-16:08:41 ·  10321 eventos ·     6 c/s · dga 104 typo 12 túnel 1 beacon 11 · → API 126 + JSONL 128
-16:08:42 ·  10327 eventos ·     5 c/s · dga 106 typo 12 túnel 1 beacon 11 · → API 126 + JSONL 130
-16:08:43 ·  10333 eventos ·     6 c/s · dga 107 typo 12 túnel 1 beacon 12 · → API 131 + JSONL 132
-16:08:44 ·  10341 eventos ·     8 c/s · dga 109 typo 12 túnel 1 beacon 12 · → API 131 + JSONL 134
-16:08:45 ·  10348 eventos ·     6 c/s · dga 112 typo 12 túnel 1 beacon 12 · → API 136 + JSONL 137
-16:08:46 ·  10354 eventos ·     6 c/s · dga 113 typo 12 túnel 1 beacon 12 · → API 136 + JSONL 138
-16:08:47 ·  10360 eventos ·     6 c/s · dga 115 typo 12 túnel 1 beacon 12 · → API 136 + JSONL 140
-16:08:48 ·  10367 eventos ·     5 c/s · dga 116 typo 12 túnel 1 beacon 12 · → API 140 + JSONL 141
-16:08:50 ·  10372 eventos ·     4 c/s · dga 119 typo 12 túnel 1 beacon 12 · → API 140 + JSONL 144
-16:08:51 ·  10375 eventos ·     2 c/s · dga 121 typo 12 túnel 1 beacon 12 · → API 145 + JSONL 146
-16:08:52 ·  10379 eventos ·     3 c/s · dga 123 typo 12 túnel 1 beacon 12 · → API 145 + JSONL 148
-16:08:53 ·  10383 eventos ·     3 c/s · dga 124 typo 12 túnel 1 beacon 12 · → API 149 + JSONL 149
-16:08:55 ·  10386 eventos ·     2 c/s · dga 125 typo 12 túnel 1 beacon 12 · → API 149 + JSONL 150
+16:10:31 ·    276 eventos ·   272 c/s · dga 0 typo 2 túnel 0 beacon 0 · → API 1 + JSONL 2
+16:10:32 ·    536 eventos ·   259 c/s · dga 3 typo 4 túnel 0 beacon 0 · → API 1 + JSONL 7
+16:10:33 ·    806 eventos ·   269 c/s · dga 3 typo 5 túnel 0 beacon 0 · → API 8 + JSONL 8
+16:10:34 ·   1076 eventos ·   268 c/s · dga 5 typo 8 túnel 1 beacon 0 · → API 8 + JSONL 14
+16:10:35 ·   1252 eventos ·   174 c/s · dga 10 typo 11 túnel 1 beacon 0 · → API 22 + JSONL 22
+16:10:36 ·   1512 eventos ·   260 c/s · dga 14 typo 12 túnel 1 beacon 0 · → API 22 + JSONL 27
+16:10:37 ·   1692 eventos ·   179 c/s · dga 18 typo 12 túnel 1 beacon 0 · → API 22 + JSONL 31
+16:10:38 ·   1902 eventos ·   209 c/s · dga 22 typo 12 túnel 1 beacon 2 · → API 35 + JSONL 37
+16:10:39 ·   2104 eventos ·   198 c/s · dga 23 typo 12 túnel 1 beacon 2 · → API 35 + JSONL 38
+16:10:40 ·   2329 eventos ·   225 c/s · dga 25 typo 12 túnel 1 beacon 2 · → API 40 + JSONL 40
+16:10:41 ·   2510 eventos ·   180 c/s · dga 27 typo 12 túnel 1 beacon 2 · → API 40 + JSONL 42
+16:10:42 ·   2790 eventos ·   277 c/s · dga 29 typo 12 túnel 1 beacon 2 · → API 40 + JSONL 44
+16:10:43 ·   2959 eventos ·   163 c/s · dga 31 typo 12 túnel 1 beacon 2 · → API 44 + JSONL 46
+16:10:44 ·   3184 eventos ·   225 c/s · dga 33 typo 12 túnel 1 beacon 3 · → API 44 + JSONL 49
+16:10:45 ·   3355 eventos ·   171 c/s · dga 35 typo 12 túnel 1 beacon 3 · → API 50 + JSONL 51
+16:10:46 ·   3569 eventos ·   214 c/s · dga 35 typo 12 túnel 1 beacon 3 · → API 50 + JSONL 51
+16:10:47 ·   3789 eventos ·   220 c/s · dga 36 typo 12 túnel 1 beacon 3 · → API 50 + JSONL 52
+16:10:48 ·   4030 eventos ·   240 c/s · dga 37 typo 12 túnel 1 beacon 3 · → API 53 + JSONL 53
+16:10:49 ·   4297 eventos ·   265 c/s · dga 39 typo 12 túnel 1 beacon 3 · → API 53 + JSONL 55
+16:10:50 ·   4502 eventos ·   204 c/s · dga 40 typo 12 túnel 1 beacon 3 · → API 56 + JSONL 56
+16:10:51 ·   4735 eventos ·   228 c/s · dga 42 typo 12 túnel 1 beacon 3 · → API 56 + JSONL 58
+16:10:52 ·   4916 eventos ·   180 c/s · dga 44 typo 12 túnel 1 beacon 3 · → API 56 + JSONL 60
+16:10:53 ·   5096 eventos ·   178 c/s · dga 45 typo 12 túnel 1 beacon 3 · → API 60 + JSONL 61
+16:10:54 ·   5292 eventos ·   195 c/s · dga 48 typo 12 túnel 1 beacon 3 · → API 60 + JSONL 64
+16:10:55 ·   5486 eventos ·   192 c/s · dga 49 typo 12 túnel 1 beacon 3 · → API 65 + JSONL 65
+16:10:56 ·   5702 eventos ·   212 c/s · dga 53 typo 12 túnel 1 beacon 3 · → API 65 + JSONL 69
+16:10:57 ·   5967 eventos ·   263 c/s · dga 55 typo 12 túnel 1 beacon 3 · → API 65 + JSONL 71
+16:10:58 ·   6180 eventos ·   211 c/s · dga 57 typo 12 túnel 1 beacon 3 · → API 72 + JSONL 73
+16:10:59 ·   6388 eventos ·   206 c/s · dga 59 typo 12 túnel 1 beacon 3 · → API 72 + JSONL 75
+16:11:00 ·   6606 eventos ·   215 c/s · dga 61 typo 12 túnel 1 beacon 3 · → API 77 + JSONL 77
+16:11:01 ·   6830 eventos ·   224 c/s · dga 61 typo 12 túnel 1 beacon 3 · → API 77 + JSONL 77
+16:11:02 ·   7061 eventos ·   225 c/s · dga 67 typo 12 túnel 1 beacon 4 · → API 77 + JSONL 84
+16:11:03 ·   7328 eventos ·   266 c/s · dga 69 typo 12 túnel 1 beacon 4 · → API 84 + JSONL 86
+16:11:04 ·   7513 eventos ·   185 c/s · dga 72 typo 12 túnel 1 beacon 4 · → API 84 + JSONL 89
+16:11:05 ·   7729 eventos ·   214 c/s · dga 75 typo 12 túnel 1 beacon 4 · → API 91 + JSONL 92
+16:11:06 ·   7934 eventos ·   205 c/s · dga 77 typo 12 túnel 1 beacon 4 · → API 91 + JSONL 94
+16:11:07 ·   8220 eventos ·   286 c/s · dga 80 typo 12 túnel 1 beacon 4 · → API 91 + JSONL 97
+16:11:08 ·   8408 eventos ·   188 c/s · dga 82 typo 12 túnel 1 beacon 4 · → API 98 + JSONL 99
+16:11:09 ·   8605 eventos ·   197 c/s · dga 83 typo 12 túnel 1 beacon 4 · → API 98 + JSONL 100
+16:11:10 ·   8881 eventos ·   275 c/s · dga 85 typo 12 túnel 1 beacon 4 · → API 102 + JSONL 102
+16:11:11 ·   9101 eventos ·   219 c/s · dga 87 typo 12 túnel 1 beacon 4 · → API 102 + JSONL 104
+16:11:12 ·   9290 eventos ·   184 c/s · dga 90 typo 12 túnel 1 beacon 4 · → API 102 + JSONL 107
+16:11:13 ·   9509 eventos ·   219 c/s · dga 92 typo 12 túnel 1 beacon 6 · → API 107 + JSONL 111
+16:11:14 ·   9694 eventos ·   185 c/s · dga 93 typo 12 túnel 1 beacon 7 · → API 107 + JSONL 113
+16:11:15 ·   9917 eventos ·   222 c/s · dga 95 typo 12 túnel 1 beacon 9 · → API 117 + JSONL 117
+16:11:16 ·  10217 eventos ·   300 c/s · dga 97 typo 12 túnel 1 beacon 9 · → API 117 + JSONL 119
+16:11:17 ·  10295 eventos ·    72 c/s · dga 98 typo 12 túnel 1 beacon 10 · → API 117 + JSONL 121
+16:11:18 ·  10302 eventos ·     7 c/s · dga 99 typo 12 túnel 1 beacon 11 · → API 121 + JSONL 123
+16:11:19 ·  10309 eventos ·     7 c/s · dga 101 typo 12 túnel 1 beacon 11 · → API 121 + JSONL 125
+16:11:20 ·  10315 eventos ·     5 c/s · dga 102 typo 12 túnel 1 beacon 11 · → API 126 + JSONL 126
+16:11:21 ·  10321 eventos ·     5 c/s · dga 104 typo 12 túnel 1 beacon 11 · → API 126 + JSONL 128
+16:11:23 ·  10327 eventos ·     5 c/s · dga 106 typo 12 túnel 1 beacon 11 · → API 126 + JSONL 130
+16:11:24 ·  10333 eventos ·     6 c/s · dga 107 typo 12 túnel 1 beacon 12 · → API 131 + JSONL 132
+16:11:25 ·  10341 eventos ·     8 c/s · dga 109 typo 12 túnel 1 beacon 12 · → API 131 + JSONL 134
+16:11:26 ·  10348 eventos ·     6 c/s · dga 112 typo 12 túnel 1 beacon 12 · → API 136 + JSONL 137
+16:11:27 ·  10354 eventos ·     6 c/s · dga 113 typo 12 túnel 1 beacon 12 · → API 136 + JSONL 138
+16:11:28 ·  10360 eventos ·     6 c/s · dga 115 typo 12 túnel 1 beacon 12 · → API 136 + JSONL 140
+16:11:29 ·  10367 eventos ·     5 c/s · dga 116 typo 12 túnel 1 beacon 12 · → API 140 + JSONL 141
+16:11:30 ·  10371 eventos ·     4 c/s · dga 119 typo 12 túnel 1 beacon 12 · → API 140 + JSONL 144
+16:11:31 ·  10374 eventos ·     3 c/s · dga 120 typo 12 túnel 1 beacon 12 · → API 145 + JSONL 145
+16:11:32 ·  10377 eventos ·     3 c/s · dga 122 typo 12 túnel 1 beacon 12 · → API 145 + JSONL 147
+16:11:34 ·  10382 eventos ·     3 c/s · dga 124 typo 12 túnel 1 beacon 12 · → API 149 + JSONL 149
+16:11:35 ·  10385 eventos ·     3 c/s · dga 125 typo 12 túnel 1 beacon 12 · → API 149 + JSONL 150
+16:11:36 ·  10387 eventos ·     2 c/s · dga 125 typo 12 túnel 1 beacon 12 · → API 149 + JSONL 150
 productor · fin: 4000 de perfil + 10390 de evaluación
-16:08:56 ·  10390 eventos ·     5 c/s · dga 125 typo 12 túnel 1 beacon 12 · → API 150 + JSONL 150
+16:11:37 ·  10390 eventos ·     6 c/s · dga 125 typo 12 túnel 1 beacon 12 · → API 150 + JSONL 150
 
 {
   "consultas": 10390,
@@ -97,7 +100,7 @@ productor · fin: 4000 de perfil + 10390 de evaluación
   },
   "latencias_evento_alerta_ms": {
     "n": 150,
-    "mediana": 1.2470940000002884
+    "mediana": 1.0825860000004468
   },
   "api": {
     "destino": "https://127.0.0.1:55000",
@@ -108,7 +111,7 @@ productor · fin: 4000 de perfil + 10390 de evaluación
     "error": null,
     "latencias_evento_api_ms": {
       "n": 150,
-      "mediana": 1199.9051620000027
+      "mediana": 1175.2768490000017
     }
   },
   "destino_qoe": "ClickHouse local"
@@ -116,6 +119,10 @@ productor · fin: 4000 de perfil + 10390 de evaluación
 ----------------------------------------------------------------------------
 
 Comprobación en el SIEM, mismo minuto:
-  vigia_red en /var/ossec/logs/alerts/alerts.json  antes 443 · después 593  (+150)
-  de las 150 nuevas: 100101 DGA 125 · 100102 typosquat 12 · 100103 túnel 1 · 100104 beacon 12
-  location de las 150: API-Webhook (llegaron por POST /events, no por el archivo)
+  docker exec single-node-wazuh.manager-1 grep -c vigia_red /var/ossec/logs/alerts/alerts.json
+  antes 593 · después 743  (+150, exactamente las que emitió el agente)
+  desglose de las 150: 100101 DGA 125 · 100102 typosquat 12 · 100103 túnel 1 · 100104 beacon 12
+  location de las 150: API-Webhook (entraron por POST /events, no por el archivo)
+  las 27 peticiones devolvieron 200 en 6-30 ms (mediana 13 ms) según el log de la API
+
+Comprobación en ClickHouse: 54 filas en red_qoe, 10 por zona, ventana de 5 s.

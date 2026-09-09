@@ -48,7 +48,9 @@ Las métricas evalúan cada regla por separado, sin el silenciamiento de alertas
 - API: 27 peticiones, 150 aceptadas, 0 fallidas, 0 reencoladas. El manager las sirvió en
   6–30 ms (mediana 13 ms).
 - Evento recibido → línea en el JSONL: mediana **1,08 ms** (n=150). Sin espera de ventana,
-  inferencia ni SIEM.
+  inferencia ni SIEM. En el modo de un solo proceso (`node src/red/demo.js`, 10 480 consultas
+  y 153 alertas) la misma medida da **0,44 ms**: la diferencia es el JSON.parse por evento
+  que cuesta la tubería.
 - Evento recibido → HTTP 200 de la API: mediana **1 175 ms** (n=150). Lo domina la agrupación
   de 2,5 s, no el transporte.
 
