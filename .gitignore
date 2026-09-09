@@ -11,3 +11,7 @@ datos/*.pem
 src/sucursal/datos/
 src/sucursal/resultado-modelo.json
 GUION-VIDEO.md
+infra/red/salida/
+infra/red/cache/
+src/red/resultado-modelo.json
+src/red/rendimiento-modelo.jsonl
