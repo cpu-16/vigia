@@ -14,6 +14,11 @@ export const clasificarEdad = años => años == null ? 'sin dato' : años <= COC
 
 export const claveCliente = c => `${sinAcentos(c?.name ?? '').trim()}|${sinAcentos(c?.country ?? '').trim()}`;
 
+// El «status» de la hoja del reto describe la FUENTE de la observación (lo vi / me lo contaron /
+// lo estimé). La corroboración es otra cosa: dos personas distintas que ven el mismo equipo.
+// Se guardan por separado a propósito; mezclarlas haría pasar por confirmado lo que solo dijo uno.
+const FUERZA = { Unknown: 0, Estimated: 1, Reported: 2, Confirmed: 3 };
+
 export class Base {
   constructor(ruta = 'datos/observaciones.jsonl') { this.ev = new Eventos(ruta); }
 
@@ -51,12 +56,13 @@ export class Base {
           existente.clave.age = { min: o.age_years_min, max: o.age_years_max };
         }
         const observadores = new Set(existente.observaciones.map(x => x.observador).filter(Boolean));
-        existente.status = observadores.size > 1 ? 'Confirmed' : o.status;
         existente.observadores = [...observadores];
+        existente.corroborado = observadores.size > 1;   // dos personas DISTINTAS vieron lo mismo
+        existente.status = FUERZA[o.status] > FUERZA[existente.status] ? o.status : existente.status;
       } else sitio.equipos.push({ clave: nuevo, modality: o.modality, quantity: o.quantity,
         manufacturer: o.manufacturer, model: o.model, age_years_min: o.age_years_min, age_years_max: o.age_years_max,
         status: o.status, confidence: o.confidence, install_year_min: o.install_year_min, install_year_max: o.install_year_max,
-        observadores: [o.observador].filter(Boolean), observaciones: [o] });
+        observadores: [o.observador].filter(Boolean), corroborado: false, observaciones: [o] });
     }
     return [...porSitio.values()].map(s => ({ ...s, equipos: s.equipos.map(({ clave, ...e }) => ({ ...e,
       ultima_fecha: e.observaciones.map(o => o.fecha).sort().at(-1),

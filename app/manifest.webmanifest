@@ -1,0 +1,10 @@
+{
+  "name": "Vigía · base instalada",
+  "short_name": "Vigía",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F3EFE6",
+  "theme_color": "#F3EFE6",
+  "description": "Captura de base instalada con inferencia local (QVAC)",
+  "icons": [{ "src": "/icono.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

@@ -1,0 +1,165 @@
+// Servidor de Vigía: sirve la app y expone el flujo del reto.
+// La inferencia ocurre aquí (nodo local) o se delega a un par QVAC por llave pública.
+// Ninguna ruta llama a un servicio externo: sin red, el nodo sigue respondiendo.
+import { createServer } from 'node:http';
+import { readFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { extname, join, resolve } from 'node:path';
+import { randomBytes } from 'node:crypto';
+import { QWEN3_1_7B_INST_Q4, QWEN3_600M_INST_Q4, WHISPER_LARGE_V3_TURBO } from '@qvac/sdk';
+import { cargar, descargar } from './core/runtime.js';
+import { cargarVoz, dictar } from './core/voz.js';
+import { llaveNodo, sellar, verificar } from './core/sello.js';
+import { RUTA as RUTA_RENDIMIENTO, RUN_ID } from './core/rendimiento.js';
+import { extraer } from './equipos/extraer.js';
+import { preguntas, derivar } from './equipos/reglas.js';
+import { candidatos } from './equipos/duplicados.js';
+import { Base } from './equipos/almacen.js';
+
+const PUERTO = Number(process.env.PUERTO ?? 7320);
+const APP = resolve('app');
+const base = new Base(process.env.OBSERVACIONES ?? 'datos/observaciones.jsonl');
+const llave = llaveNodo();
+const idSolicitud = () => `V-${randomBytes(2).toString('hex').toUpperCase()}`;
+
+// Modelos: el LLM puede correr local o delegado a un par (P2P_PROVEEDOR = llave pública hex).
+const PROVEEDOR = process.env.P2P_PROVEEDOR || undefined;
+const GGUF = process.env.GGUF_QWEN3_1_7B;
+let llm = null, vozLista = false;
+
+async function arrancar() {
+  llm = await cargar({ modelSrc: process.env.MODELO_CHICO ? QWEN3_600M_INST_Q4 : QWEN3_1_7B_INST_Q4,
+    etiqueta: process.env.MODELO_CHICO ? 'Qwen3-0.6B Q4_0' : 'Qwen3-1.7B Q4_0',
+    hardware: process.env.HARDWARE ?? 'laptop-rtx4060', device: process.env.CPU ? 'cpu' : 'gpu',
+    ...(GGUF && existsSync(GGUF) ? { fallbackSrc: GGUF } : {}), proveedor: PROVEEDOR });
+  console.log(`▸ LLM ${llm.etiqueta} · ${llm.delegado ? `DELEGADO a ${PROVEEDOR.slice(0, 12)}…` : 'local'} · ${llm.device}`);
+  try { await cargarVoz({ modelSrc: WHISPER_LARGE_V3_TURBO, etiqueta: 'Whisper large-v3 turbo', hardware: 'laptop-cpu' }); vozLista = true; console.log('▸ Voz lista'); }
+  catch (e) { console.log(`▸ Voz no disponible: ${e.message}`); }
+}
+
+const json = (res, obj, code = 200) => { res.writeHead(code, { 'content-type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(obj)); };
+const cuerpo = async (req, max = 12e6) => { const p = []; let n = 0; for await (const c of req) { n += c.length; if (n > max) throw new Error('cuerpo muy grande'); p.push(c); } return Buffer.concat(p); };
+const cuerpoJson = async req => JSON.parse((await cuerpo(req)).toString('utf8') || '{}');
+const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8', '.webmanifest': 'application/manifest+json', '.svg': 'image/svg+xml', '.png': 'image/png' };
+
+const servidor = createServer(async (req, res) => {
+  const url = new URL(req.url, 'http://x');
+  const ruta = url.pathname;
+  try {
+    // ── app ──
+    if (req.method === 'GET' && (ruta === '/' || ruta === '/app')) return archivo(res, 'index.html');
+    if (req.method === 'GET' && ruta === '/tablero') return archivo(res, 'tablero.html');
+    if (req.method === 'GET' && ruta === '/verificar') return archivo(res, 'verificar.html');
+    if (req.method === 'GET' && /^\/[\w.-]+$/.test(ruta) && existsSync(join(APP, ruta.slice(1)))) return archivo(res, ruta.slice(1));
+
+    // ── captura ──
+    if (req.method === 'POST' && ruta === '/api/dictar') {
+      if (!vozLista) return json(res, { error: 'el nodo no tiene el modelo de voz cargado' }, 503);
+      const id = url.searchParams.get('id') ?? idSolicitud();
+      const bytes = await cuerpo(req);
+      if (!bytes.length) return json(res, { error: 'sin audio' }, 400);
+      console.log(`▸ [${id}] QVAC transcribe → Whisper (${bytes.length} bytes)`);
+      const t = await dictar(bytes, { requestId: id });
+      console.log(`▸ [${id}] QVAC transcribe ✓ ${Math.round(t.ms)} ms · «${t.texto.slice(0, 70)}»`);
+      return json(res, { ...t, id });
+    }
+
+    if (req.method === 'POST' && ruta === '/api/extraer') {
+      const { texto, respuestas } = await cuerpoJson(req);
+      const id = idSolicitud();
+      console.log(`▸ [${id}] QVAC completion → ${llm.etiqueta} en ${llm.delegado ? 'par delegado' : llm.hardware} (json_schema «observacion»)`);
+      const r = await extraer(llm, texto ?? '', { requestId: id });
+      const borrador = aplicarRespuestas(r.borrador, respuestas);
+      console.log(`▸ [${id}] QVAC completion ✓ ${Math.round(r.ms)} ms · ${borrador.equipment.map(g => `${g.quantity ?? '?'}×${g.modality}`).join(', ') || 'sin equipos'}`);
+      return json(res, { id, borrador, descartes: r.descartes, ms: r.ms,
+        preguntas: preguntas(borrador, { yaContestadas: new Set(Object.keys(respuestas ?? {})) }),
+        duplicados: dupsDe(borrador), fila: r.fila });
+    }
+
+    // ── guardar ──
+    if (req.method === 'POST' && ruta === '/api/guardar') {
+      const { borrador, observador, directo, fuente, requestId, foto } = await cuerpoJson(req);
+      if (!borrador?.customer?.name) return json(res, { error: 'hace falta el hospital' }, 400);
+      if (!borrador?.equipment?.length) return json(res, { error: 'no hay equipos que guardar' }, 400);
+      const eventos = base.guardar(borrador, { observador, directo, fuente, requestId, foto });
+      const acta = sellar({ visita: requestId ?? null, observador: observador ?? null,
+        customer: borrador.customer, equipos: eventos.map(e => e.datos), eventos: eventos.map(e => e.id) }, llave, { firmante: observador ?? 'nodo' });
+      console.log(`▸ guardadas ${eventos.length} observaciones de «${borrador.customer.name}» · acta ${acta.sello.hash.slice(0, 12)}…`);
+      return json(res, { eventos: eventos.length, acta });
+    }
+
+    // ── consulta ──
+    if (req.method === 'GET' && ruta === '/api/inventario') return json(res, base.inventario());
+    if (req.method === 'GET' && ruta === '/api/cliente360') return json(res, base.cliente360(url.searchParams.get('nombre') ?? ''));
+    if (req.method === 'GET' && ruta === '/api/agregado') return json(res, base.agregado(url.searchParams.get('por') ?? 'country'));
+    if (req.method === 'GET' && ruta === '/api/renovaciones') return json(res, base.renovaciones());
+    if (req.method === 'GET' && ruta === '/api/incompletos') return json(res, base.incompletos());
+    if (req.method === 'GET' && ruta === '/api/recientes') return json(res, base.observaciones().slice(-12).reverse());
+    if (req.method === 'POST' && ruta === '/api/verificar') return json(res, verificar(await cuerpoJson(req)));
+
+    // ── evidencia técnica: lo que el jurado revisa ──
+    if (req.method === 'GET' && ruta === '/api/evidencia') {
+      const filas = existsSync(RUTA_RENDIMIENTO) ? (await readFile(RUTA_RENDIMIENTO, 'utf8')).trim().split('\n').filter(Boolean).map(l => JSON.parse(l)) : [];
+      const inf = filas.filter(f => f.stage === 'completion' && f.status === 'ok');
+      return json(res, { run_id: RUN_ID, sdk: '@qvac/sdk 0.18.2 (fijada: 0.19.0 quitó la delegación P2P)',
+        node: process.version, modelo: llm?.etiqueta, hardware: llm?.hardware,
+        modo: llm?.delegado ? `delegado a ${PROVEEDOR?.slice(0, 16)}…` : 'local', voz: vozLista,
+        llave_nodo: llave.publica.slice(0, 16) + '…', cadena: base.ev.verificarCadena(),
+        inferencias: inf.length,
+        ttft_ms_mediana: mediana(inf.map(f => f.ttft_ms)), tps_mediana: mediana(inf.map(f => f.throughput_tps)),
+        ultimas: filas.slice(-8).reverse() });
+    }
+
+    res.writeHead(404); res.end('no está');
+  } catch (e) { console.error('✗', e); json(res, { error: String(e?.message ?? e) }, 500); }
+});
+
+async function archivo(res, nombre) {
+  const p = join(APP, nombre);
+  if (!p.startsWith(APP) || !existsSync(p)) { res.writeHead(404); return res.end('no está'); }
+  res.writeHead(200, { 'content-type': TIPOS[extname(p)] ?? 'application/octet-stream', 'cache-control': 'no-cache' });
+  res.end(await readFile(p));
+}
+
+const mediana = xs => { const v = xs.filter(x => typeof x === 'number').sort((a, b) => a - b); return v.length ? Math.round(v[Math.floor(v.length / 2)] * 10) / 10 : null; };
+
+// Las respuestas del colaborador pesan más que el modelo: entran tal cual, sin volver a inferir.
+function aplicarRespuestas(b, respuestas = {}) {
+  const out = structuredClone(b);
+  for (const [clave, valor] of Object.entries(respuestas ?? {})) {
+    if (valor == null || valor === 'No sé' || valor === '') continue;
+    const [campo, g] = clave.split(':');
+    const grupo = g === 'null' ? null : out.equipment[Number(g)];
+    if (campo === 'customer.name') out.customer.name = valor;
+    else if (campo === 'customer.location') { const [ciudad, pais] = String(valor).split(',').map(s => s.trim()); out.customer.city = ciudad ?? null; out.customer.country = pais ?? out.customer.country; }
+    else if (!grupo) continue;
+    else if (campo === 'modality') grupo.modality = valor;
+    else if (campo === 'quantity') grupo.quantity = Number(valor) || null;
+    else if (campo === 'manufacturer') grupo.manufacturer = valor;
+    else if (campo === 'model') grupo.model = valor;
+    else if (campo === 'age') {
+      const m = String(valor).match(/(\d+)\s*(?:a|-|to)\s*(\d+)/) ?? String(valor).match(/(\d+)/);
+      if (m) { grupo.age_years_min = Number(m[1]); grupo.age_years_max = Number(m[2] ?? m[1]); }
+      else if (/nuevo|new/i.test(valor)) { grupo.age_years_min = 0; grupo.age_years_max = 3; }
+      else if (/m[aá]s de 10|> ?10/i.test(valor)) { grupo.age_years_min = 10; grupo.age_years_max = 15; }
+    }
+    if (grupo) grupo.verificado = { ...(grupo.verificado ?? {}), [campo]: 'colaborador' };
+  }
+  return out;
+}
+
+// Duplicados contra lo que ya está guardado, con su explicación campo por campo.
+function dupsDe(b) {
+  const inv = base.inventario().flatMap(s => s.equipos.map(e => ({ site: { name: s.customer?.name, country: s.customer?.country },
+    modality: e.modality, manufacturer: e.manufacturer, model: e.model, quantity: e.quantity,
+    age: { min: e.age_years_min, max: e.age_years_max }, _resumen: `${e.quantity ?? '?'}×${e.modality} en ${s.customer?.name}` })));
+  return (b.equipment ?? []).flatMap((g, i) => candidatos({ site: { name: b.customer?.name, country: b.customer?.country },
+    modality: g.modality, manufacturer: g.manufacturer, model: g.model, quantity: g.quantity,
+    age: { min: g.age_years_min, max: g.age_years_max } }, inv)
+    .slice(0, 1).map(c => ({ grupo: i, p: c.p, veredicto: c.veredicto, contra: c.existente._resumen, detalle: c.detalle })));
+}
+
+await arrancar();
+servidor.listen(PUERTO, () => console.log(`▸ Vigía en http://localhost:${PUERTO}  ·  tablero en /tablero`));
+process.on('SIGINT', async () => { if (llm) await descargar(llm); process.exit(0); });

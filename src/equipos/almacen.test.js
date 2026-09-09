@@ -30,21 +30,27 @@ test('guardar e inventariar: una observación por grupo, el inventario consolida
   rmSync(ruta, { force: true });
 });
 
-test('dos observadores distintos sobre el mismo equipo → Confirmed, sin duplicar unidades', () => {
+test('dos observadores distintos corroboran, sin duplicar unidades; el estado sigue la hoja del reto', () => {
   const b = nueva();
   b.guardar({ customer: pacific, equipment: [grupo('MR', 2, { manufacturer: 'NovaMed', age_years_min: 7, age_years_max: 7 })] }, { observador: 'Field User 01', fecha: '2026-08-18' });
   b.guardar({ customer: pacific, equipment: [grupo('MR', 2, { manufacturer: 'NovaMed', model: 'NM-MR 700', age_years_min: 6, age_years_max: 8 })] }, { observador: 'Sales User 02', fecha: '2026-08-20' });
   const eq = b.inventario()[0].equipos;
   assert.equal(eq.length, 1, 'no se cuenta dos veces el mismo equipo');
   assert.equal(eq[0].quantity, 2, 'las unidades no se suman');
-  assert.equal(eq[0].status, 'Confirmed');
+  assert.equal(eq[0].corroborado, true, 'dos personas distintas vieron lo mismo');
+  assert.equal(eq[0].status, 'Reported', 'ninguno dijo «lo vi yo»: la corroboración no inventa un Confirmed');
   assert.deepEqual(eq[0].observadores, ['Field User 01', 'Sales User 02']);
   assert.equal(eq[0].model, 'NM-MR 700', 'la segunda observación aporta el modelo que faltaba');
   // el mismo observador dos veces NO confirma
   const c = nueva();
   c.guardar({ customer: pacific, equipment: [grupo('MR', 2)] }, { observador: 'Field User 01' });
   c.guardar({ customer: pacific, equipment: [grupo('MR', 2)] }, { observador: 'Field User 01' });
-  assert.notEqual(c.inventario()[0].equipos[0].status, 'Confirmed');
+  assert.equal(c.inventario()[0].equipos[0].corroborado, false, 'la misma persona dos veces no corrobora');
+  // «lo vi directamente» sí da Confirmed, según la hoja «Agent Question Logic» del reto
+  const d = nueva();
+  d.guardar({ customer: pacific, equipment: [grupo('CT', 1)] }, { observador: 'Field User 01', directo: true });
+  assert.equal(d.inventario()[0].equipos[0].status, 'Confirmed');
+  assert.equal(d.inventario()[0].equipos[0].corroborado, false);
   rmSync(ruta, { force: true });
 });
 
@@ -57,6 +63,7 @@ test('Customer 360, agregados, renovaciones e incompletos', () => {
   const c360 = b.cliente360('Hospital DemoCare Pacific');
   assert.equal(c360.resumen.length, 2);
   assert.deepEqual(c360.resumen.find(r => r.modality === 'MR'), { modality: 'MR', unidades: 2, edad_aprox: 7, estado: 'Reported', marcas: ['NovaMed'] });
+  assert.equal(c360.equipos[0].corroborado, false);
   assert.equal(b.cliente360('Hospital Inexistente'), null);
 
   const paises = b.agregado('country');

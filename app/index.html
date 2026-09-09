@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F3EFE6">
+<link rel="manifest" href="/manifest.webmanifest">
+<title>Vigía · base instalada</title>
+<style>
+  /* Libreta de campo clínica: papel cálido, tinta azul profunda, turquesa solo para la acción. */
+  :root{
+    --papel:#F3EFE6; --papel-alto:#FBF9F4; --tinta:#16262E; --tinta-suave:#5C6B72;
+    --raya:#DED7C7; --accion:#0F7B85; --accion-hondo:#0A5C63;
+    --alerta:#9C4221; --confirmado:#2F6B4F; --estimado:#8A6D1F;
+    --serif:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--papel);color:var(--tinta);font:17px/1.5 system-ui,-apple-system,sans-serif;
+       -webkit-tap-highlight-color:transparent}
+  .hoja{max-width:560px;margin:0 auto;padding:0 20px 120px;min-height:100dvh}
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:18px 0 10px;
+         border-bottom:2px solid var(--tinta)}
+  h1{font:400 30px/1 var(--serif);margin:0;letter-spacing:-.01em}
+  h1 small{display:block;font:500 11px/1.4 system-ui;letter-spacing:.16em;text-transform:uppercase;color:var(--tinta-suave);margin-top:6px}
+  .nodo{font-size:12px;color:var(--tinta-suave);display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .punto{width:8px;height:8px;border-radius:50%;background:var(--alerta)}
+  .nodo.si .punto{background:var(--confirmado)}
+
+  /* credencial de quien reporta */
+  .credencial{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--raya)}
+  .avatar{width:38px;height:38px;border-radius:50%;background:var(--tinta);color:var(--papel);
+          display:grid;place-items:center;font:600 15px system-ui;flex:none}
+  .credencial input{border:0;background:transparent;font:600 17px system-ui;color:var(--tinta);width:100%;padding:2px 0}
+  .credencial input:focus{outline:0;border-bottom:2px solid var(--accion)}
+  .credencial time{font-size:12px;color:var(--tinta-suave);display:block}
+
+  /* anillo de voz */
+  .captura{display:grid;place-items:center;padding:34px 0 20px}
+  .anillo{width:168px;height:168px;border-radius:50%;border:2px solid var(--tinta);background:var(--papel-alto);
+          display:grid;place-items:center;cursor:pointer;position:relative;transition:transform .12s}
+  .anillo:active{transform:scale(.97)}
+  .anillo::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:1px solid var(--raya)}
+  .anillo.grabando{border-color:var(--accion);box-shadow:0 0 0 0 rgba(15,123,133,.35);animation:latido 1.6s infinite}
+  @keyframes latido{70%{box-shadow:0 0 0 22px rgba(15,123,133,0)}100%{box-shadow:0 0 0 0 rgba(15,123,133,0)}}
+  .anillo b{font:400 19px var(--serif);display:block;text-align:center;line-height:1.25}
+  .anillo em{font-style:normal;font-size:13px;color:var(--tinta-suave);display:block;margin-top:5px}
+  .onda{position:absolute;bottom:34px;display:flex;gap:3px;align-items:flex-end;height:26px}
+  .onda i{width:3px;background:var(--accion);border-radius:2px;height:3px;transition:height .07s}
+
+  .losas{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+  .losa{padding:16px 14px;border:1px solid var(--raya);border-radius:12px;background:var(--papel-alto);
+        text-align:center;cursor:pointer;font:500 15px system-ui;box-shadow:0 1px 0 var(--raya)}
+  .losa:active{transform:translateY(1px);box-shadow:none}
+  .losa span{display:block;font-size:22px;margin-bottom:4px}
+
+  textarea{width:100%;min-height:120px;padding:14px;border:1px solid var(--raya);border-radius:12px;
+           background:var(--papel-alto);font:16px/1.5 system-ui;color:var(--tinta);resize:vertical}
+  textarea:focus{outline:0;border-color:var(--accion)}
+
+  /* revisión */
+  .dicho{background:var(--papel-alto);border-left:3px solid var(--tinta);padding:14px 16px;margin:18px 0;
+         font:17px/1.6 var(--serif)}
+  .dicho mark{background:rgba(15,123,133,.16);color:inherit;padding:1px 2px;border-radius:3px}
+  .fila{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--raya);cursor:pointer}
+  .cifra{font:400 34px/1 var(--serif);min-width:44px;text-align:right}
+  .fila .que{flex:1}
+  .fila .que b{display:block;font:600 16px system-ui}
+  .fila .que small{color:var(--tinta-suave)}
+  .sello{font:600 10px system-ui;letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;border-radius:99px;
+         border:1px solid currentColor;white-space:nowrap}
+  .Confirmed{color:var(--confirmado)} .Reported{color:var(--tinta-suave)}
+  .Estimated{color:var(--estimado)} .Unknown{color:var(--alerta)}
+
+  .pregunta{background:var(--papel-alto);border:1px solid var(--raya);border-radius:14px;padding:18px;margin:18px 0}
+  .pregunta p{margin:0 0 4px;font:400 20px/1.35 var(--serif)}
+  .pregunta .cuantas{font-size:12px;color:var(--tinta-suave);margin-bottom:14px;display:block}
+  .ops{display:flex;flex-wrap:wrap;gap:8px}
+  .ops button{padding:11px 15px;border:1px solid var(--tinta);background:transparent;border-radius:99px;
+              font:15px system-ui;color:var(--tinta);cursor:pointer}
+  .ops button:active{background:var(--tinta);color:var(--papel)}
+  .pregunta input{width:100%;padding:12px;border:1px solid var(--raya);border-radius:10px;font:16px system-ui;margin-bottom:10px}
+
+  .aviso{border:1px solid var(--alerta);color:var(--alerta);border-radius:12px;padding:14px;margin:16px 0;font-size:15px}
+  .aviso b{display:block;margin-bottom:4px}
+  .barra{position:fixed;left:0;right:0;bottom:0;background:var(--papel);border-top:1px solid var(--raya);
+         padding:14px 20px calc(14px + env(safe-area-inset-bottom));display:flex;gap:10px;justify-content:center}
+  .barra button{flex:1;max-width:520px;padding:16px;border:0;border-radius:12px;background:var(--accion);color:#fff;
+                font:600 17px system-ui;cursor:pointer;box-shadow:0 2px 0 var(--accion-hondo)}
+  .barra button[disabled]{background:var(--raya);color:var(--tinta-suave);box-shadow:none}
+  .barra button.otro{background:transparent;color:var(--tinta);border:1px solid var(--tinta);box-shadow:none;flex:0 0 auto}
+  details{margin:18px 0;font-size:14px;color:var(--tinta-suave)}
+  summary{cursor:pointer;font:600 13px system-ui;letter-spacing:.04em;text-transform:uppercase}
+  .tec{font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--tinta-suave);white-space:pre-wrap;margin-top:8px}
+  .oculto{display:none}
+  .pendientes{background:var(--tinta);color:var(--papel);border-radius:12px;padding:12px 14px;margin:14px 0;
+              display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px}
+  .pendientes button{background:var(--papel);color:var(--tinta);border:0;border-radius:8px;padding:8px 12px;font:600 13px system-ui}
+</style>
+
+<div class="hoja">
+  <header>
+    <h1>Vigía<small>Base instalada</small></h1>
+    <span class="nodo" id="nodo"><i class="punto"></i><span id="nodoTexto">buscando nodo…</span></span>
+  </header>
+
+  <div class="credencial">
+    <div class="avatar" id="avatar">?</div>
+    <div style="flex:1">
+      <input id="quien" placeholder="Tu nombre" autocomplete="name">
+      <time id="ahora"></time>
+    </div>
+  </div>
+
+  <div id="pendientes" class="pendientes oculto">
+    <span id="pendTexto"></span><button id="procesar">Procesar</button>
+  </div>
+
+  <!-- 1 · capturar -->
+  <section id="p1">
+    <div class="captura">
+      <div class="anillo" id="anillo">
+        <b id="anilloTexto">Hablar<em>toca y cuenta la visita</em></b>
+        <div class="onda oculto" id="onda"></div>
+      </div>
+    </div>
+    <div class="losas">
+      <div class="losa" id="btnEscribir"><span>✎</span>Escribir</div>
+      <div class="losa" id="btnEjemplo"><span>❦</span>Ejemplo</div>
+    </div>
+    <textarea id="texto" class="oculto" placeholder="Estoy en Hospital DemoCare Pacific, en Panamá. Tienen dos resonadores y un tomógrafo…"></textarea>
+  </section>
+
+  <!-- 2 · revisar -->
+  <section id="p2" class="oculto">
+    <div class="dicho" id="dicho"></div>
+    <div id="filas"></div>
+    <div id="dups"></div>
+    <div id="preg"></div>
+    <details id="detalles">
+      <summary>Detalles técnicos</summary>
+      <div class="tec" id="tec"></div>
+    </details>
+  </section>
+</div>
+
+<div class="barra" id="barra">
+  <button id="accion" disabled>Revisar la visita</button>
+  <button id="volver" class="otro oculto">Corregir</button>
+</div>
+
+<script type="module">
+const $ = s => document.querySelector(s);
+const estado = { texto: '', borrador: null, respuestas: {}, id: null, directo: null, ms: 0, fila: null, dups: [] };
+
+// ── reloj y credencial ──
+const reloj = () => $('#ahora').textContent = new Date().toLocaleString('es-PA', { dateStyle: 'long', timeStyle: 'short' });
+reloj(); setInterval(reloj, 30000);
+$('#quien').value = localStorage.getItem('quien') ?? '';
+const inicial = () => $('#avatar').textContent = ($('#quien').value.trim()[0] ?? '?').toUpperCase();
+inicial(); $('#quien').oninput = () => { localStorage.setItem('quien', $('#quien').value); inicial(); };
+
+// ── nodo: ¿hay quien infiera? ──
+let hayNodo = false;
+async function sondear() {
+  try { const r = await fetch('/api/evidencia', { cache: 'no-store' }); hayNodo = r.ok; const e = await r.json();
+    $('#nodoTexto').textContent = e.modo === 'local' ? `nodo local · ${e.modelo}` : `nodo ${e.modo}`; }
+  catch { hayNodo = false; $('#nodoTexto').textContent = 'sin nodo · se guarda aquí'; }
+  $('#nodo').classList.toggle('si', hayNodo);
+  pintarPendientes();
+}
+sondear(); setInterval(sondear, 5000);
+
+// ── cola sin conexión (IndexedDB) ──
+const db = () => new Promise((ok, err) => { const r = indexedDB.open('vigia', 1);
+  r.onupgradeneeded = () => r.result.createObjectStore('cola', { keyPath: 'id', autoIncrement: true });
+  r.onsuccess = () => ok(r.result); r.onerror = () => err(r.error); });
+async function encolar(item) { const d = await db(); return new Promise(ok => { const t = d.transaction('cola', 'readwrite'); t.objectStore('cola').add({ ...item, ts: Date.now() }); t.oncomplete = ok; }); }
+async function cola() { const d = await db(); return new Promise(ok => { const r = d.transaction('cola').objectStore('cola').getAll(); r.onsuccess = () => ok(r.result); }); }
+async function vaciar(id) { const d = await db(); return new Promise(ok => { const t = d.transaction('cola', 'readwrite'); t.objectStore('cola').delete(id); t.oncomplete = ok; }); }
+async function pintarPendientes() {
+  const c = await cola();
+  $('#pendientes').classList.toggle('oculto', !c.length);
+  $('#pendTexto').textContent = `${c.length} captura${c.length === 1 ? '' : 's'} guardada${c.length === 1 ? '' : 's'} en el teléfono`;
+  $('#procesar').disabled = !hayNodo;
+  $('#procesar').textContent = hayNodo ? 'Procesar' : 'Sin nodo';
+}
+$('#procesar').onclick = async () => {
+  for (const item of await cola()) { estado.texto = item.texto; await vaciar(item.id); await revisar(); break; }
+};
+
+// ── voz ──
+let rec = null, trozos = [], audioCtx = null;
+$('#anillo').onclick = async () => {
+  if (rec?.state === 'recording') { rec.stop(); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+    rec = new MediaRecorder(stream); trozos = [];
+    rec.ondataavailable = e => trozos.push(e.data);
+    rec.onstop = async () => { stream.getTracks().forEach(t => t.stop()); pararOnda();
+      $('#anillo').classList.remove('grabando'); $('#anilloTexto').innerHTML = 'Transcribiendo…<em>un momento</em>';
+      const blob = new Blob(trozos, { type: rec.mimeType });
+      if (!hayNodo) { await encolar({ tipo: 'audio', blob }); $('#anilloTexto').innerHTML = 'Guardado aquí<em>sin nodo a la vista</em>'; return pintarPendientes(); }
+      try {
+        const r = await fetch('/api/dictar', { method: 'POST', body: blob });
+        const t = await r.json();
+        if (t.silencio) { $('#anilloTexto').innerHTML = 'No se oyó nada<em>acércate al micrófono</em>'; return; }
+        estado.texto = t.texto; await revisar();
+      } catch { $('#anilloTexto').innerHTML = 'No se pudo<em>toca para reintentar</em>'; }
+    };
+    rec.start(); trozos = [];
+    $('#anillo').classList.add('grabando'); $('#anilloTexto').innerHTML = 'Escuchando<em>toca para parar</em>';
+    onda(stream);
+    setTimeout(() => rec?.state === 'recording' && rec.stop(), 90000);   // tope de 90 s
+  } catch { $('#anilloTexto').innerHTML = 'Sin micrófono<em>usa Escribir</em>'; }
+};
+function onda(stream) {
+  audioCtx = new AudioContext(); const an = audioCtx.createAnalyser(); an.fftSize = 64;
+  audioCtx.createMediaStreamSource(stream).connect(an);
+  const datos = new Uint8Array(an.frequencyBinCount);
+  const cont = $('#onda'); cont.innerHTML = '<i></i>'.repeat(12); cont.classList.remove('oculto');
+  const barras = [...cont.children];
+  (function tic() { if (!audioCtx) return; an.getByteFrequencyData(datos);
+    barras.forEach((b, i) => b.style.height = Math.max(3, datos[i * 2] / 255 * 26) + 'px');
+    requestAnimationFrame(tic); })();
+}
+function pararOnda() { audioCtx?.close(); audioCtx = null; $('#onda').classList.add('oculto'); }
+
+// ── escribir y ejemplo ──
+$('#btnEscribir').onclick = () => { $('#texto').classList.toggle('oculto'); $('#texto').focus(); };
+const EJEMPLOS = [
+  'Estoy en Hospital DemoCare Pacific, en Panamá. Tienen dos resonadores y un tomógrafo. Uno de los resonadores parece de unos ocho años.',
+  'At Hospital DemoCare Horizon I saw three MR systems. Two seem old and one looks much newer.',
+  'Clinica DemoCare Light has two CT scanners, both Orion Imaging, around eleven years old.',
+  'Estou no Hospital DemoCare Horizon em São Paulo. Eles têm três ressonâncias e dois tomógrafos.',
+];
+$('#btnEjemplo').onclick = () => { $('#texto').classList.remove('oculto');
+  $('#texto').value = EJEMPLOS[Math.floor(Math.random() * EJEMPLOS.length)]; $('#accion').disabled = false; };
+$('#texto').oninput = () => $('#accion').disabled = !$('#texto').value.trim();
+
+// ── revisar ──
+$('#accion').onclick = async () => {
+  if ($('#p1').classList.contains('oculto')) return guardar();
+  estado.texto = $('#texto').value.trim() || estado.texto;
+  if (!estado.texto) return;
+  await revisar();
+};
+$('#volver').onclick = () => { $('#p1').classList.remove('oculto'); $('#p2').classList.add('oculto');
+  $('#volver').classList.add('oculto'); $('#accion').textContent = 'Revisar la visita';
+  $('#texto').classList.remove('oculto'); $('#texto').value = estado.texto; };
+
+async function revisar() {
+  if (!hayNodo) { await encolar({ tipo: 'texto', texto: estado.texto }); return pintarPendientes(); }
+  $('#accion').disabled = true; $('#accion').textContent = 'Interpretando…';
+  const r = await fetch('/api/extraer', { method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ texto: estado.texto, respuestas: estado.respuestas }) }).then(r => r.json());
+  Object.assign(estado, { borrador: r.borrador, id: r.id, ms: r.ms, fila: r.fila, dups: r.duplicados ?? [] });
+  $('#p1').classList.add('oculto'); $('#p2').classList.remove('oculto'); $('#volver').classList.remove('oculto');
+  pintar(r);
+}
+
+const esc = s => String(s ?? '').replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+function pintar(r) {
+  // lo dicho, con la evidencia subrayada
+  const citas = (r.borrador.equipment ?? []).flatMap(g => [g.modality_quote, g.quantity_quote, g.age_quote, g.manufacturer_quote]).filter(Boolean);
+  let html = esc(estado.texto);
+  for (const c of [...new Set(citas)].sort((a, b) => b.length - a.length)) {
+    const re = new RegExp(esc(c).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+    html = html.replace(re, m => `<mark>${m}</mark>`);
+  }
+  $('#dicho').innerHTML = html || '<em>sin texto</em>';
+
+  const c = r.borrador.customer ?? {};
+  const lugar = [c.city, c.country].filter(Boolean).join(', ');
+  $('#filas').innerHTML = `<div class="fila"><div class="cifra">◉</div><div class="que"><b>${esc(c.name ?? 'Hospital por confirmar')}</b>
+      <small>${esc(lugar || 'ciudad y país por confirmar')}</small></div></div>` +
+    (r.borrador.equipment ?? []).map((g, i) => {
+      const est = g.quantity == null || !g.modality ? 'Unknown' : (estado.directo ? 'Confirmed' : (g.age_qualitative || !g.age_years_max ? 'Estimated' : 'Reported'));
+      const det = [g.manufacturer ?? 'marca desconocida', g.model, g.age_years_max ? `~${g.age_years_max} años` : g.age_qualitative ?? 'edad desconocida'].filter(Boolean).join(' · ');
+      return `<div class="fila"><div class="cifra">${g.quantity ?? '?'}</div>
+        <div class="que"><b>${esc(g.modality)}</b><small>${esc(det)}</small></div>
+        <span class="sello ${est}">${est}</span></div>`;
+    }).join('');
+
+  // duplicados, con la explicación campo por campo
+  $('#dups').innerHTML = (r.duplicados ?? []).filter(d => d.veredicto !== 'nuevo').map(d => {
+    const suman = d.detalle.filter(x => x.bits > 0).map(x => `+${x.campo}`).join(' ');
+    const restan = d.detalle.filter(x => x.bits < 0).map(x => `−${x.campo}`).join(' ');
+    return `<div class="aviso"><b>Puede ser el mismo equipo (${Math.round(d.p * 100)} %)</b>
+      Ya está registrado: ${esc(d.contra)}.<br><small>${esc(suman)} ${esc(restan)}</small></div>`;
+  }).join('');
+
+  // una pregunta a la vez
+  const q = (r.preguntas ?? [])[0];
+  if (q) {
+    const faltan = r.preguntas.length - 1;
+    $('#preg').innerHTML = `<div class="pregunta"><p>${esc(q.texto)}</p>
+      <span class="cuantas">${faltan ? `falta esta y ${faltan} más` : 'última pregunta'}</span>
+      ${q.opciones?.length ? '' : '<input id="libre" placeholder="Escribe la respuesta">'}
+      <div class="ops">${(q.opciones?.length ? q.opciones : ['Responder']).map(o => `<button data-v="${esc(o)}">${esc(o)}</button>`).join('')}
+      ${q.opcional && !q.opciones?.includes('No sé') ? '<button data-v="No sé">No sé</button>' : ''}</div></div>`;
+    $('#preg').querySelectorAll('button').forEach(b => b.onclick = async () => {
+      const v = b.dataset.v === 'Responder' ? $('#libre')?.value : b.dataset.v;
+      if (q.campo === 'directo') { estado.directo = /vi/i.test(v); estado.respuestas[q.clave] = v; }
+      else estado.respuestas[q.clave] = v;
+      await revisar();
+    });
+    $('#accion').textContent = 'Guardar visita'; $('#accion').disabled = true;
+  } else {
+    $('#preg').innerHTML = '';
+    $('#accion').textContent = 'Guardar visita'; $('#accion').disabled = !(r.borrador.customer?.name && r.borrador.equipment?.length);
+  }
+
+  $('#tec').textContent = [
+    `solicitud ${r.id} · ${Math.round(r.ms)} ms`,
+    r.fila ? `modelo ${r.fila.model} · ${r.fila.execution_mode} · ${r.fila.backend_actual ?? '—'}` : '',
+    r.fila ? `TTFT ${r.fila.ttft_ms ?? '—'} ms · ${r.fila.input_tokens ?? '—'} tokens de entrada · ${r.fila.output_tokens ?? '—'} de salida · ${r.fila.throughput_tps?.toFixed?.(0) ?? '—'} tok/s` : '',
+    (r.descartes ?? []).length ? 'descartado por falta de evidencia: ' + r.descartes.map(d => `${d.campo}=${d.valor}`).join(', ') : 'nada descartado',
+  ].filter(Boolean).join('\n');
+}
+
+async function guardar() {
+  $('#accion').disabled = true; $('#accion').textContent = 'Guardando…';
+  const r = await fetch('/api/guardar', { method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ borrador: estado.borrador, observador: $('#quien').value.trim() || 'sin nombre',
+      directo: estado.directo === true, fuente: 'voz', requestId: estado.id }) }).then(r => r.json());
+  if (r.error) { $('#accion').textContent = r.error; $('#accion').disabled = false; return; }
+  $('#p2').innerHTML = `<div class="dicho"><b>Visita guardada.</b><br>${r.eventos} observación(es) selladas.
+    <div class="tec">acta ${r.acta.sello.hash.slice(0, 24)}…\nfirmada por ${esc(r.acta.sello.firmante)}</div></div>`;
+  $('#accion').textContent = 'Nueva visita';
+  $('#accion').disabled = false; $('#accion').onclick = () => location.reload();
+  $('#volver').classList.add('oculto');
+}
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+</script>
+</html>
