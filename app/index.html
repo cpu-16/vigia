@@ -47,6 +47,10 @@
   .onda i{width:3px;background:var(--accion);border-radius:2px;height:3px;transition:height .07s}
 
   .losas{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+  .placa-campos{background:var(--papel-alto);border:1px solid var(--raya);border-radius:14px;padding:16px;margin:16px 0}
+  .placa-campos b{display:block;font:600 15px system-ui}
+  .placa-campos small{color:var(--tinta-suave)}
+  .placa-campos .lin{font:12.5px/1.7 ui-monospace,Menlo,monospace;color:var(--tinta-suave);white-space:pre-wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--raya)}
   .losa{padding:16px 14px;border:1px solid var(--raya);border-radius:12px;background:var(--papel-alto);
         text-align:center;cursor:pointer;font:500 15px system-ui;box-shadow:0 1px 0 var(--raya)}
   .losa:active{transform:translateY(1px);box-shadow:none}
@@ -124,8 +128,13 @@
     </div>
     <div class="losas">
       <div class="losa" id="btnEscribir"><span>✎</span>Escribir</div>
+      <div class="losa" id="btnFoto"><span>▣</span>Leer placa</div>
       <div class="losa" id="btnEjemplo"><span>❦</span>Ejemplo</div>
+      <div class="losa" id="btnPreguntar"><span>?</span>Preguntar</div>
     </div>
+    <input type="file" id="archivoFoto" accept="image/*" capture="environment" hidden>
+    <div id="placa"></div>
+    <div id="respuesta"></div>
     <textarea id="texto" class="oculto" placeholder="Estoy en Hospital DemoCare Pacific, en Panamá. Tienen dos resonadores y un tomógrafo…"></textarea>
   </section>
 
@@ -329,6 +338,47 @@ async function guardar() {
   $('#accion').disabled = false; $('#accion').onclick = () => location.reload();
   $('#volver').classList.add('oculto');
 }
+
+// ── leer la placa: el modelo Psy transcribe, las reglas interpretan ──
+$('#btnFoto').onclick = () => $('#archivoFoto').click();
+$('#archivoFoto').onchange = async e => {
+  const f = e.target.files?.[0]; if (!f) return;
+  $('#placa').innerHTML = '<div class="pregunta"><p>Leyendo la placa…</p></div>';
+  try {
+    const r = await fetch('/api/placa', { method: 'POST', body: f }).then(r => r.json());
+    if (r.error) { $('#placa').innerHTML = `<div class="aviso"><b>No se pudo leer</b>${esc(r.error)}</div>`; return; }
+    const orden = [['manufacturer', 'Marca'], ['model', 'Modelo'], ['modality', 'Tipo'], ['serial', 'Serie'], ['mfg', 'Fabricación']];
+    $('#placa').innerHTML = `<div class="placa-campos">
+      ${orden.map(([k, n]) => `<div class="fila"><div class="que"><b>${n}: ${esc(r.campos[k] ?? '—')}</b>
+        <small>${esc(r.origen[k] ?? 'no aparece en la placa')}</small></div>
+        <span class="sello ${r.confianza[k] === 'High' ? 'Confirmed' : r.confianza[k] === 'Medium' ? 'Reported' : 'Unknown'}">${r.confianza[k]}</span></div>`).join('')}
+      ${r.desacuerdos?.length ? `<div class="aviso"><b>El código y la etiqueta no coinciden</b>${r.desacuerdos.map(d => `${esc(d.campo)}: código «${esc(d.codigo)}» vs etiqueta «${esc(d.etiqueta)}»`).join('<br>')}</div>` : ''}
+      <div class="lin">${esc(r.transcripcion)}\n\n${Math.round(r.ms)} ms · VisionPsy Nano 460M · ${r.requiereConfirmacion ? 'requiere que tú lo confirmes' : ''}</div></div>`;
+    // Lo leído entra a la frase como una observación más, para que siga el mismo camino.
+    const partes = [r.campos.quantity ?? 'Un', r.campos.modality ?? 'equipo',
+      r.campos.manufacturer ? `marca ${r.campos.manufacturer}` : null, r.campos.model ? `modelo ${r.campos.model}` : null].filter(Boolean);
+    $('#texto').classList.remove('oculto');
+    $('#texto').value = ($('#texto').value ? $('#texto').value + ' ' : '') + `Placa leída: ${partes.join(' ')}.`;
+    $('#accion').disabled = false;
+  } catch { $('#placa').innerHTML = '<div class="aviso"><b>No se pudo leer</b>Revisa que el nodo esté a la vista.</div>'; }
+};
+
+// ── preguntar a la base instalada en lenguaje natural ──
+$('#btnPreguntar').onclick = async () => {
+  const q = prompt('¿Qué quieres saber de la base instalada?\n\nPor ejemplo: clientes en Brasil con resonadores de más de siete años');
+  if (!q?.trim()) return;
+  $('#respuesta').innerHTML = '<div class="pregunta"><p>Consultando…</p></div>';
+  try {
+    const r = await fetch('/api/consulta', { method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ pregunta: q }) }).then(r => r.json());
+    if (r.error) { $('#respuesta').innerHTML = `<div class="aviso">${esc(r.error)}</div>`; return; }
+    const usados = Object.entries(r.filtro ?? {}).filter(([, v]) => v !== null && v !== false && v !== 'cliente');
+    $('#respuesta').innerHTML = `<div class="placa-campos">
+      <b>${r.total_unidades} unidad(es) en ${r.grupos.length} grupo(s)</b>
+      ${r.grupos.map(g => `<div class="fila"><div class="cifra">${g.unidades}</div><div class="que"><b>${esc(g.clave)}</b><small>${g.equipos} registro(s)</small></div></div>`).join('') || '<small>Nada coincide con esa pregunta.</small>'}
+      <div class="lin">La pregunta se tradujo a estos filtros y la consulta la hizo el código:\n${esc(usados.map(([k, v]) => `${k}=${v}`).join(' · ') || 'sin filtros')}\n${Math.round(r.ms)} ms</div></div>`;
+  } catch { $('#respuesta').innerHTML = '<div class="aviso">Sin nodo a la vista.</div>'; }
+};
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
 </script>

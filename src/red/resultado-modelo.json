@@ -1,0 +1,130 @@
+{
+  "fecha": "2026-09-09T19:11:29.864Z",
+  "salidas": [
+    {
+      "familia": "dga",
+      "evidencia": {
+        "longitud": 19,
+        "entropia": 3.7216117239699003,
+        "consultas": 8,
+        "ratio_sld_unicos": 1
+      },
+      "severidad": "alta",
+      "titulo": "Posible dominio generado",
+      "resumen": "longitud: 19; entropia: 3.7216117239699003; consultas: 8; ratio_sld_unicos: 1.",
+      "accion_sugerida": "revisar_equipo",
+      "modelo_verificado": true,
+      "seleccion_modelo": {
+        "severidad": "alta",
+        "titulo": "dga",
+        "resumen": "rasgos_observados",
+        "accion_sugerida": "revisar_equipo"
+      },
+      "ms": 1383.7
+    },
+    {
+      "familia": "typosquat",
+      "evidencia": {
+        "distancia": 1,
+        "homoglifos": 0,
+        "longitud": 13
+      },
+      "severidad": "media",
+      "titulo": "Posible suplantación de marca",
+      "resumen": "distancia: 1; homoglifos: 0; longitud: 13.",
+      "accion_sugerida": "validar_marca",
+      "modelo_verificado": false,
+      "seleccion_modelo": {
+        "severidad": "media",
+        "titulo": "typosquat",
+        "resumen": "evidencia_insuficiente",
+        "accion_sugerida": "validar_marca"
+      },
+      "ms": 1400.4
+    },
+    {
+      "familia": "tunnel",
+      "evidencia": {
+        "longitud": 54,
+        "entropia": 4.4140287622270495,
+        "proporcion_txt_null": 1,
+        "subdominios_unicos": 8,
+        "consultas": 8
+      },
+      "severidad": "critica",
+      "titulo": "Posible túnel DNS",
+      "resumen": "longitud: 54; entropia: 4.4140287622270495; proporcion_txt_null: 1; subdominios_unicos: 8; consultas: 8.",
+      "accion_sugerida": "inspeccionar_canal",
+      "modelo_verificado": false,
+      "seleccion_modelo": {
+        "severidad": "alta",
+        "titulo": "tunnel",
+        "resumen": "rasgos_observados",
+        "accion_sugerida": "inspeccionar_canal"
+      },
+      "ms": 1537.2
+    },
+    {
+      "familia": "beacon",
+      "evidencia": {
+        "repeticiones": 8,
+        "intervalo_medio_ms": 10044.285714285714,
+        "cv": 0.029524156493202544
+      },
+      "severidad": "alta",
+      "titulo": "Consultas periódicas sospechosas",
+      "resumen": "repeticiones: 8; intervalo_medio_ms: 10044.285714285714; cv: 0.029524156493202544.",
+      "accion_sugerida": "revisar_periodicidad",
+      "modelo_verificado": true,
+      "seleccion_modelo": {
+        "severidad": "alta",
+        "titulo": "beacon",
+        "resumen": "rasgos_observados",
+        "accion_sugerida": "revisar_periodicidad"
+      },
+      "ms": 1563.4
+    },
+    {
+      "familia": "dga",
+      "evidencia": {
+        "longitud": 11,
+        "entropia": 3.277613436819116,
+        "consultas": 9,
+        "ratio_sld_unicos": 1
+      },
+      "severidad": "alta",
+      "titulo": "Posible dominio generado",
+      "resumen": "longitud: 11; entropia: 3.277613436819116; consultas: 9; ratio_sld_unicos: 1.",
+      "accion_sugerida": "revisar_equipo",
+      "modelo_verificado": true,
+      "seleccion_modelo": {
+        "severidad": "alta",
+        "titulo": "dga",
+        "resumen": "rasgos_observados",
+        "accion_sugerida": "revisar_equipo"
+      },
+      "ms": 1528.7
+    },
+    {
+      "familia": "typosquat",
+      "evidencia": {
+        "distancia": 1,
+        "homoglifos": 0,
+        "longitud": 12
+      },
+      "severidad": "media",
+      "titulo": "Posible suplantación de marca",
+      "resumen": "distancia: 1; homoglifos: 0; longitud: 12.",
+      "accion_sugerida": "validar_marca",
+      "modelo_verificado": false,
+      "seleccion_modelo": {
+        "severidad": "media",
+        "titulo": "typosquat",
+        "resumen": "evidencia_insuficiente",
+        "accion_sugerida": "validar_marca"
+      },
+      "ms": 1469.1
+    }
+  ],
+  "desempate": "insuficiente"
+}

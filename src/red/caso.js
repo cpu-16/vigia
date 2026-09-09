@@ -32,7 +32,7 @@ export async function redactar(modelo,d) {
   ]});
   let datos;try{datos=JSON.parse(sinThink(r.texto));}catch{datos=null;}
   const anclado=datos?.titulo===d.familia&&datos?.resumen==='rasgos_observados'&&datos?.severidad===base.severidad&&datos?.accion_sugerida===base.accion_sugerida;
-  return {...validarCaso(anclado?{...base}:null,d),modelo_verificado:anclado,ms:r.ms};
+  return {...validarCaso(anclado?{...base}:null,d),modelo_verificado:Boolean(anclado),seleccion_modelo:datos,ms:r.ms};
 }
 export async function desempatar(modelo,candidato) {
   const {completar,sinThink}=await import('../core/runtime.js');

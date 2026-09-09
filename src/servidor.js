@@ -2,7 +2,7 @@
 // La inferencia ocurre aquí (nodo local) o se delega a un par QVAC por llave pública.
 // Ninguna ruta llama a un servicio externo: sin red, el nodo sigue respondiendo.
 import { createServer } from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { extname, join, resolve } from 'node:path';
 import { randomBytes } from 'node:crypto';
@@ -12,6 +12,8 @@ import { cargarVoz, dictar } from './core/voz.js';
 import { llaveNodo, sellar, verificar } from './core/sello.js';
 import { RUTA as RUTA_RENDIMIENTO, RUN_ID } from './core/rendimiento.js';
 import { extraer } from './equipos/extraer.js';
+import { consultar, sinVerificar } from './equipos/consulta.js';
+import { cargarVista, leerPlaca } from './equipos/placa.js';
 import { preguntas, derivar } from './equipos/reglas.js';
 import { candidatos } from './equipos/duplicados.js';
 import { Base } from './equipos/almacen.js';
@@ -25,7 +27,11 @@ const idSolicitud = () => `V-${randomBytes(2).toString('hex').toUpperCase()}`;
 // Modelos: el LLM puede correr local o delegado a un par (P2P_PROVEEDOR = llave pública hex).
 const PROVEEDOR = process.env.P2P_PROVEEDOR || undefined;
 const GGUF = process.env.GGUF_QWEN3_1_7B;
-let llm = null, vozLista = false;
+let llm = null, vozLista = false, vista = null;
+// El catálogo de productos permite que un código de placa identifique modelo y marca sin IA.
+const CATALOGO = existsSync('fixtures/placas/verdad.json')
+  ? JSON.parse(await readFile('fixtures/placas/verdad.json', 'utf8')).map(v => ({ gtin: v.gtin, model: v.model, manufacturer: v.manufacturer, modality: v.modality }))
+  : [];
 
 async function arrancar() {
   llm = await cargar({ modelSrc: process.env.MODELO_CHICO ? QWEN3_600M_INST_Q4 : QWEN3_1_7B_INST_Q4,
@@ -35,6 +41,8 @@ async function arrancar() {
   console.log(`▸ LLM ${llm.etiqueta} · ${llm.delegado ? `DELEGADO a ${PROVEEDOR.slice(0, 12)}…` : 'local'} · ${llm.device}`);
   try { await cargarVoz({ modelSrc: WHISPER_LARGE_V3_TURBO, etiqueta: 'Whisper large-v3 turbo', hardware: 'laptop-cpu' }); vozLista = true; console.log('▸ Voz lista'); }
   catch (e) { console.log(`▸ Voz no disponible: ${e.message}`); }
+  // La vista se carga solo si se pide: son 460M más en la misma tarjeta.
+  if (process.env.VISION) { try { vista = await cargarVista(); console.log('▸ VisionPsy listo'); } catch (e) { console.log(`▸ VisionPsy no disponible: ${e.message}`); } }
 }
 
 const json = (res, obj, code = 200) => { res.writeHead(code, { 'content-type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(obj)); };
@@ -88,6 +96,32 @@ const servidor = createServer(async (req, res) => {
       console.log(`▸ guardadas ${eventos.length} observaciones de «${borrador.customer.name}» · acta ${acta.sello.hash.slice(0, 12)}…`);
       return json(res, { eventos: eventos.length, acta });
     }
+
+    // ── placa: el modelo Psy transcribe, las reglas interpretan ──
+    if (req.method === 'POST' && ruta === '/api/placa') {
+      if (!vista) return json(res, { error: 'este nodo no tiene el modelo de visión cargado (arranca con VISION=1)' }, 503);
+      const bytes = await cuerpo(req);
+      if (!bytes.length) return json(res, { error: 'sin imagen' }, 400);
+      const id = idSolicitud();
+      const tmp = `/tmp/vigia-placa-${id}.png`;
+      await writeFile(tmp, bytes);
+      console.log(`▸ [${id}] QVAC visión → VisionPsy Nano 460M (${bytes.length} bytes)`);
+      const r = await leerPlaca(vista, tmp, { requestId: id, catalogo: CATALOGO });
+      console.log(`▸ [${id}] visión ✓ ${Math.round(r.ms)} ms · ${Object.entries(r.campos).map(([k, v]) => `${k}=${v}`).join(' · ') || 'sin campos'}`);
+      return json(res, { id, ...r });
+    }
+
+    // ── consulta en lenguaje natural sobre el dataset ──
+    if (req.method === 'POST' && ruta === '/api/consulta') {
+      const { pregunta } = await cuerpoJson(req);
+      if (!pregunta?.trim()) return json(res, { error: 'sin pregunta' }, 400);
+      const id = idSolicitud();
+      console.log(`▸ [${id}] QVAC completion → filtros de consulta («${pregunta.slice(0, 60)}»)`);
+      const r = await consultar(llm, pregunta.trim(), base.inventario(), { requestId: id });
+      console.log(`▸ [${id}] consulta ✓ ${Math.round(r.ms)} ms · ${r.total_unidades} unidades en ${r.grupos.length} grupo(s)`);
+      return json(res, r);
+    }
+    if (req.method === 'GET' && ruta === '/api/sin-verificar') return json(res, sinVerificar(base.inventario()));
 
     // ── consulta ──
     if (req.method === 'GET' && ruta === '/api/inventario') return json(res, base.inventario());

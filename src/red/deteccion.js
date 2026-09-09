@@ -27,10 +27,10 @@ export async function construirListaBlanca(fuente,{n=100,minClientes=5,maxEvento
 }
 export class Detector {
   constructor({listaBlanca=new Set(),ventanaMs=300000,maxEventos=100000,cvMax=0.12,minRepeticiones=8}={}) {
-    this.blanca=new Set(listaBlanca);this.ventanas=new Ventanas({ms:ventanaMs,maxEventos});this.cvMax=cvMax;this.minRepeticiones=minRepeticiones;
+    this.blanca=new Set(listaBlanca);this.ventanas=new Ventanas({ms:ventanaMs,maxEventos});this.cvMax=cvMax;this.minRepeticiones=minRepeticiones;this.candidatos=[];
   }
   procesar(e) {
-    const {cliente:c,padre:p,ventana}=this.ventanas.agregar(e),salida=[];
+    const {cliente:c,padre:p,ventana}=this.ventanas.agregar(e),salida=[];this.candidatos=[];
     if(this.blanca.has(e.sld))return salida;
     const l=e.dominio.split('.')[0],h=entropia(l);
     const agregar=(familia,score,evidencia)=>salida.push({familia,cliente:e.cliente,dominio:e.dominio,score,evidencia,ventana});
@@ -45,6 +45,9 @@ export class Detector {
       agregar('tunnel',0.95,{longitud:l.length,entropia:h,proporcion_txt_null:proporcion,subdominios_unicos:p.unicos,consultas:p.consultas});
     if(p.consultas>=this.minRepeticiones&&p.unicos===1&&p.intervalo_medio_ms>=1000&&p.cv<=this.cvMax)
       agregar('beacon',0.85,{repeticiones:p.consultas,intervalo_medio_ms:p.intervalo_medio_ms,cv:p.cv});
+    // Zona gris consultable por el operador; nunca se convierte en alerta por opinión del modelo.
+    if(p.consultas>=this.minRepeticiones&&p.unicos===1&&p.intervalo_medio_ms>=1000&&p.cv>this.cvMax&&p.cv<=0.25)
+      this.candidatos.push({familia:'beacon',cliente:e.cliente,dominio:e.dominio,score:0.5,evidencia:{repeticiones:p.consultas,intervalo_medio_ms:p.intervalo_medio_ms,cv:p.cv},ventana});
     return salida;
   }
 }

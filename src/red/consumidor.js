@@ -7,6 +7,7 @@ const meses = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov'
 const dobles = new Set(['com.pa','net.pa','org.pa','gob.pa','edu.pa','co.uk','com.br','com.mx','com.co','com.au']);
 // Sufijos frecuentes, no una PSL completa; ver NOTAS.md.
 export function segundoNivel(dominio) {
+  if (dominio === '.') return '.';
   const p = dominio.toLowerCase().replace(/\.$/, '').split('.');
   return p.slice(dobles.has(p.slice(-2).join('.')) ? -3 : -2).join('.');
 }
@@ -16,8 +17,8 @@ export function parsear(linea) {
   const fecha = `${m[3]}-${String(meses.indexOf(m[2])+1).padStart(2,'0')}-${m[1]}T${m[4]}`;
   const ts = Date.parse(fecha + '-05:00');
   if (!Number.isFinite(ts) || new Date(ts-5*3600000).toISOString().slice(0,23) !== fecha) return null;
-  const dominio = m[7].toLowerCase().replace(/\.$/, '');
-  if (dominio.length > 253 || !dominio.split('.').every(x => x.length && x.length <= 63 && /^[\p{L}\p{N}_-]+$/u.test(x))) return null;
+  const dominio = m[7] === '.' ? '.' : m[7].toLowerCase().replace(/\.$/, '');
+  if (dominio !== '.' && (dominio.length > 253 || !dominio.split('.').every(x => x.length && x.length <= 63 && /^[\p{L}\p{N}_*-]+$/u.test(x)))) return null;
   return { ts, cliente:m[5], dominio, sld:segundoNivel(dominio), tipo:m[8], flags:m[9], resolutor:m[10] };
 }
 export async function* leer(ruta) {
