@@ -326,6 +326,11 @@ function pintar(r) {
   ].filter(Boolean).join('\n');
 }
 
+// El acta viaja dentro del enlace (base64url en el #), así que /verificar la comprueba sin
+// preguntarle nada al servidor; el mismo enlace sirve para un QR.
+const aB64url = s => { let bin = ''; for (const b of new TextEncoder().encode(s)) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+
 async function guardar() {
   $('#accion').disabled = true; $('#accion').textContent = 'Guardando…';
   const r = await fetch('/api/guardar', { method: 'POST', headers: { 'content-type': 'application/json' },
@@ -333,7 +338,10 @@ async function guardar() {
       directo: estado.directo === true, fuente: 'voz', requestId: estado.id }) }).then(r => r.json());
   if (r.error) { $('#accion').textContent = r.error; $('#accion').disabled = false; return; }
   $('#p2').innerHTML = `<div class="dicho"><b>Visita guardada.</b><br>${r.eventos} observación(es) selladas.
-    <div class="tec">acta ${r.acta.sello.hash.slice(0, 24)}…\nfirmada por ${esc(r.acta.sello.firmante)}</div></div>`;
+    <div class="tec">acta ${r.acta.sello.hash.slice(0, 24)}…\nfirmada por ${esc(r.acta.sello.firmante)}</div></div>
+    <div class="losas" style="grid-template-columns:1fr">
+      <a class="losa" style="color:inherit;text-decoration:none" href="/verificar#acta=${aB64url(JSON.stringify(r.acta))}"><span>✓</span>Verificar esta acta</a>
+    </div>`;
   $('#accion').textContent = 'Nueva visita';
   $('#accion').disabled = false; $('#accion').onclick = () => location.reload();
   $('#volver').classList.add('oculto');

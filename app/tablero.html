@@ -45,12 +45,13 @@
        background:var(--papel-alto);border:1px solid var(--raya);border-radius:12px;padding:14px;white-space:pre-wrap}
   .vacio{color:var(--tinta-suave);font-style:italic;padding:14px 0}
   a{color:var(--accion)}
+  .vivo a{margin-right:6px;padding-right:13px;border-right:1px solid var(--raya)}
 </style>
 
 <div class="hoja">
   <header>
     <h1>Vigía<small>Tablero de base instalada</small></h1>
-    <span class="vivo"><i class="punto"></i><span id="vivo">en vivo</span></span>
+    <span class="vivo"><a href="/verificar">Verificar un acta</a><i class="punto"></i><span id="vivo">en vivo</span></span>
   </header>
 
   <div class="kpis" id="kpis"></div>

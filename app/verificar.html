@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F3EFE6">
+<title>Vigía · verificar un acta</title>
+<style>
+  /* Misma libreta de campo que la app: papel cálido, tinta profunda, turquesa solo para la acción. */
+  :root{
+    --papel:#F3EFE6; --papel-alto:#FBF9F4; --tinta:#16262E; --tinta-suave:#5C6B72;
+    --raya:#DED7C7; --accion:#0F7B85; --accion-hondo:#0A5C63;
+    --alerta:#9C4221; --confirmado:#2F6B4F; --estimado:#8A6D1F;
+    --serif:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--papel);color:var(--tinta);font:17px/1.5 system-ui,-apple-system,sans-serif;
+       -webkit-tap-highlight-color:transparent}
+  .hoja{max-width:640px;margin:0 auto;padding:0 20px 140px;min-height:100dvh}
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:18px 0 10px;
+         border-bottom:2px solid var(--tinta)}
+  h1{font:400 30px/1 var(--serif);margin:0;letter-spacing:-.01em}
+  h1 small{display:block;font:500 11px/1.4 system-ui;letter-spacing:.16em;text-transform:uppercase;color:var(--tinta-suave);margin-top:6px}
+  h1 a{color:inherit;text-decoration:none}
+  .nodo{font-size:12px;color:var(--tinta-suave);display:flex;align-items:center;gap:6px;text-align:right}
+  .punto{width:8px;height:8px;border-radius:50%;background:var(--estimado);flex:none}
+  .nodo.si .punto{background:var(--confirmado)} .nodo.no .punto{background:var(--alerta)}
+
+  .intro{color:var(--tinta-suave);font-size:15px;margin:16px 0 14px}
+  .losas{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+  .losa{padding:16px 14px;border:1px solid var(--raya);border-radius:12px;background:var(--papel-alto);
+        text-align:center;cursor:pointer;font:500 15px system-ui;box-shadow:0 1px 0 var(--raya);
+        display:block;color:inherit;text-decoration:none}
+  .losa:active{transform:translateY(1px);box-shadow:none}
+  .losa span{display:block;font-size:22px;margin-bottom:4px}
+
+  textarea{width:100%;min-height:170px;padding:14px;border:1px solid var(--raya);border-radius:12px;
+           background:var(--papel-alto);font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;
+           color:var(--tinta);resize:vertical}
+  textarea:focus{outline:0;border-color:var(--accion)}
+
+  /* veredicto: grande y de un solo color, sin ambigüedad */
+  .veredicto{border:2px solid currentColor;border-radius:16px;padding:20px;margin:22px 0 0;background:var(--papel-alto)}
+  .veredicto.si{color:var(--confirmado)} .veredicto.no{color:var(--alerta)} .veredicto.duda{color:var(--estimado)}
+  .veredicto b{display:block;font:400 clamp(28px,8vw,38px)/1.05 var(--serif)}
+  .veredicto p{margin:10px 0 0;color:var(--tinta);font-size:15.5px}
+  .veredicto .marca{font:600 10px system-ui;letter-spacing:.14em;text-transform:uppercase;display:block;margin-bottom:9px}
+
+  h2{font:400 19px var(--serif);margin:30px 0 4px;padding-bottom:7px;border-bottom:1px solid var(--raya);
+     display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+  h2 span{font:500 10px system-ui;letter-spacing:.12em;text-transform:uppercase;color:var(--tinta-suave)}
+  dl{margin:0}
+  .campo{display:flex;gap:14px;justify-content:space-between;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--raya)}
+  .campo dt{font:600 14px system-ui;color:var(--tinta-suave);flex:none;max-width:42%;overflow-wrap:anywhere}
+  .campo dd{margin:0;text-align:right;font-size:15px;overflow-wrap:anywhere}
+  .campo dd.pal{color:var(--tinta-suave);font-style:italic}
+  .mono{font:12.5px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all}
+  .huella{background:var(--papel-alto);border:1px solid var(--raya);border-radius:10px;padding:12px 13px;margin-top:11px;
+          font:12.5px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--tinta-suave);word-break:break-all}
+  .huella b{display:block;font:600 10px system-ui;letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px;color:var(--tinta)}
+  .huella.rota{border-color:var(--alerta);color:var(--alerta)} .huella.rota b{color:var(--alerta)}
+
+  .eslabon{display:flex;gap:13px;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--raya)}
+  .eslabon .n{font:400 22px/1 var(--serif);min-width:36px;text-align:right;color:var(--tinta-suave);flex:none}
+  .eslabon .que{flex:1;min-width:0}
+  .eslabon .que b{display:block;font:600 15px system-ui}
+  .eslabon .que small{color:var(--tinta-suave);display:block;overflow-wrap:anywhere}
+  .eslabon.mal .n,.eslabon.mal .que b{color:var(--alerta)}
+  .sello{font:600 10px system-ui;letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;border-radius:99px;
+         border:1px solid currentColor;white-space:nowrap;flex:none}
+  .ok{color:var(--confirmado)} .mal{color:var(--alerta)} .tibio{color:var(--tinta-suave)}
+
+  .cambio{border:1px dashed var(--alerta);border-radius:12px;padding:14px 15px;margin:20px 0 0;font-size:14.5px;background:var(--papel-alto)}
+  .cambio b{display:block;font:600 10px system-ui;letter-spacing:.12em;text-transform:uppercase;color:var(--alerta);margin-bottom:8px}
+  .cambio .par{font:12.5px/1.8 ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all}
+  .cambio .par i{font-style:normal;color:var(--tinta-suave)}
+  .cambio mark{background:rgba(156,66,33,.18);color:var(--alerta);font-weight:700;padding:1px 3px;border-radius:3px}
+
+  .aviso{border:1px solid var(--alerta);color:var(--alerta);border-radius:12px;padding:14px;margin:16px 0;font-size:15px}
+  .aviso b{display:block;margin-bottom:4px}
+  details{margin:26px 0 0;font-size:14px;color:var(--tinta-suave)}
+  summary{cursor:pointer;font:600 13px system-ui;letter-spacing:.04em;text-transform:uppercase}
+  .tec{font:12.5px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--tinta-suave);white-space:pre-wrap;margin-top:10px}
+  .pie{margin:24px 0 0;font-size:13px;color:var(--tinta-suave);border-top:1px solid var(--raya);padding-top:14px}
+  .oculto{display:none}
+  .barra{position:fixed;left:0;right:0;bottom:0;background:var(--papel);border-top:1px solid var(--raya);
+         padding:14px 20px calc(14px + env(safe-area-inset-bottom));display:flex;gap:10px;justify-content:center}
+  .barra button{flex:1;max-width:340px;padding:16px;border:0;border-radius:12px;background:var(--accion);color:#fff;
+                font:600 17px system-ui;cursor:pointer;box-shadow:0 2px 0 var(--accion-hondo)}
+  .barra button[disabled]{background:var(--raya);color:var(--tinta-suave);box-shadow:none}
+  .barra button.otro{background:transparent;color:var(--tinta);border:1px solid var(--tinta);box-shadow:none}
+</style>
+
+<div class="hoja">
+  <header>
+    <h1><a href="/">Vigía</a><small>Verificar un acta</small></h1>
+    <span class="nodo" id="soporte"><i class="punto"></i><span id="soporteTexto">probando el navegador…</span></span>
+  </header>
+
+  <p class="intro">Pega el acta que te entregaron, o ábrela desde un archivo. La comprobación ocurre
+    <b>aquí mismo</b>, en este navegador: el acta no se envía a ningún servidor.</p>
+
+  <div class="losas">
+    <label class="losa" for="archivo"><span>⇪</span>Abrir archivo</label>
+    <div class="losa" id="btnEjemplo"><span>❦</span>Acta de ejemplo</div>
+  </div>
+  <input type="file" id="archivo" accept=".json,.jsonl,.txt,application/json,text/plain" hidden>
+
+  <textarea id="acta" spellcheck="false" autocapitalize="off" autocorrect="off"
+    placeholder='{ "visita": "V-7C4A", … , "sello": { "alg": "ed25519", "hash": "…", "firma": "…", "publica": "…" } }'></textarea>
+
+  <div id="salida"></div>
+
+  <details>
+    <summary>Qué comprueba esta página</summary>
+    <div class="tec" id="comoFunciona">1 · Aparta el campo «sello» y ordena el resto del JSON: llaves alfabéticas en todos los niveles, sin espacios.
+2 · Calcula el SHA-256 de ese texto y lo compara con «sello.hash».
+3 · Importa «sello.publica» (32 bytes, Ed25519 en crudo) y verifica «sello.firma» sobre los BYTES del hash.
+Los tres pasos corren con crypto.subtle del navegador. No se llama a ninguna ruta del servidor.</div>
+  </details>
+
+  <p class="pie" id="pie">Verificado en este navegador con WebCrypto, sin servidor.
+    Esto prueba dos cosas: que el contenido no cambió desde que se selló, y que lo firmó quien tiene
+    esa llave privada. <b>No</b> prueba de qué equipo salió el acta, ni quién es el dueño de la llave.</p>
+</div>
+
+<div class="barra">
+  <button id="btnVerificar">Verificar</button>
+  <button id="btnAlterar" class="otro" disabled>Probar una alteración</button>
+</div>
+
+<script type="module">
+import { verificarEntrada, alterar, soportaEd25519, SIN_ED25519 } from '/verificar.js';
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+const estado = { original: null, alterado: false };
+
+// Acta sintética de demostración, sellada por el nodo de este equipo el 9-sep-2026.
+// Verifica sola: la llave pública viaja dentro del sello.
+const EJEMPLO = {
+  "visita": "V-7C4A",
+  "observador": "gilberto",
+  "customer": { "name": "Hospital DemoCare Pacific", "city": "Panamá", "country": "PA" },
+  "equipos": [
+    { "modality": "MR", "quantity": 2, "manufacturer": "Orion Imaging", "model": "Orion 1.5T", "age_years_min": 6, "age_years_max": 8, "status": "Reported" },
+    { "modality": "CT", "quantity": 1, "manufacturer": "Meridian Systems", "age_years_min": 11, "age_years_max": 13, "status": "Estimated" }
+  ],
+  "eventos": ["mfyq2k-3a91cc", "mfyq2k-7b02de"],
+  "nota": "Datos sintéticos de demostración; ningún hospital ni marca son reales.",
+  "sello": {
+    "alg": "ed25519",
+    "hash": "94a074c740064146380a2f217f0f8d4c767c3eedc80935146eb40d374d6986f5",
+    "firma": "A520XAp5aDRcAhVDCS7J3QCfFu1wX4uaLiMqiYiPn/9Hy6Wz1LBBxCSIsPc2ghTiUejBYrjKsJCpsfTzW1qqCg==",
+    "publica": "8f49487933b6398eca2f6246210f58d2eef90ba9b3deba5fdd1efcef3a877c39",
+    "firmante": "gilberto",
+    "ts": "2026-09-09T20:53:07.845Z"
+  }
+};
+
+// ── ¿este navegador sabe Ed25519? ──
+soportaEd25519().then(si => {
+  $('#soporte').classList.add(si ? 'si' : 'no');
+  $('#soporteTexto').textContent = si ? 'Ed25519 · WebCrypto' : 'sin Ed25519';
+  if (!si) $('#salida').innerHTML = `<div class="aviso"><b>Este navegador no puede verificar</b>${esc(SIN_ED25519)}</div>`;
+});
+
+// ── entrada: archivo, ejemplo o la URL (?acta= / #acta=, en base64url, para un QR) ──
+const deB64url = t => new TextDecoder().decode(Uint8Array.from(atob(t.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)));
+
+function deLaUrl() {
+  const frag = decodeURIComponent(location.hash.slice(1) || '');
+  const crudo = new URL(location.href).searchParams.get('acta') ?? (frag.startsWith('acta=') ? frag.slice(5) : frag);
+  if (!crudo) return null;
+  for (const abrir of [deB64url, t => t]) {
+    try { const t = abrir(crudo.trim()); JSON.parse(t); return t; } catch { /* el otro intento */ }
+  }
+  return null;
+}
+
+function cargar(texto, { verificarYa = true } = {}) {
+  // Si es un solo JSON se reindenta para poder leerlo; un JSONL se deja tal cual, línea por línea.
+  try { texto = JSON.stringify(JSON.parse(texto), null, 2); } catch { /* JSONL o texto suelto */ }
+  $('#acta').value = texto;
+  estado.original = texto; estado.alterado = false;
+  $('#btnAlterar').textContent = 'Probar una alteración';
+  if (verificarYa) verificar();
+}
+
+$('#archivo').onchange = async e => {
+  const f = e.target.files?.[0]; if (!f) return;
+  cargar((await f.text()).trim());
+  e.target.value = '';
+};
+$('#btnEjemplo').onclick = () => cargar(JSON.stringify(EJEMPLO, null, 2));
+$('#acta').oninput = () => { estado.original = null; estado.alterado = false; $('#btnAlterar').textContent = 'Probar una alteración'; $('#btnAlterar').disabled = !$('#acta').value.trim(); };
+$('#btnVerificar').onclick = () => verificar();
+
+// ── el control positivo del guion: un carácter distinto y la firma tiene que caerse ──
+$('#btnAlterar').onclick = () => {
+  if (estado.alterado && estado.original) { cargar(estado.original); return; }
+  let datos;
+  try { datos = JSON.parse($('#acta').value); }
+  catch { const l = $('#acta').value.trim().split('\n').filter(Boolean); try { datos = l.map(x => JSON.parse(x)); } catch { return verificar(); } }
+  const r = alterar(datos);
+  if (!r) return verificar();
+  const previo = estado.original ?? $('#acta').value;
+  $('#acta').value = JSON.stringify(r.datos, null, 2);
+  estado.original = previo; estado.alterado = true;
+  $('#btnAlterar').textContent = 'Volver al original';
+  verificar(r.cambio);
+};
+
+// ── verificar y pintar ──
+async function verificar(cambio = null) {
+  const texto = $('#acta').value;
+  $('#btnAlterar').disabled = !texto.trim();
+  if (!texto.trim()) { $('#salida').innerHTML = ''; return; }
+  const r = await verificarEntrada(texto);
+  $('#salida').innerHTML = (cambio ? pintarCambio(cambio) : '') + pintarVeredicto(r) + pintarDetalle(r);
+  $('#salida').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function pintarVeredicto(r) {
+  if (r.tipo === 'error') return tarjeta('no', 'No se pudo leer', 'Lo pegado no es un acta', r.motivo);
+  if (r.tipo === 'cadena') {
+    const n = `${r.total} acta${r.total === 1 ? '' : 's'}`;
+    if (r.valido) return tarjeta('si', 'Verificado', r.cadena ? `${n}, cadena íntegra` : `${n} válidas`,
+      r.cadena ? 'Cada acta lleva la huella de la anterior y todas coinciden.' : 'Ninguna declara encadenamiento: se verificó el sello de cada una.');
+    return tarjeta('no', 'Cadena rota', r.cadena ? `${n}, la cadena no cuadra` : `${n}, alguna no verifica`, r.motivo);
+  }
+  if (r.valido) return tarjeta('si', 'Verificado', 'Acta válida',
+    `El contenido es idéntico al que se selló y la firma corresponde a la llave que viaja en el sello.`);
+  if (r.motivo === 'sin sello') return tarjeta('duda', 'No hay qué verificar', 'Sin sello',
+    'Este JSON no trae el campo «sello», así que no hay firma que comprobar.');
+  return tarjeta('no', 'No verifica', 'Acta alterada', r.motivo);
+}
+
+const tarjeta = (clase, marca, titulo, detalle) =>
+  `<div class="veredicto ${clase}"><span class="marca">${esc(marca)}</span><b>${esc(titulo)}</b>
+   ${detalle ? `<p>${esc(detalle)}</p>` : ''}</div>`;
+
+function pintarDetalle(r) {
+  if (r.tipo === 'error') return '';
+  if (r.tipo === 'cadena') return pintarEslabones(r) + (r.actas.length === 1 ? pintarActa(r.actas[0]) : '');
+  return pintarActa(r);
+}
+
+function pintarActa(r) {
+  const s = r.sello;
+  const filas = [];
+  if (s) {
+    filas.push(['Firmante', esc(s.firmante)]);
+    filas.push(['Llave pública', `<span class="mono" title="${esc(s.publica)}">${esc(s.publicaCorta)}</span>`]);
+    filas.push(['Fecha del sello', esc(fecha(s.ts))]);
+    filas.push(['Algoritmo', esc(s.alg ?? '—')]);
+  }
+  const cuerpo = (r.resumen ?? []).map(c =>
+    `<div class="campo"><dt>${esc(c.clave)}</dt><dd class="${c.tipo === 'lista' || c.tipo === 'objeto' || c.tipo === 'vacio' ? 'pal' : ''}">${esc(c.valor)}</dd></div>`).join('');
+  return `
+    ${s ? `<h2>El sello <span>quién firmó</span></h2><dl>${filas.map(([k, v]) => `<div class="campo"><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
+      <div class="huella"><b>Huella declarada en el sello · SHA-256</b>${esc(s.hash)}</div>
+      ${r.hashCalculado ? `<div class="huella rota"><b>Huella que da el contenido de ahora</b>${esc(r.hashCalculado)}</div>` : ''}` : ''}
+    <h2>El contenido <span>campos de primer nivel</span></h2>
+    <dl>${cuerpo || '<div class="campo"><dt>—</dt><dd class="pal">el acta no trae campos</dd></div>'}</dl>`;
+}
+
+// El armazón del acta no se conoce de antemano: se titula con los campos que dicen algo y se
+// dejan fuera los de plomería (id, número, marca de tiempo, huella del anterior).
+const PLOMERIA = new Set(['id', 'n', 'ts', 'origen', 'prev', 'huella']);
+function tituloDe(a, datos) {
+  const campos = a.resumen ?? [];
+  if (datos && typeof datos.tipo === 'string' && datos.datos && typeof datos.datos === 'object' && !Array.isArray(datos.datos)) {
+    const dentro = Object.entries(datos.datos).slice(0, 3).map(([k, v]) => `${k}: ${typeof v === 'object' && v ? (Array.isArray(v) ? v.length + ' elementos' : Object.keys(v).length + ' campos') : v}`);
+    return `${datos.tipo} · ${dentro.join(' · ')}`;
+  }
+  const utiles = campos.filter(c => !PLOMERIA.has(c.clave));
+  return (utiles.length ? utiles : campos).slice(0, 3).map(c => `${c.clave}: ${c.valor}`).join(' · ') || 'acta sin campos';
+}
+
+function pintarEslabones(r) {
+  const rota = r.cadena && !r.cadena.valida ? r.cadena.en : null;
+  const lista = Array.isArray(r.datos) ? r.datos : [];
+  return `<h2>Las actas <span>${r.cadena ? 'encadenadas' : 'sueltas'} · ${r.firmadas} de ${r.total} firmadas</span></h2>` + r.actas.map((a, i) => {
+    const n = i + 1;
+    const mal = n === rota || (a.sello && !a.valido);
+    const encadenada = typeof lista[i]?.huella === 'string';
+    const quien = a.sello ? `firmada por ${esc(a.sello.firmante)} · ${esc(a.sello.publicaCorta)}`
+      : encadenada ? 'encadenada por huella · sin firma Ed25519' : 'sin sello Ed25519';
+    const marca = mal ? 'rota' : a.valido ? 'válida' : encadenada ? 'encadenada' : 'sin sello';
+    return `<div class="eslabon ${mal ? 'mal' : ''}"><span class="n">${n}</span>
+      <span class="que"><b>${esc(tituloDe(a, lista[i]).slice(0, 96))}</b><small>${quien}${n === rota ? ' · ' + esc(r.cadena.motivo) : ''}</small></span>
+      <span class="sello ${a.valido ? 'ok' : mal ? 'mal' : 'tibio'}">${marca}</span></div>`;
+  }).join('');
+}
+
+function pintarCambio(c) {
+  const [antes, despues] = resaltar(c.antes, c.despues);
+  return `<div class="cambio"><b>Se cambió un carácter${c.acta ? ` en el acta ${c.acta}` : ''}</b>
+    <div class="par"><i>${esc(c.ruta)}</i><br>${antes}<br>${despues}</div></div>`;
+}
+
+// Marca el carácter que se movió, para que en pantalla se vea cuál es.
+function resaltar(a, b) {
+  let i = 0; while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  const pinta = (s, pre) => `${pre} ${esc(s.slice(0, i))}<mark>${esc(s.slice(i, i + 1) || '·')}</mark>${esc(s.slice(i + 1))}`;
+  return [pinta(a, 'antes  '), pinta(b, 'ahora  ')];
+}
+
+const fecha = ts => { if (!ts) return '—'; const d = new Date(ts); return isNaN(d) ? String(ts) : d.toLocaleString('es-PA', { dateStyle: 'long', timeStyle: 'short' }); };
+
+// arranque: si la URL trae un acta, se verifica sola
+const deUrl = deLaUrl();
+if (deUrl) cargar(deUrl); else $('#btnAlterar').disabled = true;
+addEventListener('hashchange', () => { const t = deLaUrl(); if (t) cargar(t); });
+</script>
+</html>
