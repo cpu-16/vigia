@@ -17,6 +17,7 @@ import { cargarVista, leerPlaca } from './equipos/placa.js';
 import { preguntas, derivar } from './equipos/reglas.js';
 import { candidatos } from './equipos/duplicados.js';
 import { Base } from './equipos/almacen.js';
+import { manejarSucursal, contextoSucursal } from './sucursal/http.js';
 
 const PUERTO = Number(process.env.PUERTO ?? 7320);
 const APP = resolve('app');
@@ -32,6 +33,8 @@ let llm = null, vozLista = false, vista = null;
 const CATALOGO = existsSync('fixtures/placas/verdad.json')
   ? JSON.parse(await readFile('fixtures/placas/verdad.json', 'utf8')).map(v => ({ gtin: v.gtin, model: v.model, manufacturer: v.manufacturer, modality: v.modality }))
   : [];
+// Módulo de sucursal (track 05): reutiliza este mismo LLM ya cargado; no abre un segundo modelo.
+const sucursal = contextoSucursal({ llm: () => llm, llave });
 
 async function arrancar() {
   llm = await cargar({ modelSrc: process.env.MODELO_CHICO ? QWEN3_600M_INST_Q4 : QWEN3_1_7B_INST_Q4,
@@ -59,6 +62,7 @@ const servidor = createServer(async (req, res) => {
     if (req.method === 'GET' && (ruta === '/' || ruta === '/app')) return archivo(res, 'index.html');
     if (req.method === 'GET' && ruta === '/tablero') return archivo(res, 'tablero.html');
     if (req.method === 'GET' && ruta === '/verificar') return archivo(res, 'verificar.html');
+    if (req.method === 'GET' && ruta === '/sucursal') return archivo(res, 'sucursal.html');
     if (req.method === 'GET' && /^\/[\w.-]+$/.test(ruta) && existsSync(join(APP, ruta.slice(1)))) return archivo(res, ruta.slice(1));
 
     // ── captura ──
@@ -144,6 +148,8 @@ const servidor = createServer(async (req, res) => {
         ttft_ms_mediana: mediana(inf.map(f => f.ttft_ms)), tps_mediana: mediana(inf.map(f => f.throughput_tps)),
         ultimas: filas.slice(-8).reverse() });
     }
+
+    if (await manejarSucursal(req, res, url, sucursal)) return;
 
     res.writeHead(404); res.end('no está');
   } catch (e) { console.error('✗', e); json(res, { error: String(e?.message ?? e) }, 500); }
