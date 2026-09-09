@@ -10,3 +10,4 @@ datos/*.jsonl
 datos/*.pem
 src/sucursal/datos/
 src/sucursal/resultado-modelo.json
+GUION-VIDEO.md
