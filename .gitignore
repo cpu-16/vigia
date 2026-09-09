@@ -15,3 +15,4 @@ infra/red/salida/
 infra/red/cache/
 src/red/resultado-modelo.json
 src/red/rendimiento-modelo.jsonl
+datos/

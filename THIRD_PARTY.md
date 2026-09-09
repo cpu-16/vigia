@@ -13,8 +13,8 @@ ejecutan en las demostraciones. Se completa a medida que cada módulo los incorp
 
 | Constante del SDK | Modelo | Cuantización | Dónde corre |
 |---|---|---|---|
-| `QWEN3_1_7B_INST_Q4` | Qwen3-1.7B Instruct | Q4_0 | Laptop (RTX 4060, Vulkan) como proveedor P2P |
-| `QWEN3_600M_INST_Q4` | Qwen3-0.6B Instruct | Q4_0 | Teléfono (HONOR X6s, CPU Cortex-A53) como respaldo local |
+| `QWEN3_1_7B_INST_Q4` | Qwen3-1.7B Instruct | Q4_0 | Laptop (RTX 4060, Vulkan) como nodo y como proveedor P2P; Mac (M5 Max, Metal) como proveedor P2P en otra casa |
+| `QWEN3_600M_INST_Q4` | Qwen3-0.6B Instruct | Q4_0 | Teléfono (HONOR X6s, CPU Cortex-A53) como respaldo a bordo; hoy no carga en ese aparato, ver `evidencia/medicion-telefono-9sep.md` |
 | `WHISPER_LARGE_V3_TURBO` | Whisper large-v3 turbo | — | Laptop (RTX 4060) |
 | `EMBEDDINGGEMMA_300M_Q8_0` | EmbeddingGemma 300M | Q8_0 | Laptop; recuperación semántica de la guía de sucursal |
 | `VISIONPSY_NANO_460M_MULTIMODAL_Q8_0` + `MMPROJ_VISIONPSY_NANO_460M_MULTIMODAL_Q8_0` | VisionPsy Nano 460M (Apache 2.0, familia Psy de QVAC) | Q8_0 | Laptop (RTX 4060, Vulkan); transcribe la placa en el track 02 |
@@ -23,12 +23,16 @@ ejecutan en las demostraciones. Se completa a medida que cada módulo los incorp
 
 | Nodo | Equipo | Rol |
 |---|---|---|
-| Laptop | Fedora Linux, RTX 4060 8 GB, 31 GB RAM | Proveedor P2P y nodo de sitio |
+| Laptop | Fedora Linux, Intel + NVIDIA RTX 4060 8 GB (Vulkan), 31 GB RAM, Node 24.14.1 | Nodo de sitio, proveedor P2P para el teléfono, consumidor P2P de la Mac |
 | Teléfono | HONOR X6s, Android 14, 3.7 GB RAM, 8× Cortex-A53 | Captura; SDK local por Termux (Bare) |
-| Nodo remoto | Mac (M5 Max) en otra red | Proveedor P2P alterno, solo para el módulo Equipos |
+| Nodo remoto | MacBook Pro, Apple M5 Max (18 núcleos, GPU de 40), 128 GB, macOS 26.4, Metal, Node 24.14.1, en otra casa | Proveedor P2P del producto (`src/puente/proveedor.js`, Qwen3-1.7B), solo para el módulo Equipos |
 
 ## Otros
 
-| Componente | Licencia | Uso |
-|---|---|---|
-| Fotografías ilustrativas del catálogo | Wikimedia Commons (CC), ver `fixtures/FUENTES.json` | Solo demostración |
+| Componente | Versión | Licencia | Uso |
+|---|---|---|---|
+| Wazuh (gestor, indexador y panel, imágenes oficiales en Docker) | 4.14.0 | GPLv2 | SIEM real que recibe las alertas del módulo Red (`infra/red/`) |
+| ClickHouse (imagen oficial en Docker) | 24.8 | Apache 2.0 | Tabla `red_qoe` con el score de experiencia por zona |
+| Grafana + `grafana-clickhouse-datasource` (Docker) | 11.3 | AGPLv3 / Apache 2.0 | Tablero `vigia-red` del score por zona |
+| Registro DNS de BIND9 entregado por Ovnicom para el reto | 8–9 sep 2026 | del patrocinador, declarado sintético por el reto | Entrada del módulo Red; los ataques, la latencia y los códigos de respuesta se generan y se marcan |
+| Placas sintéticas | `fixtures/placas/generar.py` | propias | Track 02; marcas y modelos ficticios del brief de Philips |

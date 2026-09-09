@@ -8,8 +8,8 @@ quien lo produce**. Toda la inferencia corre en el dispositivo o se delega entre
 de QVAC. Ninguna llamada a una API de inferencia en la nube.
 
 Tracks a los que se presenta este proyecto: **01 Philips** (base instalada) · **02 Tether QVAC Psy**
-· **03 Desafío General** · y los módulos de banca (05 Caja de Ahorros) y red (04 Ovnicom) si
-quedan completos dentro de la ventana.
+· **03 Desafío General** · **04 Ovnicom** (red) · **05 Caja de Ahorros** (banca). Un solo producto con
+tres espacios, **Equipos, Sucursal y Red**, que comparten runtime, registro, sellado y verificador.
 
 ## Requisito técnico (artículo 10)
 
@@ -18,7 +18,11 @@ quedan completos dentro de la ventana.
   demuestra esa delegación entre pares, así que se queda en la última versión que la incluye.
 - Modelos, cuantizaciones y hardware de ejecución: `THIRD_PARTY.md`.
 - Cada inferencia deja una fila en `evidencia/rendimiento.jsonl` (modelo, hardware, origen local o
-  delegado, carga, tokens, TTFT, throughput).
+  delegado, carga, prompts, tokens, TTFT, throughput). Ese archivo operativo no se sube; la corrida
+  **entregable** del track 02 está versionada en `evidencia/registro-psy-placas-9sep.jsonl`
+  (VisionPsy Nano sobre las 20 placas sintéticas, con carga, prompt, tokens, TTFT y throughput por
+  placa), y las tablas de las demás mediciones en `evidencia/sucursal-gpu-9sep.md`,
+  `evidencia/mac-par-9sep.md` y `evidencia/medicion-telefono-9sep.md`.
 
 ## Base preexistente declarada (artículo 11.c)
 
@@ -41,7 +45,8 @@ src/core/        runtime QVAC, política de ejecución, registro de rendimiento,
 src/equipos/     módulo Philips: captura, extracción, identidad de activos, inventario
 src/sucursal/    módulo banca: procedimiento citado, acta verificable
 src/red/         módulo red: consumidor del stream DNS, clasificación, salidas
-app/             interfaz web instalable (PWA) y tablero
+src/puente/      proveedor P2P (presta la GPU por llave pública), nodo del teléfono, respaldo cuando el par cae
+app/             interfaz web instalable (PWA), tablero, pantalla de sucursal y verificador de actas
 fixtures/        datos sintéticos
 evidencia/       procedencia, rendimiento, pruebas de no salida de datos
 ```
@@ -52,11 +57,11 @@ Un solo proyecto, un solo repositorio (rama `main`), un solo video. Cada jurado 
 
 | Track | Módulo | Carpeta | Minuto del video |
 |---|---|---|---|
-| 01 Philips · Base instalada | Equipos: captura por voz/texto/foto, extracción, identidad y duplicados, inventario, Customer 360 | `src/equipos/`, `app/` | _(por definir)_ |
-| 02 Tether · QVAC Psy | VisionPsy Nano lee la placa; reglas deterministas sacan marca, modelo y serie; registro de rendimiento | `src/equipos/placa.js`, `evidencia/rendimiento.jsonl` | _(por definir)_ |
-| 03 General · Sovereign Intelligence at the Edge | Todo lo anterior + delegación entre pares por llave pública, respaldo local en el teléfono, actas verificables, prueba de no salida de datos | `src/core/`, `evidencia/` | _(por definir)_ |
-| 05 Caja de Ahorros · Banca | Sucursal: procedimiento citado sin conexión, acta sellada y verificable | `src/sucursal/` | _(por definir)_ |
-| 04 Ovnicom · Sentinel-DNS | Red: el registro DNS real como flujo, detección por capas, alertas a Wazuh y score por zona en ClickHouse y Grafana | `src/red/`, `infra/red/` | _(por definir)_ |
+| 01 Philips · Base instalada | Equipos: captura por voz/texto/foto, extracción, identidad y duplicados, inventario, Customer 360 | `src/equipos/`, `app/index.html`, `app/tablero.html` | 0:12–1:28 |
+| 02 Tether · QVAC Psy | VisionPsy Nano lee la placa en la laptop; reglas deterministas sacan marca, modelo y serie; registro de rendimiento entregable | `src/equipos/placa.js`, `evidencia/registro-psy-placas-9sep.jsonl` | 0:42–1:09 |
+| 03 General · Sovereign Intelligence at the Edge | Todo lo anterior + delegación entre pares por llave pública (teléfono → laptop, laptop → Mac en otra casa), el par que se apaga y la laptop que lo nota, actas verificables en el navegador, prueba de aislamiento | `src/core/`, `src/puente/`, `app/verificar.html`, `evidencia/` | 3:02–4:19, y la evidencia común 4:19–4:55 |
+| 05 Caja de Ahorros · Banca | Sucursal: procedimiento citado sin conexión, expediente, acta sellada y verificable; pantalla en `/sucursal` | `src/sucursal/`, `app/sucursal.html` | 1:28–2:22 |
+| 04 Ovnicom · Sentinel-DNS | Red: el registro DNS entregado por Ovnicom reproducido como flujo, detección por capas, alertas a Wazuh por su API local y score por zona en ClickHouse y Grafana | `src/red/`, `infra/red/` | 2:22–3:02, aislamiento 3:58–4:19 |
 
 ## Lo medido, con su denominador
 
@@ -65,17 +70,35 @@ Un solo proyecto, un solo repositorio (rama `main`), un solo video. Cada jurado 
 | Extracción de un reporte dictado | 1.9 s | `src/equipos/equipos.test.js` |
 | Los 10 prompts oficiales de Philips, más español y portugués | 12 / 12 | idem |
 | Consulta en lenguaje natural traducida a filtros | 6 / 6, menos de 1 s | `src/equipos/consulta.test.js` |
-| Placa: número de serie sobre 20 placas sintéticas | 20 / 20 | `src/equipos/placa.test.js` |
-| Placa: modelo · marca · modalidad | 19 / 20 · 18 / 20 · 19 / 20 | idem |
-| Sucursal: consultas correctas | 17 / 20 | `src/sucursal/sucursal.test.js` |
+| Placa: número de serie sobre 20 placas sintéticas | 20 / 20 | `src/equipos/placa.test.js`; corrida entregable en `evidencia/registro-psy-placas-9sep.jsonl` |
+| Placa: modelo · marca · modalidad | 18 / 20 · 16 / 20 · 18 / 20 | idem (corrida del 9-sep en la RTX 4060; las placas nítidas dan 38 / 40 campos) |
+| Placa: tiempo hasta el primer token · velocidad | mediana 1.0 s · 218 tok/s | idem |
+| Sucursal: consultas correctas | 19 / 20 | `src/sucursal/sucursal.test.js`; `evidencia/sucursal-gpu-9sep.md` (tres corridas: 17, 18 y 19 de 20) |
 | Sucursal: abstenciones cuando la guía no cubre | 5 / 5 | idem |
+| Sucursal: latencia por consulta | 375–923 ms en la RTX 4060 (4.5–17 s en CPU) | `evidencia/sucursal-gpu-9sep.md` |
+| Sucursal: flujo completo por HTTP hasta el acta verificable | 1 prueba determinista, sin modelo | `src/sucursal/http.test.js` |
+| Acta verificada en el navegador, sin servidor: válida, alterada, cadena rota | prueba determinista con WebCrypto | `src/core/verificar-web.test.js` |
 | Recuperación de preguntas parafraseadas: términos vs. híbrida | 1 / 4 → 3 / 4 | `src/core/semantica.test.js` |
 | Red: typosquatting · túnel · DGA · beaconing (precisión) | 100 % · 100 % · 85 % · 57 % | `src/red/red.test.js` |
-| Red: alertas del agente procesadas por Wazuh | 153 / 153 | `infra/red/VERIFICADO-WAZUH.md` |
+| Red: alertas del agente procesadas por Wazuh | 153 / 153 por el lector de archivo · 150 / 150 por la API local (`POST /events`, `location: API-Webhook`) | `infra/red/VERIFICADO-WAZUH.md` |
+| Red: evento → alerta en el JSONL · evento → HTTP 200 del SIEM | mediana 1,08 ms · 1 175 ms (n = 150; la agrupación de 2,5 s domina, el POST son 13 ms) | `infra/red/VERIFICADO-WAZUH.md`, `infra/red/stream-9sep.txt` |
+| Red: el consumidor alerta antes de que el productor termine | prueba determinista, dos procesos y una tubería local | `src/red/stream.test.js` |
 | Delegación al par desde el teléfono | 0.3-0.5 s a 237-240 tok/s en la RTX | `evidencia/medicion-telefono-9sep.md` |
+| Delegación de la laptop a una Mac en otra casa, por llave pública | 0.65–1.17 s a 255–280 tok/s en el M5 Max | `evidencia/mac-par-9sep.md` |
+| El par se apaga: la laptop lo nota, recalcula local y lo dice | 12.8 s la solicitud que lo encuentra, 2.3 s la siguiente | idem |
 
 El beaconing va con su 57 % a la vista: el tráfico legítimo también es periódico y la
 periodicidad no prueba mando y control.
+
+## Límites conocidos, dichos aquí y en el video
+
+- El teléfono captura y delega; hoy no infiere a bordo (el worker de Bare cae al cargar el modelo). Sin par a la vista, la captura queda en cola.
+- Cuando el par delegado se apaga, la laptop lo nota y recalcula local; cuando el par vuelve, no vuelve a delegar sola: hay que reiniciar el nodo.
+- La latencia y los códigos de respuesta DNS son sintéticos, porque el registro entregado solo trae consultas; cada fila lo marca.
+- El beaconing tiene 57 % de precisión: la periodicidad no prueba mando y control. Las reglas detectan; el modelo explica y no decide bloqueos.
+- El endpoint `/events` de Wazuh admite 100 eventos por petición y 30 peticiones por minuto, fijo en el manager: el agente agrupa hasta 100 alertas o 2,5 s. El JSONL local se escribe siempre, antes de cualquier envío, y es el respaldo si la API no responde.
+- La prueba de aislamiento cubre el proceso del agente, no toda la laptop: corre en un namespace sin rutas y desde ahí `curl` a internet falla.
+- Una firma prueba que el contenido no cambió y que lo firmó esa llave; no acredita la identidad de quien la tiene.
 
 ## Cómo ejecutarlo
 
@@ -84,11 +107,18 @@ solos la primera vez desde el registro de QVAC; no hay que registrarse en ningú
 
 ```bash
 npm install                 # instala @qvac/sdk 0.18.2 (fijada)
-node --test                 # 45 pruebas deterministas, sin modelos, ~2 s
+node --test                 # 59 pruebas deterministas, sin modelos, ~3 s (8 más corren solo con PRUEBA_MODELO=1)
 
 # nodo completo (extracción, dictado y lectura de placa)
 GGML_VK_VISIBLE_DEVICES=1 VISION=1 node src/servidor.js
-#   app en http://localhost:7320   ·   tablero en /tablero
+#   app en http://localhost:7320  ·  tablero en /tablero  ·  sucursal en /sucursal  ·  verificador en /verificar
+
+# reto 04 (Ovnicom): el stream DNS en dos procesos, una tubería local
+node src/red/productor.js --velocidad 1 | node src/red/demo.js --stdin
+#   con el SIEM y ClickHouse levantados (bash infra/red/levantar.sh):
+#   export WAZUH_API_URL=https://127.0.0.1:55000 WAZUH_API_USER=wazuh-wui WAZUH_API_PASS=<API_PASSWORD>
+#   export CLICKHOUSE_LOCAL=1 VENTANA_QOE_MS=5000
+#   bash infra/red/aislado.sh        # el agente completo en un namespace sin rutas
 ```
 
 Variables útiles:
@@ -150,8 +180,8 @@ LD_LIBRARY_PATH=$PREFIX/lib P2P_PROVEEDOR=<llave> node src/puente/nodo.js
 | Nodo | Equipo | Qué corrió ahí |
 |---|---|---|
 | Laptop | Fedora Linux, Intel + NVIDIA RTX 4060 8 GB (Vulkan), 31 GB RAM, Node 24.14.1 | Qwen3-1.7B, VisionPsy Nano, Whisper, y como proveedor P2P |
-| Teléfono | HONOR X6s, Android 14, 8× Cortex-A53, 3.7 GB RAM, Termux + Bare | Qwen3-0.6B a bordo y el puente que delega |
-| Nodo remoto | Mac (M5 Max, 128 GB) en otra red | Proveedor P2P alterno |
+| Teléfono | HONOR X6s, Android 14, 8× Cortex-A53, 3.7 GB RAM, Termux + Bare | El puente que delega por llave pública (el modelo a bordo hoy no carga: `evidencia/medicion-telefono-9sep.md`) |
+| Nodo remoto | MacBook Pro, Apple M5 Max (18 núcleos, GPU de 40), 128 GB, macOS 26.4, Metal, Node 24.14.1, en otra casa | Proveedor P2P del producto (Qwen3-1.7B), llave `49fa9472…` |
 
 Los números publicados salieron de este hardware. En otro equipo cambian los tiempos, no los
-resultados: las pruebas deterministas (45) no usan modelos y deben dar igual en cualquier parte.
+resultados: las pruebas deterministas (59) no usan modelos y deben dar igual en cualquier parte.
