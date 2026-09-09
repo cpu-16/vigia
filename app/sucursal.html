@@ -5,8 +5,8 @@
 <meta name="theme-color" content="#F3EFE6">
 <title>Vigía · sucursal</title>
 <style>
-  /* Misma libreta de campo que el resto de Vigía: papel cálido, tinta azul profunda,
-     turquesa SOLO para la acción principal, serif con carácter en los títulos. */
+  /* Misma libreta de campo que Equipos: papel cálido, tinta profunda, turquesa SOLO para la acción.
+     Pantalla de teléfono primero (390 px): el cajero dicta, el agente responde citando la guía. */
   :root{
     --papel:#F3EFE6; --papel-alto:#FBF9F4; --tinta:#16262E; --tinta-suave:#5C6B72;
     --raya:#DED7C7; --accion:#0F7B85; --accion-hondo:#0A5C63;
@@ -15,176 +15,175 @@
     --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--papel);color:var(--tinta);font:17px/1.55 system-ui,-apple-system,sans-serif}
-  .hoja{max-width:1080px;margin:0 auto;padding:0 22px 72px}
-  header{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;
-         padding:24px 0 12px;border-bottom:2px solid var(--tinta)}
-  h1{font:400 33px/1 var(--serif);margin:0}
-  h1 small{display:block;font:500 11px/1.4 system-ui;letter-spacing:.16em;text-transform:uppercase;
-           color:var(--tinta-suave);margin-top:7px}
-  header a{color:var(--accion);font-size:14px;text-decoration:none;border-bottom:1px solid transparent}
-  header a:hover{border-bottom-color:var(--accion)}
+  body{margin:0;background:var(--papel);color:var(--tinta);font:17px/1.5 system-ui,-apple-system,sans-serif;
+       -webkit-tap-highlight-color:transparent}
+  :focus-visible{outline:2px solid var(--accion);outline-offset:3px}
+  .hoja{max-width:560px;margin:0 auto;padding:0 20px 132px;min-height:100dvh}
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:18px 0 10px;
+         border-bottom:2px solid var(--tinta)}
+  h1{font:400 30px/1 var(--serif);margin:0;letter-spacing:-.01em}
+  h1 small{display:block;font:500 11px/1.4 system-ui;letter-spacing:.16em;text-transform:uppercase;color:var(--tinta-suave);margin-top:6px}
+  .nodo{font-size:12px;color:var(--tinta-suave);display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .punto{width:8px;height:8px;border-radius:50%;background:var(--alerta);flex:none}
+  .nodo.si .punto{background:var(--confirmado)}
 
-  /* tira de contexto: guía, inferencia y lo que declara la persona */
-  .tira{display:flex;flex-wrap:wrap;gap:8px 20px;margin:12px 0 22px;font-size:13.5px;color:var(--tinta-suave)}
-  .tira b{font-weight:600;color:var(--tinta)}
-  .marca{display:inline-flex;align-items:center;gap:7px}
-  .punto{width:8px;height:8px;border-radius:50%;background:var(--tinta-suave);flex:none}
-  .marca.si .punto{background:var(--confirmado)}
-  .marca.no .punto{background:var(--alerta)}
-  .marca.declarado .punto{background:var(--estimado)}
+  /* credencial: quién atiende y en qué sucursal */
+  .credencial{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--raya)}
+  .avatar{width:38px;height:38px;border-radius:50%;background:var(--tinta);color:var(--papel);
+          display:grid;place-items:center;font:600 15px system-ui;flex:none}
+  .credencial input{border:0;background:transparent;font:600 17px system-ui;color:var(--tinta);width:100%;padding:2px 0}
+  .credencial input.chico{font:400 13px system-ui;color:var(--tinta-suave)}
+  .credencial input:focus{border-bottom:2px solid var(--accion)}
+  .tira{display:flex;flex-wrap:wrap;gap:4px 14px;padding:10px 0 0;font-size:12px;color:var(--tinta-suave)}
+  .tira .marca{display:inline-flex;align-items:center;gap:6px}
+  .tira .marca .punto{background:var(--estimado)}
 
-  .rejilla{display:grid;grid-template-columns:1fr;gap:22px;align-items:start}
-  @media (min-width:900px){ .rejilla{grid-template-columns:1.03fr .97fr} }
-  .tarjeta{background:var(--papel-alto);border:1px solid var(--raya);border-radius:16px;padding:20px;margin-bottom:22px}
-  h2{font:400 21px var(--serif);margin:0 0 4px;display:flex;align-items:baseline;gap:10px}
-  h2 i{font:600 11px system-ui;font-style:normal;letter-spacing:.14em;text-transform:uppercase;color:var(--tinta-suave)}
-  .guia-h2{font-size:13.5px;color:var(--tinta-suave);margin:0 0 16px}
+  /* anillo de voz, igual que en Equipos */
+  .captura{display:grid;place-items:center;padding:30px 0 16px}
+  .anillo{width:168px;height:168px;border-radius:50%;border:2px solid var(--tinta);background:var(--papel-alto);
+          display:grid;place-items:center;cursor:pointer;position:relative;transition:transform .12s;
+          appearance:none;-webkit-appearance:none;padding:0;color:inherit;font-family:inherit}
+  .anillo:active{transform:scale(.97)}
+  .anillo::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:1px solid var(--raya)}
+  .anillo.grabando{border-color:var(--accion);box-shadow:0 0 0 0 rgba(15,123,133,.35);animation:latido 1.6s infinite}
+  .anillo.grabando b{margin-bottom:22px}
+  @keyframes latido{70%{box-shadow:0 0 0 22px rgba(15,123,133,0)}100%{box-shadow:0 0 0 0 rgba(15,123,133,0)}}
+  .anillo b{font:400 19px var(--serif);display:block;text-align:center;line-height:1.25;max-width:126px;margin:0 auto}
+  .anillo em{font-style:normal;font-size:13px;color:var(--tinta-suave);display:block;margin-top:5px}
+  .onda{position:absolute;bottom:34px;display:flex;gap:3px;align-items:flex-end;height:26px}
+  .onda i{width:3px;background:var(--accion);border-radius:2px;height:3px;transition:height .07s}
 
-  label{display:block;font:600 12px system-ui;letter-spacing:.09em;text-transform:uppercase;
-        color:var(--tinta-suave);margin:0 0 5px}
-  input[type=text],textarea{width:100%;padding:11px 12px;border:1px solid var(--raya);border-radius:10px;
-        background:var(--papel);color:var(--tinta);font:17px/1.5 system-ui}
-  textarea{min-height:104px;resize:vertical}
-  input:focus,textarea:focus{outline:2px solid var(--accion);outline-offset:1px;border-color:var(--accion)}
-  .dos{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:16px}
-  @media (min-width:560px){ .dos{grid-template-columns:1fr 1fr} }
-  .campo{margin-bottom:16px}
-
-  button{font:600 16px system-ui;border-radius:10px;cursor:pointer;padding:12px 16px;border:1px solid var(--tinta);
-         background:transparent;color:var(--tinta)}
-  button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--accion);outline-offset:2px}
-  button.principal{background:var(--accion);border-color:var(--accion);color:#fff;box-shadow:0 2px 0 var(--accion-hondo)}
-  button.principal:hover{background:var(--accion-hondo)}
-  button.chico{font-size:14px;padding:8px 12px;border-radius:8px}
-  button[disabled]{background:var(--raya);border-color:var(--raya);color:var(--tinta-suave);box-shadow:none;cursor:not-allowed}
-  .acciones{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:16px}
-  .estado{font-size:14px;color:var(--tinta-suave);flex:1;min-width:200px}
+  .losas{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+  .losa{padding:16px 14px;border:1px solid var(--raya);border-radius:12px;background:var(--papel-alto);
+        text-align:center;cursor:pointer;font:500 15px system-ui;box-shadow:0 1px 0 var(--raya);
+        appearance:none;-webkit-appearance:none;color:var(--tinta);width:100%}
+  .losa:active{transform:translateY(1px);box-shadow:none}
+  .losa span{display:block;font-size:22px;margin-bottom:4px}
+  textarea{width:100%;min-height:110px;padding:14px;margin-top:12px;border:1px solid var(--raya);border-radius:12px;
+           background:var(--papel-alto);font:16px/1.5 system-ui;color:var(--tinta);resize:vertical}
+  textarea:focus{border-color:var(--accion)}
+  .estado{font-size:13.5px;color:var(--tinta-suave);text-align:center;margin:12px 0 0}
   .estado.mal{color:var(--alerta)}
 
-  /* respaldo */
-  .codigo{font:600 14px var(--mono);letter-spacing:.02em;color:var(--accion-hondo);margin:0}
-  .titulo-sec{font:400 21px/1.3 var(--serif);margin:2px 0 16px}
+  /* tarjeta de respuesta del agente */
+  .respuesta{background:var(--papel-alto);border:1px solid var(--raya);border-radius:16px;padding:18px;margin:18px 0}
+  .quien-responde{display:flex;align-items:center;gap:8px;font:600 11px system-ui;letter-spacing:.12em;
+                  text-transform:uppercase;color:var(--tinta-suave);margin:0 0 12px}
+  .quien-responde .punto{background:var(--confirmado)}
+  .dicho{border-left:3px solid var(--raya);padding:2px 0 2px 12px;margin:0 0 16px;font:15px/1.5 var(--serif);color:var(--tinta-suave)}
+  .codigo{font:600 13px var(--mono);color:var(--accion-hondo);margin:0}
+  .titulo-sec{font:400 23px/1.25 var(--serif);margin:2px 0 14px}
   .tope{border:1px solid var(--raya);border-left:3px solid var(--tinta);border-radius:12px;padding:14px 16px;
-        background:var(--papel);margin:0 0 18px}
-  .tope b{display:block;font:400 40px/1.05 var(--serif);letter-spacing:-.01em}
-  .tope .alcance{display:block;font:16px/1.45 var(--serif);margin-top:6px}
+        background:var(--papel);margin:0 0 16px}
+  .tope b{display:block;font:400 38px/1.05 var(--serif);letter-spacing:-.01em}
+  .tope .alcance{display:block;font:15.5px/1.45 var(--serif);margin-top:6px}
   .tope .origen{display:block;font-size:12px;color:var(--tinta-suave);margin-top:8px}
-  .tope.sin{border-left-color:var(--raya)}
   .tope.sin p{margin:0;font-size:15px;color:var(--tinta-suave)}
   .rotulo{font:600 11px system-ui;letter-spacing:.13em;text-transform:uppercase;color:var(--tinta-suave);margin:0 0 8px}
-  ol.pasos{margin:0 0 18px;padding-left:22px}
-  ol.pasos li{margin-bottom:9px;font:16px/1.5 var(--serif)}
+  ol.pasos{margin:0 0 16px;padding-left:20px}
+  ol.pasos li{margin-bottom:8px;font:16px/1.45 var(--serif)}
   ul.limites{list-style:none;margin:0 0 16px;padding:0}
   ul.limites li{font-size:15px;color:var(--alerta);padding-left:16px;position:relative;margin-bottom:6px}
   ul.limites li::before{content:"▲";position:absolute;left:0;font-size:9px;top:4px}
-  details{margin:0 0 18px}
+  details{margin:0 0 14px}
   summary{cursor:pointer;font:600 12px system-ui;letter-spacing:.1em;text-transform:uppercase;color:var(--tinta-suave)}
-  pre.seccion{font:13px/1.65 var(--mono);white-space:pre-wrap;background:var(--papel);border:1px solid var(--raya);
-              border-radius:10px;padding:14px;margin-top:10px;max-height:340px;overflow:auto;color:var(--tinta-suave)}
-  .abstencion{border:1px solid var(--alerta);border-radius:12px;padding:16px;background:var(--papel)}
-  .abstencion b{display:block;font:400 24px var(--serif);color:var(--alerta);margin-bottom:6px}
-  .abstencion p{margin:0 0 6px;font-size:16px}
-  .abstencion .motivo{font:15px/1.5 var(--mono);color:var(--tinta-suave)}
+  pre.seccion{font:12.5px/1.6 var(--mono);white-space:pre-wrap;background:var(--papel);border:1px solid var(--raya);
+              border-radius:10px;padding:12px;margin-top:10px;max-height:300px;overflow:auto;color:var(--tinta-suave)}
+  .pie{font:12px/1.6 var(--mono);color:var(--tinta-suave);border-top:1px solid var(--raya);padding-top:10px;margin:0}
+
+  /* abstención */
+  .abstencion{border:1px solid var(--alerta);border-radius:16px;padding:18px;margin:18px 0;background:var(--papel)}
+  .abstencion b{display:block;font:400 24px/1.2 var(--serif);color:var(--alerta);margin-bottom:8px}
+  .abstencion p{margin:0 0 8px;font-size:15.5px}
+  .abstencion .motivo{font:13.5px/1.5 var(--mono);color:var(--tinta-suave)}
 
   /* expediente */
-  .ficha{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:15px;margin:0 0 18px}
+  .ficha{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:15px;margin:0 0 16px}
   .ficha dt{font:600 11px system-ui;letter-spacing:.1em;text-transform:uppercase;color:var(--tinta-suave);padding-top:3px}
   .ficha dd{margin:0}
-  .ficha dd.id{font:13px var(--mono);word-break:break-all}
+  .ficha dd.id{font:12px var(--mono);word-break:break-all}
   .pill{display:inline-block;font:600 11px system-ui;letter-spacing:.09em;text-transform:uppercase;
         border:1px solid currentColor;border-radius:99px;padding:3px 9px}
   .abierto{color:var(--tinta-suave)} .en_proceso{color:var(--estimado)} .cerrado{color:var(--confirmado)}
-  .act{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--raya)}
-  .act p{margin:0;flex:1;font:16px/1.45 var(--serif)}
-  .act .hecho{font:600 12px system-ui;letter-spacing:.08em;text-transform:uppercase;color:var(--confirmado);
-              white-space:nowrap;padding-top:4px}
-  .dato{display:flex;gap:10px;align-items:flex-end;margin-bottom:12px}
+  .act{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--raya)}
+  .act p{margin:0;flex:1;font:15.5px/1.4 var(--serif)}
+  .act .hecho{font:600 11px system-ui;letter-spacing:.08em;text-transform:uppercase;color:var(--confirmado);white-space:nowrap}
+  .chico{font:600 13px system-ui;padding:8px 12px;border-radius:8px;border:1px solid var(--tinta);
+         background:transparent;color:var(--tinta);cursor:pointer;white-space:nowrap}
+  .chico[disabled]{border-color:var(--raya);color:var(--tinta-suave);cursor:not-allowed}
+  .dato{display:flex;gap:8px;align-items:flex-end;margin-bottom:10px}
   .dato > div{flex:1}
-  .dato input{font-size:16px}
-  .nota{display:block;font-size:12.5px;color:var(--tinta-suave);margin:3px 0 5px;text-transform:none;letter-spacing:0;font-weight:400;line-height:1.35}
-  @media (max-width:560px){ .act{flex-wrap:wrap} .act p{flex:1 1 100%} .act button,.act .hecho{margin-left:auto} }
-  .resumen{border-top:1px solid var(--raya);margin-top:16px;padding-top:16px}
-  .resumen p{margin:0 0 12px;font-size:15px}
-  .resumen .frase{font:16px/1.5 var(--serif);color:var(--tinta)}
+  .dato label{display:block;font:600 11px system-ui;letter-spacing:.09em;text-transform:uppercase;color:var(--tinta-suave);margin-bottom:4px}
+  .dato input{width:100%;padding:11px 12px;border:1px solid var(--raya);border-radius:10px;background:var(--papel);
+              color:var(--tinta);font:16px system-ui}
+  .dato input:focus{border-color:var(--accion)}
   .acta{border:1px solid var(--confirmado);border-radius:12px;padding:16px;margin-top:16px;background:var(--papel)}
   .acta b{font:400 20px var(--serif);color:var(--confirmado);display:block;margin-bottom:8px}
-  .acta dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font:12.5px var(--mono);margin:0 0 14px;color:var(--tinta-suave)}
-  .acta dt{font-family:system-ui;font-weight:600;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+  .acta dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font:12px var(--mono);margin:0 0 12px;color:var(--tinta-suave)}
+  .acta dt{font-family:system-ui;font-weight:600;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase}
   .acta dd{margin:0;word-break:break-all}
-  .acta .botones{display:flex;gap:10px;flex-wrap:wrap}
-  a.boton{display:inline-block;text-decoration:none;font:600 14px system-ui;padding:9px 13px;border-radius:8px;
+  a.boton{display:inline-block;text-decoration:none;font:600 13px system-ui;padding:8px 12px;border-radius:8px;
           border:1px solid var(--tinta);color:var(--tinta)}
-  .limites-caja{font-size:14.5px;color:var(--tinta-suave)}
-  .limites-caja p{margin:0 0 10px}
-  .limites-caja b{color:var(--tinta)}
-  footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--raya);font-size:13px;color:var(--tinta-suave)}
-  .oculto{display:none}
+
+  .nota{font-size:13px;color:var(--tinta-suave);margin:14px 0 0}
+  .nota b{color:var(--tinta)}
+  .barra{position:fixed;left:0;right:0;bottom:0;background:var(--papel);border-top:1px solid var(--raya);
+         padding:14px 20px calc(14px + env(safe-area-inset-bottom));display:flex;gap:10px;justify-content:center}
+  .barra button{flex:1;max-width:520px;padding:16px;border:0;border-radius:12px;background:var(--accion);color:#fff;
+                font:600 17px system-ui;cursor:pointer;box-shadow:0 2px 0 var(--accion-hondo)}
+  .barra button[disabled]{background:var(--raya);color:var(--tinta-suave);box-shadow:none;cursor:not-allowed}
+  .barra button.otro{background:transparent;color:var(--tinta);border:1px solid var(--tinta);box-shadow:none;flex:0 0 auto;font-size:15px}
+  .oculto{display:none !important}
 </style>
 
 <div class="hoja">
   <header>
-    <h1>Vigía<small>Sucursal</small></h1>
-    <a href="/tablero">Tablero de base instalada →</a>
+    <h1>Vigía<small>Sucursal · asistente del cajero</small></h1>
+    <span class="nodo" id="nodo"><i class="punto"></i><span id="nodoTexto">buscando nodo…</span></span>
   </header>
 
-  <p class="tira">
-    <span id="tiraGuia">Guía BPL · versión … · Demostración sintética</span>
-    <span class="marca" id="tiraNodo"><i class="punto"></i><span id="tiraNodoTexto">Inferencia: consultando el nodo…</span></span>
-    <span class="marca declarado"><i class="punto"></i>CORE: caída reportada por el operador</span>
-  </p>
-
-  <div class="rejilla">
-    <div>
-      <!-- 1 · consultar -->
-      <section class="tarjeta" id="m1">
-        <h2><i>1</i> Consultar la guía</h2>
-        <p class="guia-h2">Todavía no se abre expediente: primero se busca el procedimiento que respalda la contingencia.</p>
-        <div class="dos">
-          <div><label for="sucursal">Sucursal</label><input type="text" id="sucursal" autocomplete="off" placeholder="Sucursal Ficticia Isla"></div>
-          <div><label for="empleado">Empleado</label><input type="text" id="empleado" autocomplete="off" placeholder="Empleado Ficticio A"></div>
-        </div>
-        <div class="campo">
-          <label for="consulta">Contingencia</label>
-          <textarea id="consulta" placeholder="Sin enlace al CORE, ¿cómo documento un retiro y cuál es el tope?"></textarea>
-        </div>
-        <div class="acciones">
-          <button class="principal" id="btnConsultar">Consultar guía</button>
-          <span class="estado" id="progreso" role="status" aria-live="polite">Describe la contingencia para buscar su procedimiento</span>
-        </div>
-      </section>
-
-      <!-- 2 · revisar respaldo -->
-      <section class="tarjeta oculto" id="m2">
-        <h2><i>2</i> Revisar el respaldo</h2>
-        <p class="guia-h2">Lo que sigue es texto literal de la guía. El modelo eligió la sección; no la redactó.</p>
-        <div id="respaldo"></div>
-      </section>
-    </div>
-
-    <div>
-      <!-- 3 · documentar -->
-      <section class="tarjeta oculto" id="m3">
-        <h2><i>3</i> Documentar</h2>
-        <p class="guia-h2">Cada actuación queda registrada con su cita. El expediente encadena los eventos.</p>
-        <div id="expediente"></div>
-      </section>
-
-      <section class="tarjeta limites-caja" id="limites">
-        <h2>Qué documenta esta pantalla</h2>
-        <p>Un procedimiento <b>con respaldo</b> es respaldo documental: <b>no es una autorización</b> del retiro
-           ni una operación en el CORE.</p>
-        <p>El acta lleva la <b>firma del nodo</b> que la emitió. La doble firma del procedimiento (cajero y
-           supervisor) se registra como <b>dato declarado</b> por quien atiende.</p>
-        <p>La inferencia corre en este equipo. Ni la consulta ni el expediente salen de la sucursal.</p>
-      </section>
+  <div class="credencial">
+    <div class="avatar" id="avatar">?</div>
+    <div style="flex:1">
+      <input id="empleado" placeholder="Tu nombre" autocomplete="name">
+      <input id="sucursal" class="chico" placeholder="Sucursal" autocomplete="off">
     </div>
   </div>
+  <p class="tira">
+    <span id="tiraGuia">Guía BPL · versión …</span>
+    <span class="marca"><i class="punto"></i>CORE: caída declarada por el operador</span>
+  </p>
 
-  <footer>
-    Acta firmada por el nodo; la doble firma del procedimiento se registra como dato declarado.
-    Banco, guía, montos y personas son ficticios: demostración sintética del HackPTY 2026.
-  </footer>
+  <!-- 1 · preguntarle al agente -->
+  <section id="p1">
+    <div class="captura">
+      <button type="button" class="anillo" id="anillo" aria-pressed="false">
+        <b id="anilloTexto">Hablar<em>toca y di la contingencia</em></b>
+        <span class="onda oculto" id="onda"></span>
+      </button>
+    </div>
+    <div class="losas">
+      <button type="button" class="losa" id="btnEscribir"><span>✎</span>Escribir</button>
+      <button type="button" class="losa" id="btnEjemplo"><span>◈</span>Ver un ejemplo</button>
+    </div>
+    <textarea id="consulta" class="oculto" placeholder="Sin enlace al CORE, ¿cómo documento un retiro y cuál es el tope?"></textarea>
+    <p class="estado" id="progreso" role="status" aria-live="polite">La consulta y la respuesta no salen de la sucursal</p>
+  </section>
+
+  <!-- 2 · lo que responde el agente -->
+  <section id="p2" class="oculto"><div id="respuesta"></div></section>
+
+  <!-- 3 · expediente -->
+  <section id="p3" class="oculto">
+    <div id="expediente"></div>
+    <p class="nota">El expediente es <b>respaldo documental</b>: no autoriza el retiro ni lo ejecuta en el CORE.
+      El acta la firma el nodo; la doble firma del procedimiento se registra como dato declarado.</p>
+  </section>
+</div>
+
+<div class="barra" id="barra">
+  <button id="accion" disabled>Consultar la guía</button>
+  <button id="volver" class="otro oculto">Otra consulta</button>
 </div>
 
 <script type="module">
@@ -202,10 +201,9 @@ const el = (tag, props = {}, ...hijos) => {
   for (const h of hijos) if (h) n.append(h);
   return n;
 };
-const vaciar = n => { while (n.firstChild) n.removeChild(n.firstChild); return n; };
+const limpiar = n => { while (n.firstChild) n.removeChild(n.firstChild); return n; };
 const ESTADOS = { abierto: 'Abierto', en_proceso: 'En proceso', cerrado: 'Cerrado' };
-
-const app = { respuesta: null, consultaId: null, expediente: null, acta: null };
+const app = { texto: '', respuesta: null, consultaId: null, expediente: null, acta: null, modelo: '', vista: 'consulta' };
 
 async function api(metodo, ruta, cuerpo) {
   const r = await fetch(ruta, { method: metodo,
@@ -217,52 +215,131 @@ async function api(metodo, ruta, cuerpo) {
 }
 // Sin `http` no hubo respuesta: el nodo no está, y eso NO es una abstención.
 const sinNodo = e => e.http === undefined;
+const progreso = (texto, mal = false) => { const p = $('#progreso'); p.textContent = texto; p.classList.toggle('mal', mal); };
 
-// ── estado del nodo y de la guía ──
+// ── credencial ──
+$('#empleado').value = localStorage.getItem('vigia.empleado') ?? '';
+$('#sucursal').value = localStorage.getItem('vigia.sucursal') ?? '';
+const inicial = () => $('#avatar').textContent = ($('#empleado').value.trim()[0] ?? '?').toUpperCase();
+inicial();
+$('#empleado').oninput = () => { localStorage.setItem('vigia.empleado', $('#empleado').value); inicial(); };
+$('#sucursal').oninput = () => localStorage.setItem('vigia.sucursal', $('#sucursal').value);
+
+// ── nodo y guía ──
+let hayNodo = false;
 (async () => {
   try {
     const e = await api('GET', '/api/sucursal/estado');
+    hayNodo = !!e.disponible;
     if (e.guia) $('#tiraGuia').textContent = `${e.guia.nombre}${e.guia.version ? ` · versión ${e.guia.version}` : ''}`;
-    const marca = $('#tiraNodo');
-    marca.classList.add(e.disponible ? 'si' : 'no');
-    $('#tiraNodoTexto').textContent = e.disponible
-      ? `Inferencia: nodo ${e.ejecucion ?? 'local'} disponible${e.hardware ? ` · ${e.hardware}` : ''}`
-      : 'Inferencia: el nodo no tiene el modelo cargado';
-  } catch {
-    $('#tiraNodo').classList.add('no');
-    $('#tiraNodoTexto').textContent = 'Inferencia: no se pudo consultar el nodo';
-  }
+    $('#nodo').classList.toggle('si', hayNodo);
+    $('#nodoTexto').textContent = hayNodo
+      ? `nodo ${e.ejecucion ?? 'local'}${e.hardware ? ` · ${e.hardware}` : ''}` : 'sin modelo a bordo';
+  } catch { $('#nodoTexto').textContent = 'sin nodo a la vista'; }
+  try { app.modelo = (await api('GET', '/api/evidencia')).modelo ?? ''; } catch {}
 })();
 
-// ── 1 · consultar ──
-const progreso = (texto, mal = false) => { const p = $('#progreso'); p.textContent = texto; p.classList.toggle('mal', mal); };
+// ── voz: el mismo anillo de Equipos, contra el mismo /api/dictar ──
+let rec = null, trozos = [], audioCtx = null;
+$('#anillo').onclick = async () => {
+  if (rec?.state === 'recording') { rec.stop(); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+    rec = new MediaRecorder(stream); trozos = [];
+    rec.ondataavailable = e => trozos.push(e.data);
+    rec.onstop = async () => { stream.getTracks().forEach(t => t.stop()); pararOnda();
+      $('#anillo').classList.remove('grabando'); $('#anillo').setAttribute('aria-pressed', 'false');
+      $('#anilloTexto').innerHTML = 'Transcribiendo…<em>un momento</em>';
+      const blob = new Blob(trozos, { type: rec.mimeType });
+      try {
+        const r = await fetch('/api/dictar', { method: 'POST', body: blob });
+        const t = await r.json();
+        if (!r.ok || t.error) { $('#anilloTexto').innerHTML = 'No se pudo transcribir<em>toca para reintentar</em>'; return; }
+        if (t.silencio) { $('#anilloTexto').innerHTML = 'No se oyó nada<em>acércate al micrófono</em>'; return; }
+        $('#anilloTexto').innerHTML = 'Hablar<em>toca y di la contingencia</em>';
+        $('#consulta').classList.remove('oculto'); $('#consulta').value = t.texto;
+        await consultar(t.texto);
+      } catch { $('#anilloTexto').innerHTML = 'No se pudo<em>toca para reintentar</em>'; }
+    };
+    rec.start(); trozos = [];
+    $('#anillo').classList.add('grabando'); $('#anillo').setAttribute('aria-pressed', 'true');
+    $('#anilloTexto').innerHTML = 'Detener';
+    onda(stream);
+    setTimeout(() => rec?.state === 'recording' && rec.stop(), 90000);   // tope de 90 s
+  } catch { $('#anilloTexto').innerHTML = 'Sin micrófono<em>usa Escribir</em>'; }
+};
+function onda(stream) {
+  audioCtx = new AudioContext(); const an = audioCtx.createAnalyser(); an.fftSize = 64;
+  audioCtx.createMediaStreamSource(stream).connect(an);
+  const datos = new Uint8Array(an.frequencyBinCount);
+  const cont = $('#onda'); cont.innerHTML = '<i></i>'.repeat(12); cont.classList.remove('oculto');
+  const barras = [...cont.children];
+  (function tic() { if (!audioCtx) return; an.getByteFrequencyData(datos);
+    barras.forEach((b, i) => b.style.height = Math.max(3, datos[i * 2] / 255 * 26) + 'px');
+    requestAnimationFrame(tic); })();
+}
+function pararOnda() { audioCtx?.close(); audioCtx = null; $('#onda').classList.add('oculto'); }
 
-$('#btnConsultar').addEventListener('click', async () => {
-  const consulta = $('#consulta').value.trim();
-  if (!consulta) { progreso('Describe la contingencia para buscar su procedimiento'); $('#consulta').focus(); return; }
-  const boton = $('#btnConsultar');
+// ── escribir ──
+const EJEMPLOS = [
+  'Sin enlace al CORE, ¿cómo documento un retiro y cuál es el tope?',
+  'El cliente no trae la constancia de saldo, ¿qué hago?',
+  'Se cayó el sistema y quiere hacer dos retiros seguidos, ¿puedo?',
+];
+$('#btnEscribir').onclick = () => { $('#consulta').classList.remove('oculto'); $('#consulta').focus(); };
+$('#btnEjemplo').onclick = () => { $('#consulta').classList.remove('oculto');
+  $('#consulta').value = EJEMPLOS[Math.floor(Math.random() * EJEMPLOS.length)]; $('#accion').disabled = false; };
+$('#consulta').oninput = () => { if (app.vista === 'consulta') $('#accion').disabled = !$('#consulta').value.trim(); };
+
+// ── la barra de abajo lleva SIEMPRE la acción del paso en que va el cajero ──
+function barra(vista) {
+  app.vista = vista;
+  const b = $('#accion'), v = $('#volver');
+  v.classList.toggle('oculto', vista === 'consulta');
+  b.classList.remove('oculto'); b.disabled = false;
+  if (vista === 'consulta') { b.textContent = 'Consultar la guía'; b.disabled = !$('#consulta').value.trim(); }
+  else if (vista === 'respuesta') b.textContent = 'Abrir expediente con esta respuesta';
+  else if (vista === 'abstencion') { b.textContent = 'Reformular'; }
+  else if (vista === 'expediente') b.textContent = 'Cerrar y emitir acta';
+  else if (vista === 'cerrado') b.textContent = 'Verificar acta';
+}
+$('#accion').onclick = async () => {
+  if (app.vista === 'consulta') return consultar($('#consulta').value.trim());
+  if (app.vista === 'abstencion') return reformular();
+  if (app.vista === 'respuesta') return abrirExpediente();
+  if (app.vista === 'expediente') return cerrar();
+  if (app.vista === 'cerrado') return verificar(app.acta ?? app.expediente?.acta);
+};
+$('#volver').onclick = () => reformular();
+function reformular() {
+  $('#p1').classList.remove('oculto'); $('#p2').classList.add('oculto'); $('#p3').classList.add('oculto');
+  $('#consulta').classList.remove('oculto'); $('#consulta').focus();
+  progreso('La consulta y la respuesta no salen de la sucursal');
+  barra('consulta');
+}
+
+// ── 1 · preguntarle al agente ──
+async function consultar(consulta) {
+  if (!consulta) { $('#consulta').classList.remove('oculto'); $('#consulta').focus(); return; }
+  app.texto = consulta;
+  const boton = $('#accion');
   const t0 = Date.now();
   boton.disabled = true;
-  const tic = () => {
-    const s = Math.round((Date.now() - t0) / 1000);
-    boton.textContent = 'Consultando guía…';
-    progreso(s > 4 ? `Consultando guía… ${s} s · La consulta sigue en curso` : `Consultando guía… ${s} s`);
-  };
+  const tic = () => { const s = Math.round((Date.now() - t0) / 1000);
+    boton.textContent = 'Consultando la guía…';
+    progreso(s > 4 ? `Buscando el procedimiento… ${s} s · sigue en curso` : `Buscando el procedimiento… ${s} s`); };
   tic();
   const reloj = setInterval(tic, 500);
   try {
     const r = await api('POST', '/api/sucursal/consulta', { consulta });
     app.respuesta = r; app.consultaId = r.consultaId;
-    pintarRespaldo(r);
-    progreso(`Respondido en ${Math.round(r.ms)} ms, en este equipo`);
+    pintarRespuesta(r);
+    progreso('');
   } catch (e) {
+    barra('consulta');
     progreso(sinNodo(e) ? 'No se pudo consultar el nodo. Tu texto sigue aquí' : e.message, true);
-  } finally {
-    clearInterval(reloj);
-    boton.disabled = false;
-    boton.textContent = 'Consultar guía';
-  }
-});
+  } finally { clearInterval(reloj); }
+}
 
 // Las actuaciones son SOLO las líneas numeradas de la sección; el resto (tablas, excepciones)
 // queda en «Ver sección completa» y las advertencias se muestran aparte.
@@ -271,102 +348,104 @@ const sinNumero = l => l.replace(/^\s*\d+[.)]\s*/, '');
 const esAdvertencia = l => !esPaso(l) && !l.trim().startsWith('|') && !l.trim().startsWith('#')
   && /^(no |sin |si |una |ninguna |abstenerse|el asistente|el cierre|cerrar )/i.test(l.trim());
 
-function pintarRespaldo(r) {
-  const caja = vaciar($('#respaldo'));
-  $('#m2').classList.remove('oculto');
-  $('#m2').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+function pintarRespuesta(r) {
+  const caja = limpiar($('#respuesta'));
+  $('#p1').classList.add('oculto'); $('#p3').classList.add('oculto'); $('#p2').classList.remove('oculto');
+  window.scrollTo({ top: 0 });
 
   if (!r.cubierto) {
     caja.append(el('div', { class: 'abstencion' },
-      el('b', { text: 'Sin respaldo en la guía' }),
-      el('p', { text: 'La guía consultada no contiene un procedimiento para esa consulta, así que no se documenta nada.' }),
+      el('b', { text: 'Sin respaldo en la guía: no invento' }),
+      el('p', { text: 'La guía de la sucursal no trae un procedimiento para eso, así que el agente no responde ni documenta nada.' }),
       el('p', { class: 'motivo', text: `Motivo: ${r.abstencion?.motivo ?? 'sin respaldo en la guía'}` }),
-      el('p', { text: 'Reformula la contingencia con las palabras de la guía o escala con tu supervisor.' })));
-    $('#consulta').focus();
+      el('p', { text: 'Reformula con las palabras de la guía o escala con tu supervisor.' }),
+      el('p', { class: 'pie', text: pieTecnico(r) })));
+    barra('abstencion');
     return;
   }
 
+  const tarjeta = el('article', { class: 'respuesta' });
+  tarjeta.append(el('p', { class: 'quien-responde' }, el('i', { class: 'punto' }), document.createTextNode('El agente responde · en este equipo')));
+  tarjeta.append(el('p', { class: 'dicho', text: `«${app.texto}»` }));
+
   const seccion = r.citas?.[0]?.seccion ?? '';
   const [codigo, ...resto] = seccion.split(' — ');
-  caja.append(el('p', { class: 'codigo', text: r.codigo ?? codigo }));
-  caja.append(el('p', { class: 'titulo-sec', text: resto.join(' — ') || seccion }));
+  tarjeta.append(el('p', { class: 'codigo', text: r.codigo ?? codigo }));
+  tarjeta.append(el('p', { class: 'titulo-sec', text: resto.join(' — ') || seccion }));
 
   // El monto: literal, con su unidad y con la línea de la guía que le pone alcance.
   if (r.limite) {
     const linea = (r.pasos ?? []).map(l => l.replace(/^\s*\|\s*|\s*\|\s*$/g, '').split('|').map(c => c.trim()).sort((a, b) => b.length - a.length)[0])
       .find(l => l && l.includes(r.limite) && !/^#/.test(l));
-    caja.append(el('div', { class: 'tope' },
+    tarjeta.append(el('div', { class: 'tope' },
       el('p', { class: 'rotulo', text: r.limite.startsWith('B/.') ? 'Monto respaldado por la guía' : 'Dato citado de la guía' }),
       el('b', { text: r.limite }),
       linea ? el('span', { class: 'alcance', text: `«${linea}»` }) : null,
       el('span', { class: 'origen', text: `Origen: ${r.limite_origen ?? 'sección citada'}` })));
   } else {
-    caja.append(el('div', { class: 'tope sin' },
-      el('p', { text: 'No se obtuvo un monto respaldado. Revisa la sección citada.' })));
+    tarjeta.append(el('div', { class: 'tope sin' }, el('p', { text: 'No se obtuvo un monto respaldado. Revisa la sección citada.' })));
   }
 
   const pasos = (r.pasos ?? []).filter(esPaso);
   if (pasos.length) {
-    caja.append(el('p', { class: 'rotulo', text: 'Actuaciones · texto literal de la guía' }));
+    tarjeta.append(el('p', { class: 'rotulo', text: 'Qué hacer · texto literal de la guía' }));
     const ol = el('ol', { class: 'pasos' });
     for (const p of pasos) ol.append(el('li', { text: sinNumero(p) }));
-    caja.append(ol);
+    tarjeta.append(ol);
   }
 
   const avisos = (r.pasos ?? []).filter(esAdvertencia).slice(0, 4);
   if (avisos.length) {
-    caja.append(el('p', { class: 'rotulo', text: 'Cuándo la guía manda detenerse' }));
+    tarjeta.append(el('p', { class: 'rotulo', text: 'Cuándo la guía manda detenerse' }));
     const ul = el('ul', { class: 'limites' });
     for (const a of avisos) ul.append(el('li', { text: a.trim() }));
-    caja.append(ul);
+    tarjeta.append(ul);
   }
 
-  const det = el('details', {}, el('summary', { text: 'Ver sección completa' }),
-    el('pre', { class: 'seccion', text: r.citas?.[0]?.texto ?? '' }));
-  caja.append(det);
+  tarjeta.append(el('details', {}, el('summary', { text: 'Ver sección completa' }),
+    el('pre', { class: 'seccion', text: r.citas?.[0]?.texto ?? '' })));
+  tarjeta.append(el('p', { class: 'pie', text: pieTecnico(r) }));
+  caja.append(tarjeta);
+  barra('respuesta');
+}
+const pieTecnico = r => [app.modelo, `${Math.round(r.ms)} ms`, 'en este equipo', r.id].filter(Boolean).join(' · ');
 
-  const abrir = el('button', { class: 'principal', text: 'Abrir expediente con esta consulta' });
-  const aviso = el('span', { class: 'estado' });
-  abrir.addEventListener('click', async () => {
-    const sucursal = $('#sucursal').value.trim(), empleado = $('#empleado').value.trim();
-    if (!sucursal || !empleado) { aviso.textContent = 'Falta la sucursal o el empleado'; aviso.classList.add('mal'); $('#sucursal').focus(); return; }
-    abrir.disabled = true; aviso.classList.remove('mal'); aviso.textContent = 'Abriendo expediente…';
-    try {
-      const r2 = await api('POST', '/api/sucursal/expedientes', { sucursal, empleado, consultaId: app.consultaId });
-      aviso.textContent = '';
-      pintarExpediente(r2.expediente);
-    } catch (e) {
-      aviso.classList.add('mal');
-      aviso.textContent = sinNodo(e) ? 'No se pudo abrir el expediente: el nodo no responde' : e.message;
-      abrir.disabled = false;
-    }
-  });
-  caja.append(el('div', { class: 'acciones' }, abrir, aviso));
+// ── 2 · abrir el expediente con esa respuesta ──
+async function abrirExpediente() {
+  const sucursal = $('#sucursal').value.trim(), empleado = $('#empleado').value.trim();
+  if (!sucursal || !empleado) {
+    $('#p1').classList.remove('oculto');
+    progreso('Escribe tu nombre y tu sucursal arriba para abrir el expediente', true);
+    (empleado ? $('#sucursal') : $('#empleado')).focus();
+    return;
+  }
+  const b = $('#accion'); b.disabled = true; b.textContent = 'Abriendo expediente…';
+  try {
+    const r = await api('POST', '/api/sucursal/expedientes', { sucursal, empleado, consultaId: app.consultaId });
+    pintarExpediente(r.expediente);
+  } catch (e) {
+    barra('respuesta');
+    alertaEnLinea(sinNodo(e) ? 'No se pudo abrir el expediente: el nodo no responde' : e.message, '#respuesta');
+  }
 }
 
-// ── 3 · documentar ──
 const CAMPOS = [
-  ['folio', 'Folio del formulario', 'ISLA-20260909-FICTICIA-001', null],
-  ['monto', 'Monto documental', 'B/. 80.00', 'Se escribe con su unidad, como en la guía.'],
-  ['constancia', 'Referencia de constancia', 'CONST-LOCAL-0912', null],
-  ['supervisor_declarado', 'Supervisor declarado', 'Supervisor Ficticio B', 'Dato declarado: escribir un nombre no produce su firma.'],
-  ['observacion', 'Observación', 'Sin acumulado disponible entre sucursales', null],
+  ['folio', 'Folio del formulario', 'ISLA-20260909-FICTICIA-001'],
+  ['monto', 'Monto documental', 'B/. 80.00'],
+  ['supervisor_declarado', 'Supervisor declarado', 'Supervisor Ficticio B'],
 ];
 
 function pintarExpediente(exp) {
   app.expediente = exp;
-  const caja = vaciar($('#expediente'));
-  $('#m3').classList.remove('oculto');
+  const caja = limpiar($('#expediente'));
+  $('#p2').classList.add('oculto'); $('#p3').classList.remove('oculto');
   const cerrado = exp.estado === 'cerrado';
 
   const ficha = el('dl', { class: 'ficha' });
-  const fila = (k, v, clase) => { ficha.append(el('dt', { text: k })); ficha.append(el('dd', { class: clase, text: v })); };
   ficha.append(el('dt', { text: 'Estado' }));
   ficha.append(el('dd', {}, el('span', { class: `pill ${exp.estado}`, text: ESTADOS[exp.estado] ?? exp.estado })));
-  fila('Expediente', exp.id, 'id');
-  fila('Empleado', exp.empleado);
-  fila('Sucursal', exp.sucursal);
-  fila('Motivo', exp.motivo);
+  ficha.append(el('dt', { text: 'Sección' })); ficha.append(el('dd', { text: app.respuesta?.codigo ?? '—' }));
+  ficha.append(el('dt', { text: 'Expediente' })); ficha.append(el('dd', { class: 'id', text: exp.id }));
   caja.append(ficha);
 
   // Actuaciones: el navegador manda el índice del paso, nunca su texto.
@@ -376,19 +455,18 @@ function pintarExpediente(exp) {
     caja.append(el('p', { class: 'rotulo', text: 'Actuaciones de la guía' }));
     for (const linea of pasos) {
       const texto = sinNumero(linea);
-      const hecho = registrados.has(texto);
       const fila = el('div', { class: 'act' }, el('p', { text: texto }));
-      if (hecho) fila.append(el('span', { class: 'hecho', text: '✓ Registrada' }));
+      if (registrados.has(texto)) fila.append(el('span', { class: 'hecho', text: '✓ Registrada' }));
       else {
-        const b = el('button', { class: 'chico', text: 'Registrar realización' });
+        const b = el('button', { class: 'chico', text: 'Registrar' });
         if (cerrado) b.disabled = true;
         b.addEventListener('click', async () => {
           b.disabled = true; b.textContent = 'Registrando…';
           try {
             const r = await api('POST', `/api/sucursal/expedientes/${exp.id}/pasos`,
               { consultaId: app.consultaId, indicePaso: (app.respuesta.pasos ?? []).indexOf(linea) });
-            pintarExpediente(r.expediente);         // solo se marca con lo que confirmó el servidor
-          } catch (e) { await falloGuardado(e, exp.id, b, 'Registrar realización'); }
+            pintarExpediente(r.expediente);      // solo se marca con lo que confirmó el servidor
+          } catch (e) { await falloGuardado(e, exp.id, b, 'Registrar'); }
         });
         fila.append(b);
       }
@@ -396,8 +474,8 @@ function pintarExpediente(exp) {
     }
   }
 
-  caja.append(el('p', { class: 'rotulo', text: 'Datos del formulario' }));
-  for (const [campo, etiqueta, ejemplo, nota] of CAMPOS) {
+  caja.append(el('p', { class: 'rotulo', style: 'margin-top:16px', text: 'Datos del formulario' }));
+  for (const [campo, etiqueta, ejemplo] of CAMPOS) {
     const valor = exp.datos?.[campo];
     const entrada = el('input', { type: 'text', id: `c-${campo}`, placeholder: ejemplo, value: valor ?? '' });
     const b = el('button', { class: 'chico', text: valor ? 'Actualizar' : 'Guardar' });
@@ -406,65 +484,53 @@ function pintarExpediente(exp) {
       const v = entrada.value.trim();
       if (!v) { entrada.focus(); return; }
       b.disabled = true; b.textContent = 'Guardando…';
-      try {
-        const r = await api('POST', `/api/sucursal/expedientes/${exp.id}/datos`, { campo, valor: v });
-        pintarExpediente(r.expediente);
-      } catch (e) { await falloGuardado(e, exp.id, b, 'Guardar'); }
+      try { pintarExpediente((await api('POST', `/api/sucursal/expedientes/${exp.id}/datos`, { campo, valor: v })).expediente); }
+      catch (e) { await falloGuardado(e, exp.id, b, 'Guardar'); }
     });
     caja.append(el('div', { class: 'dato' },
-      el('div', {}, el('label', { for: `c-${campo}` }, document.createTextNode(etiqueta), nota ? el('span', { class: 'nota', text: nota }) : null), entrada),
-      b));
+      el('div', {}, el('label', { for: `c-${campo}`, text: etiqueta }), entrada), b));
   }
 
-  if (!cerrado) {
-    const resumen = el('div', { class: 'resumen' });
-    const nDatos = Object.keys(exp.datos ?? {}).length;
-    resumen.append(el('p', { text: `${(exp.pasos ?? []).length} de ${pasos.length} actuaciones registradas · ${nDatos} dato(s) del formulario. No hace falta marcarlas todas: una excepción de la guía puede obligar a detenerse y escalar.` }));
-    resumen.append(el('p', { class: 'frase', text: 'El cierre documenta la revisión; no acredita una operación en el CORE.' }));
-    const cerrar = el('button', { class: 'principal', text: 'Cerrar expediente y emitir acta' });
-    const aviso = el('span', { class: 'estado' });
-    cerrar.addEventListener('click', async () => {
-      cerrar.disabled = true; cerrar.textContent = 'Cerrando…'; aviso.classList.remove('mal'); aviso.textContent = '';
-      try {
-        const r = await api('POST', `/api/sucursal/expedientes/${exp.id}/cerrar`);
-        app.acta = r.acta;
-        pintarExpediente(r.expediente);
-      } catch (e) {
-        cerrar.disabled = false; cerrar.textContent = 'Cerrar expediente y emitir acta';
-        aviso.classList.add('mal');
-        aviso.textContent = sinNodo(e) ? 'No pudimos confirmar el cierre. Recarga el expediente' : e.message;
-      }
-    });
-    resumen.append(el('div', { class: 'acciones' }, cerrar, aviso));
-    caja.append(resumen);
-  } else {
+  if (cerrado) {
     const acta = app.acta ?? exp.acta;
     const bloque = el('div', { class: 'acta' }, el('b', { text: 'Acta emitida y firmada por el nodo' }));
     const dl = el('dl');
     const par = (k, v) => { dl.append(el('dt', { text: k })); dl.append(el('dd', { text: v })); };
     par('Huella', acta?.sello?.hash ?? '—');
-    par('Llave pública', acta?.sello?.publica ?? '—');
     par('Firmante', acta?.sello?.firmante ?? '—');
     par('Emitida', acta?.sello?.ts ?? '—');
     bloque.append(dl);
-    bloque.append(el('div', { class: 'botones' },
-      el('a', { class: 'boton', href: `/api/sucursal/expedientes/${exp.id}/acta`, download: `acta-${exp.id}.json`, text: 'Descargar acta JSON' }),
-      el('button', { class: 'chico', text: 'Verificar acta', onclick: () => verificar(acta) })));
+    bloque.append(el('a', { class: 'boton', href: `/api/sucursal/expedientes/${exp.id}/acta`,
+      download: `acta-${exp.id}.json`, text: 'Descargar acta JSON' }));
     caja.append(bloque);
+    barra('cerrado');
+  } else barra('expediente');
+}
+
+async function cerrar() {
+  const exp = app.expediente;
+  const b = $('#accion'); b.disabled = true; b.textContent = 'Cerrando…';
+  try {
+    const r = await api('POST', `/api/sucursal/expedientes/${exp.id}/cerrar`);
+    app.acta = r.acta;
+    pintarExpediente(r.expediente);
+  } catch (e) {
+    barra('expediente');
+    alertaEnLinea(sinNodo(e) ? 'No pudimos confirmar el cierre. Recarga el expediente' : e.message, '#expediente');
   }
 }
 
 // El guardado incierto es distinto de un rechazo: se recarga el expediente y manda el servidor.
 async function falloGuardado(e, id, boton, etiqueta) {
   boton.textContent = etiqueta;
-  if (!sinNodo(e)) { boton.disabled = false; alertaEnLinea(e.message); return; }
-  alertaEnLinea('No pudimos confirmar el guardado. Recargando el expediente…');
+  if (!sinNodo(e)) { boton.disabled = false; alertaEnLinea(e.message, '#expediente'); return; }
+  alertaEnLinea('No pudimos confirmar el guardado. Recargando el expediente…', '#expediente');
   try { pintarExpediente((await api('GET', `/api/sucursal/expedientes/${id}`)).expediente); }
-  catch { boton.disabled = false; alertaEnLinea('No pudimos confirmar el guardado y el nodo sigue sin responder'); }
+  catch { boton.disabled = false; alertaEnLinea('No pudimos confirmar el guardado y el nodo sigue sin responder', '#expediente'); }
 }
-function alertaEnLinea(texto) {
+function alertaEnLinea(texto, donde) {
   let n = $('#alertaExp');
-  if (!n) { n = el('p', { class: 'estado mal', id: 'alertaExp' }); $('#expediente').prepend(n); }
+  if (!n) { n = el('p', { class: 'estado mal', id: 'alertaExp' }); $(donde).prepend(n); }
   n.textContent = texto;
 }
 
