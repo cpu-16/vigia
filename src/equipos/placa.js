@@ -31,7 +31,8 @@ export async function transcribir(vista, imagen, { requestId, prompt = PROMPT, m
   const t0 = performance.now();
   let tPrimero = null, texto = '', stats = null;
   const base = { stage: 'vision', request_id: requestId ?? null, sdk_version: SDK_VERSION, model: vista.etiqueta,
-    hardware_id: vista.hardware, execution_mode: 'local', input_asset: imagen, prompt };
+    hardware_id: vista.hardware, execution_mode: 'local', input_asset: imagen,
+    prompt_messages: [{ role: 'user', content: prompt, attachments: [imagen] }], prompt };
   try {
     const run = completion({ modelId: vista.modelId, stream: true, maxTokens,
       history: [{ role: 'user', content: prompt, attachments: [{ path: imagen }] }] });

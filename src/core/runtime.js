@@ -2,6 +2,7 @@
 // par por llave pública), corre una completion y deja la fila de rendimiento.
 // Todo módulo (equipos, sucursal, red) pasa por aquí: así la evidencia es la misma.
 import { loadModel, completion, getLoadedModelInfo, unloadModel } from '@qvac/sdk';
+import { createHash } from 'node:crypto';
 import { registrar, ms } from './rendimiento.js';
 
 const SDK_VERSION = '0.18.2'; // fijada en package.json; 0.19.0 quitó la delegación P2P
@@ -42,10 +43,16 @@ export async function completar(modelo, { history, responseFormat, requestId, ma
   let tPrimero = null, texto = '', stats = null;
   const run = completion({ modelId: modelo.modelId, stream: true, history, responseFormat,
     ...(maxTokens ? { maxTokens } : {}), ...(temperature != null ? { temperature } : {}) });
+  // El track 02 pide que el registro incluya LOS PROMPTS, no solo su tamaño: van completos, con
+  // su huella, para que otro evaluador pueda repetir exactamente la misma llamada.
   const base = { stage: 'completion', request_id: id, sdk_version: SDK_VERSION, model: modelo.etiqueta,
     hardware_id: modelo.hardware, execution_mode: modelo.delegado ? 'delegated' : 'local',
+    prompt_messages: (history ?? []).map(m => ({ role: m.role, content: m.content })),
+    prompt_sha256: createHash('sha256').update(JSON.stringify(history ?? [])).digest('hex').slice(0, 16),
     prompt_chars: history?.reduce((n, m) => n + (m.content?.length ?? 0), 0) ?? 0,
-    response_format: responseFormat?.type ?? 'text' };
+    response_format: responseFormat?.type ?? 'text',
+    schema_name: responseFormat?.json_schema?.name ?? null,
+    max_tokens: maxTokens ?? null, temperature: temperature ?? null };
   try {
     for await (const ev of run.events) {
       if (ev.type === 'contentDelta' && ev.text) { if (tPrimero === null) tPrimero = performance.now(); texto += ev.text; }
@@ -58,7 +65,7 @@ export async function completar(modelo, { history, responseFormat, requestId, ma
       input_tokens: stats?.promptTokens ?? null, output_tokens: stats?.generatedTokens ?? null,
       token_count_source: stats ? 'sdk' : null,
       throughput_tps: stats?.tokensPerSecond ?? null, backend_actual: stats?.backendDevice ?? null,
-      end_to_end_ms: total });
+      output_text: texto, end_to_end_ms: total });
     return { id, texto, stats, ms: total, fila };
   } catch (e) {
     registrar({ ...base, status: 'error', error: String(e?.message ?? e), end_to_end_ms: ms(t0) });

@@ -55,7 +55,8 @@ export async function dictar(bytes, { requestId, umbralDb = -30 } = {}) {
   const wav = await normalizar(bytes);
   const pico = picoDb(wav), segundos = Math.max(0, (wav.length - 44) / 2 / 16000);
   const base = { stage: 'transcription', request_id: requestId ?? null, sdk_version: SDK_VERSION, model: voz.etiqueta,
-    hardware_id: voz.hardware, execution_mode: 'local', audio_bytes: bytes.length, audio_seconds: Math.round(segundos * 10) / 10, peak_dbfs: Math.round(pico * 10) / 10 };
+    hardware_id: voz.hardware, execution_mode: 'local', prompt_messages: [{ role: 'audio', content: `${voz.idioma} · ${bytes.length} bytes` }],
+    audio_bytes: bytes.length, audio_seconds: Math.round(segundos * 10) / 10, peak_dbfs: Math.round(pico * 10) / 10 };
   // Silencio: no se llama al modelo (evita que Whisper alucine «gracias por ver el video»).
   if (pico < umbralDb) { registrar({ ...base, status: 'silencio', end_to_end_ms: ms(t0) }); return { texto: '', ms: ms(t0), segundos, pico, silencio: true }; }
   try {

@@ -60,4 +60,71 @@ Un solo proyecto, un solo repositorio (rama `main`), un solo video. Cada jurado 
 
 ## Cómo ejecutarlo
 
-_(se completa con la primera versión funcional)_
+Requisitos: **Node 22 o superior** y `ffmpeg` (solo para el dictado). Los modelos se descargan
+solos la primera vez desde el registro de QVAC; no hay que registrarse en ningún servicio.
+
+```bash
+npm install                 # instala @qvac/sdk 0.18.2 (fijada)
+node --test                 # 45 pruebas deterministas, sin modelos, ~2 s
+
+# nodo completo (extracción, dictado y lectura de placa)
+GGML_VK_VISIBLE_DEVICES=1 VISION=1 node src/servidor.js
+#   app en http://localhost:7320   ·   tablero en /tablero
+```
+
+Variables útiles:
+
+| Variable | Para qué |
+|---|---|
+| `GGML_VK_VISIBLE_DEVICES` | Elige la GPU (Vulkan). Sin ella el SDK toma la primera que encuentre |
+| `CPU=1` | Fuerza CPU, para reproducir en un equipo sin GPU |
+| `VISION=1` | Carga además VisionPsy (460 M) para leer placas |
+| `MODELO_CHICO=1` | Usa Qwen3-0.6B en vez de 1.7B, para hardware limitado |
+| `P2P_PROVEEDOR=<llave>` | Delega la inferencia a otro nodo por su llave pública |
+| `PUERTO`, `OBSERVACIONES`, `RENDIMIENTO` | Puerto y rutas de datos y de evidencia |
+
+### Reproducir las mediciones
+
+Cada corrida deja su evidencia en `evidencia/rendimiento.jsonl`, con los prompts completos, su
+huella, los tokens, el tiempo hasta el primer token y el rendimiento.
+
+```bash
+# los 10 prompts oficiales del reto de Philips, más español y portugués
+GGML_VK_VISIBLE_DEVICES=1 PRUEBA_MODELO=1 node --test src/equipos/equipos.test.js
+# VisionPsy sobre las 20 placas sintéticas
+GGML_VK_VISIBLE_DEVICES=1 PRUEBA_MODELO=1 node --test src/equipos/placa.test.js
+# las 20 consultas de la guía de sucursal
+GGML_VK_VISIBLE_DEVICES=1 PRUEBA_MODELO=1 node --test src/sucursal/sucursal.test.js
+# la consulta en lenguaje natural sobre la base instalada
+GGML_VK_VISIBLE_DEVICES=1 PRUEBA_MODELO=1 node --test src/equipos/consulta.test.js
+```
+
+**Dos procesos de QVAC a la vez** (por ejemplo el nodo y el proveedor) necesitan carpetas de
+caché distintas, o se pelean el bloqueo del almacén:
+
+```bash
+echo '{"cacheDirectory":"/ruta/aparte"}' > otro.json
+QVAC_CONFIG_PATH=$PWD/otro.json node src/puente/proveedor.js
+```
+
+### Delegación entre pares
+
+```bash
+# en el equipo que presta su cómputo
+GGML_VK_VISIBLE_DEVICES=1 node src/puente/proveedor.js      # imprime su llave pública
+
+# en el teléfono (Termux) o en cualquier otro nodo
+QVAC_WORKER_PATH=$HOME/qvac-app/node_modules/@qvac/sdk/dist/server/worker-min.js \
+LD_LIBRARY_PATH=$PREFIX/lib P2P_PROVEEDOR=<llave> node src/puente/nodo.js
+```
+
+### Hardware con el que se midió
+
+| Nodo | Equipo | Qué corrió ahí |
+|---|---|---|
+| Laptop | Fedora Linux, Intel + NVIDIA RTX 4060 8 GB (Vulkan), 31 GB RAM, Node 24.14.1 | Qwen3-1.7B, VisionPsy Nano, Whisper, y como proveedor P2P |
+| Teléfono | HONOR X6s, Android 14, 8× Cortex-A53, 3.7 GB RAM, Termux + Bare | Qwen3-0.6B a bordo y el puente que delega |
+| Nodo remoto | Mac (M5 Max, 128 GB) en otra red | Proveedor P2P alterno |
+
+Los números publicados salieron de este hardware. En otro equipo cambian los tiempos, no los
+resultados: las pruebas deterministas (45) no usan modelos y deben dar igual en cualquier parte.
