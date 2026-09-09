@@ -20,12 +20,35 @@ import { cargar } from '../core/runtime.js';
 import { conRespaldo, SinRespaldo } from './respaldo.js';
 import { extraer } from '../equipos/extraer.js';
 import { preguntas } from '../equipos/reglas.js';
+import { Base } from '../equipos/almacen.js';
+import { llaveNodo, sellar } from '../core/sello.js';
 
 const PUERTO = Number(process.env.PUERTO ?? 7312);
 const APP = resolve('app');
 const PROVEEDOR = process.env.P2P_PROVEEDOR || null;
 const HARDWARE = process.env.HARDWARE ?? 'honor-x6s';
 const idSolicitud = () => `V-${randomBytes(2).toString('hex').toUpperCase()}`;
+
+// El teléfono guarda en SU propio almacén y firma con SU propia llave: la visita queda completa
+// aunque nunca toque la laptop. Son los mismos módulos que usa el servidor (`equipos/almacen.js`
+// y `core/sello.js`), así que un acta sellada aquí la verifica cualquiera allá.
+// Perezosos a propósito: importar este módulo (las pruebas lo hacen) no debe crear la llave
+// ni el archivo de observaciones hasta que alguien guarde de verdad.
+let _base = null, _llave = null;
+export const almacen = () => (_base ??= new Base(process.env.OBSERVACIONES ?? 'datos/observaciones.jsonl'));
+export const llave = () => (_llave ??= llaveNodo());
+
+// guardar(cuerpo) → { eventos, acta } · el mismo contrato que `POST /api/guardar` del servidor,
+// para que «Verificar esta acta» de la app funcione igual servida desde el teléfono.
+export function guardar({ borrador, observador, directo, fuente, requestId, foto } = {}) {
+  if (!borrador?.customer?.name) return { error: 'hace falta el hospital', codigo: 400 };
+  if (!borrador?.equipment?.length) return { error: 'no hay equipos que guardar', codigo: 400 };
+  const eventos = almacen().guardar(borrador, { observador, directo, fuente, requestId, foto });
+  const acta = sellar({ visita: requestId ?? null, observador: observador ?? null,
+    customer: borrador.customer, equipos: eventos.map(e => e.datos), eventos: eventos.map(e => e.id) },
+    llave(), { firmante: observador ?? 'nodo' });
+  return { eventos: eventos.length, acta };
+}
 
 // Dos modelos cargados: el par remoto (rápido) y el chico de a bordo (lento pero siempre está).
 // El chico se carga aunque haya par: cargarlo cuando ya se cayó el enlace tarda demasiado.
@@ -75,6 +98,7 @@ export function extraerConRespaldo(texto, { requestId = idSolicitud(), extraerFn
 }
 
 const json = (res, o, c = 200) => { res.writeHead(c, { 'content-type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(o)); };
+const cuerpoJson = async req => { const p = []; for await (const c of req) p.push(c); return JSON.parse(Buffer.concat(p).toString('utf8') || '{}'); };
 const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8',
   '.webmanifest': 'application/manifest+json', '.svg': 'image/svg+xml' };
 
@@ -89,9 +113,14 @@ export function crearServidor() {
           modelo: (modelos.delegado ?? modelos.local)?.etiqueta, par: PROVEEDOR ? PROVEEDOR.slice(0, 16) + '…' : null,
           respaldo: !!modelos.local,   // si es false, este nodo depende del par: no tiene modelo a bordo
           sdk: '@qvac/sdk 0.18.2', node: process.version });
+      if (req.method === 'POST' && url.pathname === '/api/guardar') {
+        const { eventos, acta, error, codigo } = guardar(await cuerpoJson(req));
+        if (error) return json(res, { error }, codigo);
+        console.log(`▸ guardadas ${eventos} observaciones en el teléfono · acta ${acta.sello.hash.slice(0, 12)}…`);
+        return json(res, { eventos, acta });
+      }
       if (req.method === 'POST' && url.pathname === '/api/extraer') {
-        const partes = []; for await (const c of req) partes.push(c);
-        const { texto, respuestas } = JSON.parse(Buffer.concat(partes).toString('utf8') || '{}');
+        const { texto, respuestas } = await cuerpoJson(req);
         const id = idSolicitud();
         console.log(`▸ [${id}] extracción por ${modelos.delegado ? 'PAR delegado' : 'modelo a bordo'}`);
         const r = await extraerConRespaldo(texto ?? '', { requestId: id }).catch(e => {

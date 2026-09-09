@@ -6,8 +6,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { extraerConRespaldo, modelos } from './nodo.js';
+import { extraerConRespaldo, modelos, crearServidor } from './nodo.js';
+import { verificar } from '../core/sello.js';
 import { SinRespaldo } from './respaldo.js';
 
 const raiz = fileURLToPath(new URL('../../', import.meta.url));
@@ -64,6 +67,44 @@ test('sin modelo a bordo, el nodo sigue solo delegado y lo dice en vez de morir'
   assert.equal(e.aviso, 'Sin par a la vista y sin modelo a bordo: la captura queda pendiente');
   assert.equal(modelos.delegado, null, 'el par igual se da por caído');
   Object.assign(modelos, previo);
+});
+
+// El teléfono también GUARDA: sin esta ruta la PWA servida desde el propio teléfono se queda
+// trabada en «Guardando…» con un 404. El acta la firma la llave del teléfono y tiene que
+// verificarse en cualquier otro lado, que es lo que hace «Verificar esta acta».
+// tmpdir(): en Android no existe /tmp.
+test('el nodo del teléfono guarda la observación y devuelve un acta que verifica en otro equipo', async () => {
+  const sufijo = `${process.pid}-${Date.now()}`;
+  process.env.OBSERVACIONES = join(tmpdir(), `vigia-obs-${sufijo}.jsonl`);
+  process.env.LLAVE_NODO = join(tmpdir(), `vigia-llave-${sufijo}.pem`);
+  const srv = crearServidor();
+  await new Promise(ok => srv.listen(0, '127.0.0.1', ok));
+  const base = `http://127.0.0.1:${srv.address().port}`;
+  const pedir = (ruta, cuerpo) => fetch(base + ruta, { method: 'POST',
+    headers: { 'content-type': 'application/json' }, body: JSON.stringify(cuerpo) });
+  try {
+    const borrador = { customer: { name: 'Hospital DemoCare Pacific', country: 'Panama', city: 'Panamá' },
+      equipment: [{ modality: 'MR', quantity: 2, age_years_min: 7, age_years_max: 8 }, { modality: 'CT', quantity: 1 }] };
+    const res = await pedir('/api/guardar', { borrador, observador: 'Gilberto', fuente: 'voz', requestId: 'V-TEL1' });
+    assert.equal(res.status, 200, 'la ruta existe en el teléfono, no 404');
+    const r = await res.json();
+    assert.equal(r.eventos, 2, 'una observación por grupo de equipo');
+    assert.equal(r.acta.sello.firmante, 'Gilberto');
+    assert.deepEqual(verificar(r.acta), { valido: true, publica: r.acta.sello.publica, firmante: 'Gilberto' });
+
+    // El acta cubre lo guardado: si alguien le cambia una cifra, deja de verificar.
+    const alterada = structuredClone(r.acta);
+    alterada.equipos[0].quantity = 9;
+    assert.equal(verificar(alterada).valido, false);
+
+    // Y las guardas son las mismas del servidor.
+    assert.equal((await pedir('/api/guardar', { borrador: { customer: {}, equipment: [] } })).status, 400);
+  } finally {
+    srv.close();
+    rmSync(process.env.OBSERVACIONES, { force: true });
+    rmSync(process.env.LLAVE_NODO, { force: true });
+    delete process.env.OBSERVACIONES; delete process.env.LLAVE_NODO;
+  }
 });
 
 function arrancarProveedor(semilla) {
