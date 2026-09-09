@@ -32,22 +32,30 @@ const idSolicitud = () => `V-${randomBytes(2).toString('hex').toUpperCase()}`;
 export const modelos = { delegado: null, local: null };
 
 export async function cargarModelos({ soloLocal = false } = {}) {
-  if (PROVEEDOR && !soloLocal) {
-    try {
-      modelos.delegado = await cargar({ modelSrc: QWEN3_1_7B_INST_Q4, etiqueta: 'Qwen3-1.7B Q4_0 (par)',
-        hardware: `par ${PROVEEDOR.slice(0, 8)}…`, proveedor: PROVEEDOR });
-      if (!modelos.delegado.delegado) { console.log('▸ el par no respondió: el modelo quedó local'); modelos.delegado = null; }
-    } catch (e) { console.log(`▸ sin par (${e.message})`); }
-  }
-  // El modelo a bordo puede NO cargar: en el HONOR X6s de hoy el worker de Bare muere con SIGSEGV
-  // (ver evidencia/medicion-telefono-9sep.md). Ese teléfono todavía sirve como consumidor del par,
-  // así que el nodo sigue en pie sin respaldo y lo dice, en vez de no arrancar.
+  // El modelo a bordo va PRIMERO, y el orden no es cosmético.
+  //
+  // Puede NO cargar: en el HONOR X6s de hoy el worker de Bare muere al cargarlo
+  // (ver evidencia/medicion-telefono-9sep.md). El SDK levanta un worker nuevo, pero el nuevo NACE
+  // VACÍO: se lleva puestos los modelos que ya estaban cargados. Medido en el teléfono el 9-sep con
+  // el orden contrario (par primero): la carga delegada decía `status: ok`, y a la primera captura
+  // la completion moría con «Model with ID "27fe88790efcfd44" not found» y el nodo respondía 503
+  // teniendo el par vivo al otro lado. Cargando el chico primero, la explosión pasa antes de que
+  // exista el handle del par.
+  //
+  // Y se carga aunque haya par: cargarlo cuando el enlace YA se cayó tarda demasiado en un teléfono.
   try {
     modelos.local = await cargar({ modelSrc: QWEN3_600M_INST_Q4, etiqueta: 'Qwen3-0.6B Q4_0 (a bordo)',
       hardware: HARDWARE, device: process.env.GPU_TELEFONO ? 'gpu' : 'cpu', ctx: 2048 });
   } catch (e) {
     modelos.local = null;
     console.log(`▸ sin modelo a bordo (${e.message}): este nodo solo funciona con el par a la vista`);
+  }
+  if (PROVEEDOR && !soloLocal) {
+    try {
+      modelos.delegado = await cargar({ modelSrc: QWEN3_1_7B_INST_Q4, etiqueta: 'Qwen3-1.7B Q4_0 (par)',
+        hardware: `par ${PROVEEDOR.slice(0, 8)}…`, proveedor: PROVEEDOR });
+      if (!modelos.delegado.delegado) { console.log('▸ el par no respondió: el modelo quedó local'); modelos.delegado = null; }
+    } catch (e) { console.log(`▸ sin par (${e.message})`); }
   }
   return modelos;
 }
