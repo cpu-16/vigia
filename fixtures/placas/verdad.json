@@ -1,0 +1,222 @@
+[
+  {
+    "archivo": "nmmr700-nitida.png",
+    "dificultad": "nitida",
+    "manufacturer": "NovaMed",
+    "model": "NM-MR 700",
+    "modality": "MR",
+    "serial": "NMMR2519575",
+    "gtin": "07612345000017",
+    "mfg": "2015-03",
+    "gs1": "(01)07612345000017(11)150301(21)NMMR2519575"
+  },
+  {
+    "archivo": "nmmr700-borrosa.png",
+    "dificultad": "borrosa",
+    "manufacturer": "NovaMed",
+    "model": "NM-MR 700",
+    "modality": "MR",
+    "serial": "NMMR3084256",
+    "gtin": "07612345000017",
+    "mfg": "2021-01",
+    "gs1": "(01)07612345000017(11)210101(21)NMMR3084256"
+  },
+  {
+    "archivo": "nmus55-nitida.png",
+    "dificultad": "nitida",
+    "manufacturer": "NovaMed",
+    "model": "NM-US 55",
+    "modality": "Ultrasound",
+    "serial": "NMUS5857463",
+    "gtin": "07612345000024",
+    "mfg": "2024-12",
+    "gs1": "(01)07612345000024(11)241201(21)NMUS5857463"
+  },
+  {
+    "archivo": "nmus55-inclinada.png",
+    "dificultad": "inclinada",
+    "manufacturer": "NovaMed",
+    "model": "NM-US 55",
+    "modality": "Ultrasound",
+    "serial": "NMUS1042415",
+    "gtin": "07612345000024",
+    "mfg": "2017-11",
+    "gs1": "(01)07612345000024(11)171101(21)NMUS1042415"
+  },
+  {
+    "archivo": "ahct320-nitida.png",
+    "dificultad": "nitida",
+    "manufacturer": "Aurelia Health",
+    "model": "AH-CT 320",
+    "modality": "CT",
+    "serial": "AHCT8913762",
+    "gtin": "07698765000011",
+    "mfg": "2020-08",
+    "gs1": "(01)07698765000011(11)200801(21)AHCT8913762"
+  },
+  {
+    "archivo": "ahct320-reflejo.png",
+    "dificultad": "reflejo",
+    "manufacturer": "Aurelia Health",
+    "model": "AH-CT 320",
+    "modality": "CT",
+    "serial": "AHCT4279829",
+    "gtin": "07698765000011",
+    "mfg": "2016-05",
+    "gs1": "(01)07698765000011(11)160501(21)AHCT4279829"
+  },
+  {
+    "archivo": "ahmr650-nitida.png",
+    "dificultad": "nitida",
+    "manufacturer": "Aurelia Health",
+    "model": "AH-MR 650",
+    "modality": "MR",
+    "serial": "AHMR7082554",
+    "gtin": "07698765000028",
+    "mfg": "2020-04",
+    "gs1": "(01)07698765000028(11)200401(21)AHMR7082554"
+  },
+  {
+    "archivo": "ahmr650-oscura.png",
+    "dificultad": "oscura",
+    "manufacturer": "Aurelia Health",
+    "model": "AH-MR 650",
+    "modality": "MR",
+    "serial": "AHMR1261884",
+    "gtin": "07698765000028",
+    "mfg": "2021-08",
+    "gs1": "(01)07698765000028(11)210801(21)AHMR1261884"
+  },
+  {
+    "archivo": "bpmr500-nitida.png",
+    "dificultad": "nitida",
+    "manufacturer": "BluePeak Medical",
+    "model": "BP-MR 500",
+    "modality": "MR",
+    "serial": "BPMR4954640",
+    "gtin": "07655544000015",
+    "mfg": "2019-09",
+    "gs1": "(01)07655544000015(11)190901(21)BPMR4954640"
+  },
+  {
+    "archivo": "bpmr500-borrosa.png",
+    "dificultad": "borrosa",
+    "manufacturer": "BluePeak Medical",
+    "model": "BP-MR 500",
+    "modality": "MR",
+    "serial": "BPMR5073373",
+    "gtin": "07655544000015",
+    "mfg": "2021-09",
+    "gs1": "(01)07655544000015(11)210901(21)BPMR5073373"
+  },
+  {
+    "archivo": "bpct610-nitida.png",
+    "dificultad": "nitida",
+    "manufacturer": "BluePeak Medical",
+    "model": "BP-CT 610",
+    "modality": "CT",
+    "serial": "BPCT9208079",
+    "gtin": "07655544000022",
+    "mfg": "2017-12",
+    "gs1": "(01)07655544000022(11)171201(21)BPCT9208079"
+  },
+  {
+    "archivo": "bpct610-inclinada.png",
+    "dificultad": "inclinada",
+    "manufacturer": "BluePeak Medical",
+    "model": "BP-CT 610",
+    "modality": "CT",
+    "serial": "BPCT5044612",
+    "gtin": "07655544000022",
+    "mfg": "2014-03",
+    "gs1": "(01)07655544000022(11)140301(21)BPCT5044612"
+  },
+  {
+    "archivo": "oict450-nitida.png",
+    "dificultad": "nitida",
+    "manufacturer": "Orion Imaging",
+    "model": "OI-CT 450",
+    "modality": "CT",
+    "serial": "OICT2022323",
+    "gtin": "07611122000019",
+    "mfg": "2021-05",
+    "gs1": "(01)07611122000019(11)210501(21)OICT2022323"
+  },
+  {
+    "archivo": "oict450-reflejo.png",
+    "dificultad": "reflejo",
+    "manufacturer": "Orion Imaging",
+    "model": "OI-CT 450",
+    "modality": "CT",
+    "serial": "OICT9117300",
+    "gtin": "07611122000019",
+    "mfg": "2014-01",
+    "gs1": "(01)07611122000019(11)140101(21)OICT9117300"
+  },
+  {
+    "archivo": "oimr620-nitida.png",
+    "dificultad": "nitida",
+    "manufacturer": "Orion Imaging",
+    "model": "OI-MR 620",
+    "modality": "MR",
+    "serial": "OIMR3238800",
+    "gtin": "07611122000026",
+    "mfg": "2015-01",
+    "gs1": "(01)07611122000026(11)150101(21)OIMR3238800"
+  },
+  {
+    "archivo": "oimr620-oscura.png",
+    "dificultad": "oscura",
+    "manufacturer": "Orion Imaging",
+    "model": "OI-MR 620",
+    "modality": "MR",
+    "serial": "OIMR4001824",
+    "gtin": "07611122000026",
+    "mfg": "2016-09",
+    "gs1": "(01)07611122000026(11)160901(21)OIMR4001824"
+  },
+  {
+    "archivo": "hcus40-nitida.png",
+    "dificultad": "nitida",
+    "manufacturer": "HelixCare",
+    "model": "HC-US 40",
+    "modality": "Ultrasound",
+    "serial": "HCUS9007492",
+    "gtin": "07633366000013",
+    "mfg": "2015-07",
+    "gs1": "(01)07633366000013(11)150701(21)HCUS9007492"
+  },
+  {
+    "archivo": "hcus40-borrosa.png",
+    "dificultad": "borrosa",
+    "manufacturer": "HelixCare",
+    "model": "HC-US 40",
+    "modality": "Ultrasound",
+    "serial": "HCUS7150771",
+    "gtin": "07633366000013",
+    "mfg": "2021-01",
+    "gs1": "(01)07633366000013(11)210101(21)HCUS7150771"
+  },
+  {
+    "archivo": "zmct430-nitida.png",
+    "dificultad": "nitida",
+    "manufacturer": "Zenith MedTech",
+    "model": "ZM-CT 430",
+    "modality": "CT",
+    "serial": "ZMCT2649194",
+    "gtin": "07677788000010",
+    "mfg": "2017-06",
+    "gs1": "(01)07677788000010(11)170601(21)ZMCT2649194"
+  },
+  {
+    "archivo": "zmct430-inclinada.png",
+    "dificultad": "inclinada",
+    "manufacturer": "Zenith MedTech",
+    "model": "ZM-CT 430",
+    "modality": "CT",
+    "serial": "ZMCT5722950",
+    "gtin": "07677788000010",
+    "mfg": "2024-06",
+    "gs1": "(01)07677788000010(11)240601(21)ZMCT5722950"
+  }
+]

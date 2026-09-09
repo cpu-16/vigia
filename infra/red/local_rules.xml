@@ -1,0 +1,30 @@
+<group name="vigia_red,">
+  <rule id="100101" level="10">
+    <decoded_as>json</decoded_as>
+    <field name="integration">^vigia-red$</field>
+    <field name="family">^dga$</field>
+    <field name="severity">^alta$</field>
+    <description>Vigía: posible DGA en $(domain), cliente $(client_ip)</description>
+  </rule>
+  <rule id="100102" level="7">
+    <decoded_as>json</decoded_as>
+    <field name="integration">^vigia-red$</field>
+    <field name="family">^typosquat$</field>
+    <field name="severity">^media$</field>
+    <description>Vigía: posible suplantación en $(domain), cliente $(client_ip)</description>
+  </rule>
+  <rule id="100103" level="12">
+    <decoded_as>json</decoded_as>
+    <field name="integration">^vigia-red$</field>
+    <field name="family">^tunnel$</field>
+    <field name="severity">^critica$</field>
+    <description>Vigía: posible túnel DNS en $(domain), cliente $(client_ip)</description>
+  </rule>
+  <rule id="100104" level="10">
+    <decoded_as>json</decoded_as>
+    <field name="integration">^vigia-red$</field>
+    <field name="family">^beacon$</field>
+    <field name="severity">^alta$</field>
+    <description>Vigía: periodicidad sospechosa en $(domain), cliente $(client_ip)</description>
+  </rule>
+</group>

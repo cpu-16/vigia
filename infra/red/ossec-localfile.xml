@@ -1,0 +1,5 @@
+<!-- Insertar dentro del ossec_config del manager o agente que comparte este archivo. -->
+<localfile>
+  <log_format>json</log_format>
+  <location>/var/log/vigia/alertas.jsonl</location>
+</localfile>

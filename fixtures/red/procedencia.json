@@ -1,0 +1,8 @@
+{
+  "fuente": "Patrocinador Ovnicom, queries.2, primeras 14000 líneas sin modificar",
+  "fecha_extraccion": "2026-09-09",
+  "entrenamiento_lista_blanca": "líneas 1–4000",
+  "evaluacion": "líneas 4001–14000",
+  "etiqueta_benigna": "Supuesto basado en el perfilado proporcionado, no verdad de terreno auditada",
+  "sintetico": "Inyecciones etiquetadas, marcas ficticias, latency_ms y rcode de QoE"
+}

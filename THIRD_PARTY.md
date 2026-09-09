@@ -16,7 +16,7 @@ ejecutan en las demostraciones. Se completa a medida que cada módulo los incorp
 | `QWEN3_1_7B_INST_Q4` | Qwen3-1.7B Instruct | Q4_0 | Laptop (RTX 4060, Vulkan) como proveedor P2P |
 | `QWEN3_600M_INST_Q4` | Qwen3-0.6B Instruct | Q4_0 | Teléfono (HONOR X6s, CPU Cortex-A53) como respaldo local |
 | `WHISPER_LARGE_V3_TURBO` | Whisper large-v3 turbo | — | Laptop (RTX 4060) |
-| `VISIONPSY_NANO_460M_MULTIMODAL_Q8_0` + `MMPROJ_VISIONPSY_NANO_460M_MULTIMODAL_Q8_0` | VisionPsy Nano 460M | Q8_0 | Laptop; lectura de placas (track 02) |
+| `VISIONPSY_NANO_460M_MULTIMODAL_Q8_0` + `MMPROJ_VISIONPSY_NANO_460M_MULTIMODAL_Q8_0` | VisionPsy Nano 460M (Apache 2.0, familia Psy de QVAC) | Q8_0 | Laptop (RTX 4060, Vulkan); transcribe la placa en el track 02 |
 
 ## Hardware declarado
 
