@@ -16,8 +16,8 @@ import { existsSync } from 'node:fs';
 import { extname, join, resolve } from 'node:path';
 import { randomBytes } from 'node:crypto';
 import { QWEN3_600M_INST_Q4, QWEN3_1_7B_INST_Q4 } from '@qvac/sdk';
-import { cargar, completar } from '../core/runtime.js';
-import { registrar } from '../core/rendimiento.js';
+import { cargar } from '../core/runtime.js';
+import { conRespaldo, SinRespaldo } from './respaldo.js';
 import { extraer } from '../equipos/extraer.js';
 import { preguntas } from '../equipos/reglas.js';
 
@@ -39,31 +39,31 @@ export async function cargarModelos({ soloLocal = false } = {}) {
       if (!modelos.delegado.delegado) { console.log('▸ el par no respondió: el modelo quedó local'); modelos.delegado = null; }
     } catch (e) { console.log(`▸ sin par (${e.message})`); }
   }
-  modelos.local = await cargar({ modelSrc: QWEN3_600M_INST_Q4, etiqueta: 'Qwen3-0.6B Q4_0 (a bordo)',
-    hardware: HARDWARE, device: process.env.GPU_TELEFONO ? 'gpu' : 'cpu', ctx: 2048 });
+  // El modelo a bordo puede NO cargar: en el HONOR X6s de hoy el worker de Bare muere con SIGSEGV
+  // (ver evidencia/medicion-telefono-9sep.md). Ese teléfono todavía sirve como consumidor del par,
+  // así que el nodo sigue en pie sin respaldo y lo dice, en vez de no arrancar.
+  try {
+    modelos.local = await cargar({ modelSrc: QWEN3_600M_INST_Q4, etiqueta: 'Qwen3-0.6B Q4_0 (a bordo)',
+      hardware: HARDWARE, device: process.env.GPU_TELEFONO ? 'gpu' : 'cpu', ctx: 2048 });
+  } catch (e) {
+    modelos.local = null;
+    console.log(`▸ sin modelo a bordo (${e.message}): este nodo solo funciona con el par a la vista`);
+  }
   return modelos;
 }
 
-// El respaldo que el SDK no da: si el proveedor muere con el modelo ya cargado, la completion
-// delegada vuelve VACÍA y sin error (medido). `fallbackToLocal` solo cubre la carga, no esto.
-// Así que el vacío se trata como caída y se reintenta a bordo, diciéndolo.
-// `extraerFn` se puede inyectar para probar la política de respaldo sin cargar modelos.
-export async function extraerConRespaldo(texto, { requestId = idSolicitud(), extraerFn = extraer } = {}) {
-  if (modelos.delegado) {
-    try {
-      const r = await extraerFn(modelos.delegado, texto, { requestId });
-      const vacio = !r.crudo || (!r.borrador.customer?.name && !r.borrador.equipment?.length && !r.sinModelo);
-      if (!vacio) return { ...r, modo: 'delegado', modelo: modelos.delegado.etiqueta, degradado: false };
-      registrar({ stage: 'fallback', request_id: requestId, status: 'vacio', model: modelos.delegado.etiqueta,
-        motivo: 'la completion delegada volvió vacía: se asume par caído' });
-    } catch (e) {
-      registrar({ stage: 'fallback', request_id: requestId, status: 'error', error: String(e?.message ?? e), model: modelos.delegado.etiqueta });
-    }
-    modelos.delegado = null;   // no se reintenta el par en cada visita: se sigue a bordo
-  }
-  const r = await extraerFn(modelos.local, texto, { requestId });
-  return { ...r, modo: 'local', modelo: modelos.local.etiqueta, degradado: !!PROVEEDOR,
-    aviso: PROVEEDOR ? 'El par no está a la vista: se usó el modelo pequeño del teléfono, que es más lento y menos preciso. Revisa con cuidado.' : null };
+// La política de respaldo vive en respaldo.js y la comparten el teléfono y la laptop.
+// Aquí solo se dice de dónde sale cada cosa en ESTE nodo: el modelo a bordo ya está cargado
+// (cargarlo cuando el enlace ya se cayó tarda demasiado en un teléfono), así que la función
+// perezosa se limita a devolverlo. `extraerFn` se inyecta para probar sin cargar modelos.
+export function extraerConRespaldo(texto, { requestId = idSolicitud(), extraerFn = extraer } = {}) {
+  return conRespaldo(texto, { requestId, extraerFn,
+    par: modelos.delegado,
+    alCaerElPar: () => { modelos.delegado = null; },   // no se reintenta el par en cada visita
+    cargarLocal: () => modelos.local,
+    hayPar: !!PROVEEDOR,
+    aviso: 'El par no está a la vista: se usó el modelo pequeño del teléfono, que es más lento y menos preciso. Revisa con cuidado.',
+    avisoSinRespaldo: 'Sin par a la vista y sin modelo a bordo: la captura queda pendiente' });
 }
 
 const json = (res, o, c = 200) => { res.writeHead(c, { 'content-type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(o)); };
@@ -77,15 +77,22 @@ export function crearServidor() {
       if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/app')) return archivo(res, 'index.html');
       if (req.method === 'GET' && /^\/[\w.-]+$/.test(url.pathname) && existsSync(join(APP, url.pathname.slice(1)))) return archivo(res, url.pathname.slice(1));
       if (req.method === 'GET' && url.pathname === '/api/evidencia')
-        return json(res, { nodo: HARDWARE, modo: modelos.delegado ? 'delegado' : 'local',
+        return json(res, { nodo: HARDWARE, modo: modelos.delegado ? 'delegado' : (PROVEEDOR ? 'local (par caído)' : 'local'),
           modelo: (modelos.delegado ?? modelos.local)?.etiqueta, par: PROVEEDOR ? PROVEEDOR.slice(0, 16) + '…' : null,
+          respaldo: !!modelos.local,   // si es false, este nodo depende del par: no tiene modelo a bordo
           sdk: '@qvac/sdk 0.18.2', node: process.version });
       if (req.method === 'POST' && url.pathname === '/api/extraer') {
         const partes = []; for await (const c of req) partes.push(c);
         const { texto, respuestas } = JSON.parse(Buffer.concat(partes).toString('utf8') || '{}');
         const id = idSolicitud();
         console.log(`▸ [${id}] extracción por ${modelos.delegado ? 'PAR delegado' : 'modelo a bordo'}`);
-        const r = await extraerConRespaldo(texto ?? '', { requestId: id });
+        const r = await extraerConRespaldo(texto ?? '', { requestId: id }).catch(e => {
+          if (!e?.sinRespaldo) throw e;
+          console.log(`▸ [${id}] sin par y sin modelo a bordo: la captura queda pendiente`);
+          json(res, { id, error: e.aviso, aviso: e.aviso, modo: 'sin_respaldo', degradado: true }, 503);
+          return null;
+        });
+        if (!r) return;
         console.log(`▸ [${id}] ${r.modo} · ${Math.round(r.ms)} ms · ${r.borrador.equipment.map(g => `${g.quantity ?? '?'}×${g.modality}`).join(', ') || 'sin equipos'}`);
         return json(res, { id, borrador: r.borrador, descartes: r.descartes, ms: r.ms, modo: r.modo,
           modelo: r.modelo, degradado: r.degradado, aviso: r.aviso, fila: r.fila,
@@ -105,6 +112,8 @@ async function archivo(res, nombre) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   await cargarModelos();
-  console.log(`▸ Nodo ${HARDWARE} · ${modelos.delegado ? `delegando al par ${PROVEEDOR.slice(0, 12)}…` : 'solo modelo a bordo'}`);
+  const donde = modelos.delegado ? `delegando al par ${PROVEEDOR.slice(0, 12)}…` : 'solo modelo a bordo';
+  console.log(`▸ Nodo ${HARDWARE} · ${donde} · respaldo a bordo: ${modelos.local ? 'sí' : 'NO'}`);
+  if (!modelos.delegado && !modelos.local) console.log('▸ ni par ni modelo a bordo: las capturas van a quedar pendientes');
   crearServidor().listen(PUERTO, () => console.log(`▸ Puente en http://localhost:${PUERTO}`));
 }

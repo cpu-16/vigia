@@ -289,8 +289,14 @@ function pintar(r) {
         <span class="sello ${est}">${est}</span></div>`;
     }).join('');
 
+  // Cuando el par se cae, esta respuesta la calculó otro hardware: hay que decirlo antes de que
+  // la persona la dé por buena. Va arriba de todo, con el mismo tono de alerta que los duplicados.
+  const degradado = r.degradado
+    ? `<div class="aviso"><b>Revisa esta captura</b>${esc(r.aviso ?? 'La respuesta no la calculó el par.')}
+        <br><small>${esc(r.modelo ?? '')}</small></div>` : '';
+
   // duplicados, con la explicación campo por campo
-  $('#dups').innerHTML = (r.duplicados ?? []).filter(d => d.veredicto !== 'nuevo').map(d => {
+  $('#dups').innerHTML = degradado + (r.duplicados ?? []).filter(d => d.veredicto !== 'nuevo').map(d => {
     const suman = d.detalle.filter(x => x.bits > 0).map(x => `+${x.campo}`).join(' ');
     const restan = d.detalle.filter(x => x.bits < 0).map(x => `−${x.campo}`).join(' ');
     return `<div class="aviso"><b>Puede ser el mismo equipo (${Math.round(d.p * 100)} %)</b>

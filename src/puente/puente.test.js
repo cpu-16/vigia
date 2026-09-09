@@ -8,6 +8,7 @@ import { spawn } from 'node:child_process';
 import { writeFileSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { extraerConRespaldo, modelos } from './nodo.js';
+import { SinRespaldo } from './respaldo.js';
 
 const raiz = fileURLToPath(new URL('../../', import.meta.url));
 const conf = (nombre, cache) => { const p = `/tmp/qvac-${nombre}-${process.pid}.json`;
@@ -39,11 +40,29 @@ test('un resultado útil del par no activa el respaldo', async () => {
   modelos.delegado = { modelId: 'x', etiqueta: 'par', hardware: 'par', delegado: true };
   modelos.local = { modelId: 'y', etiqueta: 'a bordo', hardware: 'telefono', delegado: false };
   let llamadas = 0;
-  const extraerFn = async () => { llamadas++; return { borrador: { customer: { name: 'H' }, equipment: [{ modality: 'CT', quantity: 1 }] }, descartes: [], crudo: {}, ms: 2, fila: {} }; };
+  // `fila` con ttft: una extracción que de verdad salió del par siempre midió su primer token.
+  const extraerFn = async () => { llamadas++; return { borrador: { customer: { name: 'H' }, equipment: [{ modality: 'CT', quantity: 1 }] },
+    descartes: [], crudo: {}, ms: 2, fila: { execution_mode: 'delegated', ttft_ms: 120, output_tokens: 90 } }; };
   const r = await extraerConRespaldo('texto', { extraerFn });
   assert.equal(llamadas, 1);
   assert.equal(r.modo, 'delegado');
   assert.equal(r.degradado, false);
+  Object.assign(modelos, previo);
+});
+
+test('sin modelo a bordo, el nodo sigue solo delegado y lo dice en vez de morir', async () => {
+  // El HONOR X6s de hoy no carga ningún modelo local (worker de Bare, SIGSEGV). Ese teléfono
+  // todavía sirve como consumidor del par, así que el nodo arranca igual con modelos.local = null.
+  const previo = { delegado: modelos.delegado, local: modelos.local };
+  modelos.delegado = { modelId: 'x', etiqueta: 'par', hardware: 'par', delegado: true };
+  modelos.local = null;
+  const extraerFn = async modelo => modelo.delegado
+    ? { borrador: { customer: { name: null }, equipment: [] }, descartes: [], crudo: {}, ms: 3, fila: {} }
+    : assert.fail('no hay modelo a bordo que llamar');
+  const e = await extraerConRespaldo('texto', { extraerFn }).then(() => null, err => err);
+  assert.ok(e instanceof SinRespaldo, 'debe avisar, no reventar con un TypeError');
+  assert.equal(e.aviso, 'Sin par a la vista y sin modelo a bordo: la captura queda pendiente');
+  assert.equal(modelos.delegado, null, 'el par igual se da por caído');
   Object.assign(modelos, previo);
 });
 
