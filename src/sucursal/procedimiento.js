@@ -30,7 +30,14 @@ export function validarRespuesta(datos, guia, secciones, { ms = 0, id = null } =
   // mediana (medio minuto por consulta); elegir por número la volvía rápida pero ciega, porque
   // un índice no significa nada para el modelo. El código sí: es rápido y sigue anclado.
   const codigoElegido = limpio(datos.codigo)?.toUpperCase();
-  const porCodigo = codigoElegido ? secciones.find(s => s.titulo.toUpperCase().startsWith(codigoElegido + ' — ')) : null;
+  // Guarda de alcance: un código VÁLIDO no es respaldo si la búsqueda no lo puso arriba. Medido el
+  // 9-sep: en los 15 casos que la guía sí responde, la sección correcta salió primera o segunda;
+  // en «¿A qué hora cierra la sucursal los sábados?» las tres recuperadas empataron en el puntaje
+  // mínimo y el modelo eligió la tercera (CAJ-ARQ-01): un procedimiento real para una pregunta que
+  // la guía no cubre. Exigir el top-2 de lo recuperado cierra ese hueco sin costar aciertos.
+  const rango = codigoElegido ? secciones.findIndex(s => s.titulo.toUpperCase().startsWith(codigoElegido + ' — ')) : -1;
+  if (rango > 1) return { ...base, abstencion: { motivo: `${codigoElegido} no está entre los dos procedimientos con mejor respaldo para esta consulta` } };
+  const porCodigo = rango >= 0 ? secciones[rango] : null;
   const pasos = porCodigo ? { seccion: porCodigo.titulo, texto: porCodigo.texto } : localizar(datos.cita_pasos);
   const candidata = localizar(datos.cita_limite);
   const limite = candidata?.seccion === pasos?.seccion ? candidata : null;
@@ -41,17 +48,22 @@ export function validarRespuesta(datos, guia, secciones, { ms = 0, id = null } =
   const codigos = new Set(guia.secciones.map(s => s.titulo.split(' — ')[0]));
   const valor = limpio(datos.limite);
   const numeros = s => s.match(/\d+(?:[.,]\d+)*/g) ?? [];
-  const montoRespaldado = valor && limite && limite.texto.includes(valor) && numeros(valor).every(n => numeros(limite.texto).includes(n));
+  const unico = [...new Set(pasos.texto.match(/B\/\.\s*\d+(?:[.,]\d+)*/g) ?? [])].map(s => s.replace(/\s+/, ' '));
+  // El respaldo del monto lo da la guía, no la prolijidad del modelo al copiar: vale su cita
+  // localizada y, cuando la parafrasea («Tope: B/. 100.00 por cliente y por día»), vale la
+  // sección elegida siempre que mencione UN solo importe —la misma condición que ya se exige
+  // cuando el modelo no da monto—. Así nunca elegimos nosotros entre dos cifras.
+  const respaldo = limite ?? (unico.length === 1 ? pasos : null);
+  const montoRespaldado = !!valor && !!respaldo && respaldo.texto.includes(valor) && numeros(valor).every(n => numeros(respaldo.texto).includes(n));
   // Si el modelo NO dio monto, se saca de la sección elegida por regla, y solo cuando toda la
   // sección menciona un único importe: así no elegimos nosotros entre dos cifras.
   // Si el modelo dio un monto que no está respaldado, se descarta y no se sustituye: un importe
   // equivocado suele significar que respondió otra pregunta.
-  const unico = [...new Set(pasos.texto.match(/B\/\.\s*\d+(?:[.,]\d+)*/g) ?? [])].map(s => s.replace(/\s+/, ' '));
   const desdeSeccion = valor == null && unico.length === 1 ? unico[0] : null;
-  const importe = montoRespaldado ? literalDelMonto(valor, limite.texto) : desdeSeccion;
+  const importe = montoRespaldado ? literalDelMonto(valor, respaldo.texto) : desdeSeccion;
   return { ...base, cubierto: true, pasos: pasos.texto.split('\n').filter(l => l.trim()), citas,
     codigo: codigo && codigos.has(codigo) && pasos.seccion.startsWith(codigo + ' — ') ? codigo : null,
-    limite: importe, limite_origen: importe ? (montoRespaldado ? 'cita del modelo, verificada' : 'única cifra de la sección') : null,
+    limite: importe, limite_origen: importe ? (montoRespaldado ? (limite ? 'cita del modelo, verificada' : 'importe único de la sección, verificado') : 'única cifra de la sección') : null,
     abstencion: null };
 }
 
