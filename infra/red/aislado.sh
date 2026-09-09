@@ -43,7 +43,8 @@ PY
   exit 0
 fi
 
-cd "$(dirname "$0")/../.."
+GUION="$(readlink -f "$0")"   # se vuelve a invocar dentro del namespace; el cd rompería $0
+cd "$(dirname "$GUION")/../.."
 RAIZ="$PWD"
 MODELO_GGUF="${GGUF_QWEN3_1_7B:-$HOME/.qvac/models/f7cce66406dee646_Qwen3-1.7B-Q4_0.gguf}"
 [ -f "$MODELO_GGUF" ] || { echo "Falta el GGUF ya descargado: $MODELO_GGUF" >&2; exit 1; }
@@ -62,4 +63,4 @@ rm -f "$SALIDA"/alertas.jsonl "$SALIDA"/casos.jsonl "$SALIDA"/qoe.jsonl "$SALIDA
 echo "fecha: $(date -Is) · host: $(hostname) · node $(node -v)"
 echo "modelo: $MODELO_GGUF"
 echo "esperando el lock de GPU /tmp/vigia-gpu.lock (una prueba con modelo a la vez)…"
-exec flock /tmp/vigia-gpu.lock unshare --user --map-root-user --net bash "$0" --dentro
+exec flock /tmp/vigia-gpu.lock unshare --user --map-root-user --net bash "$GUION" --dentro
