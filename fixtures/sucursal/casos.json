@@ -1,0 +1,22 @@
+[
+  {"id":"S01","consulta":"¿Cuál es el depósito inicial mínimo para abrir una cuenta de ahorro?","espera":{"cubierto":true,"codigo":"AHO-AP-01","valor":"B/. 25.00"}},
+  {"id":"S02","consulta":"Se cayó el enlace al CORE, ¿cuál es el tope de retiro por cliente y por día en modo isla?","espera":{"cubierto":true,"codigo":"RET-ISL-01","valor":"B/. 100.00"}},
+  {"id":"S03","consulta":"Estoy sin enlace al CORE, ¿qué formulario uso para el retiro en contingencia?","espera":{"cubierto":true,"codigo":"RET-ISL-01","valor":"RET-ISL-01"}},
+  {"id":"S04","consulta":"Para un retiro en modo isla, ¿quiénes ponen la doble firma?","espera":{"cubierto":true,"codigo":"RET-ISL-01","valor":"supervisor"}},
+  {"id":"S05","consulta":"¿Cómo asigno el folio del retiro en modo isla?","espera":{"cubierto":true,"codigo":"RET-ISL-01","valor":"ISLA-AAAAMMDD-SUC-SECUENCIA"}},
+  {"id":"S06","consulta":"Estoy haciendo el arqueo de caja, ¿contra qué comparo el efectivo contado?","espera":{"cubierto":true,"codigo":"CAJ-ARQ-01","valor":"registro local"}},
+  {"id":"S07","consulta":"Me salió un faltante, ¿cómo abro el incidente INC-CAJA?","espera":{"cubierto":true,"codigo":"INC-CAJA","valor":"INC-CAJA"}},
+  {"id":"S08","consulta":"Llegó una persona natural adulta panameña, ¿qué documentos le pido?","espera":{"cubierto":true,"codigo":"DOC-NAT-01","valor":"Cédula"}},
+  {"id":"S09","consulta":"¿Qué documentos requiere una persona natural extranjera adulta?","espera":{"cubierto":true,"codigo":"DOC-EXT-01","valor":"Pasaporte"}},
+  {"id":"S10","consulta":"¿Qué documentos pido para una persona jurídica?","espera":{"cubierto":true,"codigo":"DOC-JUR-01","valor":"representante legal"}},
+  {"id":"S11","consulta":"¿Cómo trato los datos biométricos en la demostración según DAT-PRI-01?","espera":{"cubierto":true,"codigo":"DAT-PRI-01","valor":"sensibles"}},
+  {"id":"S12","consulta":"Falta un documento obligatorio, ¿qué hago con EX-DOC-01?","espera":{"cubierto":true,"codigo":"EX-DOC-01","valor":"pendiente"}},
+  {"id":"S13","consulta":"No hay constancia local vigente del saldo, ¿qué hago según EX-SAL-01?","espera":{"cubierto":true,"codigo":"EX-SAL-01","valor":"Abstenerse"}},
+  {"id":"S14","consulta":"Ya regresó el enlace, ¿cómo hago la conciliación ISL-REC-01?","espera":{"cubierto":true,"codigo":"ISL-REC-01","valor":"Comparar"}},
+  {"id":"S15","consulta":"Quedó una diferencia al conciliar, ¿qué indica EX-CON-01?","espera":{"cubierto":true,"codigo":"EX-CON-01","valor":"supervisor"}},
+  {"id":"S16","consulta":"¿Qué tasa le ofrezco al cliente para un préstamo hipotecario?","espera":{"cubierto":false,"codigo":null,"valor":null}},
+  {"id":"S17","consulta":"El cliente olvidó su PIN, ¿cómo lo recupero?","espera":{"cubierto":false,"codigo":null,"valor":null}},
+  {"id":"S18","consulta":"¿Cuánto rinde invertir en criptomonedas con el banco?","espera":{"cubierto":false,"codigo":null,"valor":null}},
+  {"id":"S19","consulta":"¿Qué cobertura tiene el seguro de vida?","espera":{"cubierto":false,"codigo":null,"valor":null}},
+  {"id":"S20","consulta":"¿A qué hora cierra la sucursal los sábados?","espera":{"cubierto":false,"codigo":null,"valor":null}}
+]
