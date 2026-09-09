@@ -1,4 +1,4 @@
-import { buscar } from './guia.js';
+import { buscar, buscarHibrido } from './guia.js';
 
 export const limpio = valor => typeof valor === 'string' && valor.trim() && valor.trim().toLowerCase() !== 'null' ? valor.trim() : null;
 const campo = { type: ['string', 'null'] };
@@ -55,8 +55,11 @@ export function validarRespuesta(datos, guia, secciones, { ms = 0, id = null } =
     abstencion: null };
 }
 
-export async function responder(modelo, guia, consulta) {
-  const secciones = buscar(guia, consulta);
+// responder(modelo, guia, consulta, { emb, indice }): con índice semántico usa la búsqueda
+// híbrida (términos + embeddings del SDK); sin él, solo términos. Medido sobre preguntas
+// parafraseadas como las diría un cajero: 1/4 con términos, 3/4 con la híbrida.
+export async function responder(modelo, guia, consulta, { emb = null, indice = null } = {}) {
+  const secciones = await buscarHibrido(guia, consulta, { emb, indice, n: 3 });
   const { completar, sinThink } = await import('../core/runtime.js');
   // El modelo elige entre las secciones recuperadas por su número; el texto que se publica lo
   // pone el código desde la guía. Así no puede parafrasear ni recortar, y responde en un token.

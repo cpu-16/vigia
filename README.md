@@ -82,6 +82,14 @@ Variables útiles:
 | `MODELO_CHICO=1` | Usa Qwen3-0.6B en vez de 1.7B, para hardware limitado |
 | `P2P_PROVEEDOR=<llave>` | Delega la inferencia a otro nodo por su llave pública |
 | `PUERTO`, `OBSERVACIONES`, `RENDIMIENTO` | Puerto y rutas de datos y de evidencia |
+| `REGISTRO_PROMPTS=0` | Deja de guardar el texto de los prompts y de las respuestas en el registro; conserva la huella, los tokens y los tiempos |
+
+> **Sobre el registro de rendimiento y la privacidad.** El track 02 pide que el registro incluya
+> los prompts, así que por omisión se guardan completos. Eso quiere decir que
+> `evidencia/rendimiento.jsonl` contiene lo que la persona dictó: se queda en el mismo nodo, no
+> se envía a ninguna parte y no se sube al repositorio. En este proyecto todo ese contenido es
+> **sintético**. En un despliegue real con datos de un cliente se apaga con `REGISTRO_PROMPTS=0`,
+> que conserva la huella y las métricas y descarta el texto.
 
 ### Reproducir las mediciones
 

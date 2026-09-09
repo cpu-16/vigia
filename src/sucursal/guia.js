@@ -13,6 +13,8 @@ export function cargarGuia(ruta = new URL('../../fixtures/sucursal/guia-bpl.md',
   }
   return { texto, secciones };
 }
+// buscar(): recuperación por términos y códigos. Determinista y sin modelo: es la que acierta
+// los códigos exactos. Se combina con la semántica (src/core/semantica.js) en buscarHibrido().
 export function buscar(guia, consulta, n = 3) {
   const palabras = [...new Set(terminos(consulta).filter(t => !comunes.has(t)))];
   return guia.secciones.map((s, indice) => {
@@ -21,4 +23,15 @@ export function buscar(guia, consulta, n = 3) {
     const puntaje = palabras.reduce((p, t) => p + (tokens.has(t) ? (t.includes('-') ? 30 : 1) + (titulo.has(t) ? 4 : 0) : 0), 0);
     return { ...s, puntaje, indice };
   }).filter(s => s.puntaje > 0).sort((a, b) => b.puntaje - a.puntaje || a.indice - b.indice).slice(0, Math.max(0, n));
+}
+
+// buscarHibrido(): la exacta más la semántica del SDK, fusionadas por rango recíproco.
+// Sin índice semántico (`emb` nulo) se comporta exactamente como buscar(): el módulo sigue
+// funcionando en un equipo donde no quepa el modelo de embeddings.
+export async function buscarHibrido(guia, consulta, { emb = null, indice = null, n = 3 } = {}) {
+  const exacta = buscar(guia, consulta, n + 2);
+  if (!emb || !indice) return exacta.slice(0, n);
+  const { buscarSemantico, combinar } = await import('../core/semantica.js');
+  const semantica = await buscarSemantico(emb, indice, consulta, n + 2);
+  return combinar([exacta, semantica], { n, clave: f => f.titulo });
 }

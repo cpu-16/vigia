@@ -1,0 +1,35 @@
+✔ BIND9: línea del patrocinador, tipos, fechas, IPv6 y entradas malformadas (6.612456ms)
+Métricas dga {"tp":101,"fp":18,"fn":19,"benignas":10000,"inyectadas":120,"precision":0.8487394957983193,"recall":0.8416666666666667,"falsos_positivos_por_10000":18}
+Métricas typosquat {"tp":120,"fp":0,"fn":0,"benignas":10000,"inyectadas":120,"precision":1,"recall":1,"falsos_positivos_por_10000":0}
+Métricas tunnel {"tp":113,"fp":0,"fn":7,"benignas":10000,"inyectadas":120,"precision":1,"recall":0.9416666666666667,"falsos_positivos_por_10000":0}
+Métricas beacon {"tp":113,"fp":84,"fn":7,"benignas":10000,"inyectadas":120,"precision":0.5736040609137056,"recall":0.9416666666666667,"falsos_positivos_por_10000":84}
+✔ reproducción con intervalos, mezcla, límites y cancelación (114.403877ms)
+✔ ventanas: expiran claves, rasgos e intervalos; capacidad y orden (2.836966ms)
+✔ Damerau-Levenshtein completo y homoglifos (1.360922ms)
+✔ lista blanca aprende infraestructura multicliente sin usar inyecciones (27.961002ms)
+✔ dga: precisión, recall y FP sobre 10000 consultas del patrocinador (642.494165ms)
+✔ typosquat: precisión, recall y FP sobre 10000 consultas del patrocinador (728.094369ms)
+✔ tunnel: precisión, recall y FP sobre 10000 consultas del patrocinador (618.074789ms)
+✔ beacon: precisión, recall y FP sobre 10000 consultas del patrocinador (595.303529ms)
+✔ túnel, DGA y beacon no confunden controles benignos sintéticos (1.72245ms)
+✔ zona gris de periodicidad se expone sin producir amenaza (0.243771ms)
+✔ QoE honesto: penalizaciones independientes y formato ClickHouse (0.946064ms)
+✔ Wazuh: JSON por línea, plano, severidad fija y rasgos numéricos (5.932524ms)
+✔ resumen: rechaza cifras inventadas, null y atribuciones cambiadas (0.217388ms)
+Evento → alerta local (ms) [ 0.6630450000002384 ]
+✔ flujo → alerta local y filas QoE: latencia medida (3.694335ms)
+QVAC dga 1383.7 ms; elección anclada: true
+QVAC typosquat 1400.4 ms; elección anclada: false
+QVAC tunnel 1537.2 ms; elección anclada: false
+QVAC beacon 1563.4 ms; elección anclada: true
+QVAC dga 1528.7 ms; elección anclada: true
+QVAC typosquat 1469.1 ms; elección anclada: false
+✔ QVAC local real: seis casos con cifras ancladas (12503.593968ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15372.413518
