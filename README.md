@@ -55,8 +55,27 @@ Un solo proyecto, un solo repositorio (rama `main`), un solo video. Cada jurado 
 | 01 Philips · Base instalada | Equipos: captura por voz/texto/foto, extracción, identidad y duplicados, inventario, Customer 360 | `src/equipos/`, `app/` | _(por definir)_ |
 | 02 Tether · QVAC Psy | VisionPsy Nano lee la placa; reglas deterministas sacan marca, modelo y serie; registro de rendimiento | `src/equipos/placa.js`, `evidencia/rendimiento.jsonl` | _(por definir)_ |
 | 03 General · Sovereign Intelligence at the Edge | Todo lo anterior + delegación entre pares por llave pública, respaldo local en el teléfono, actas verificables, prueba de no salida de datos | `src/core/`, `evidencia/` | _(por definir)_ |
-| 05 Caja de Ahorros · Banca | Sucursal: procedimiento citado sin conexión, acta sellada y verificable | `src/sucursal/` | _(solo si queda completo)_ |
-| 04 Ovnicom · Sentinel-DNS | Red: consumidor del stream DNS, clasificación, alerta a Wazuh, score por zona | `src/red/`, `infra/` | _(solo si queda completo)_ |
+| 05 Caja de Ahorros · Banca | Sucursal: procedimiento citado sin conexión, acta sellada y verificable | `src/sucursal/` | _(por definir)_ |
+| 04 Ovnicom · Sentinel-DNS | Red: el registro DNS real como flujo, detección por capas, alertas a Wazuh y score por zona en ClickHouse y Grafana | `src/red/`, `infra/red/` | _(por definir)_ |
+
+## Lo medido, con su denominador
+
+| Qué | Resultado | Dónde se reproduce |
+|---|---|---|
+| Extracción de un reporte dictado | 1.9 s | `src/equipos/equipos.test.js` |
+| Los 10 prompts oficiales de Philips, más español y portugués | 12 / 12 | idem |
+| Consulta en lenguaje natural traducida a filtros | 6 / 6, menos de 1 s | `src/equipos/consulta.test.js` |
+| Placa: número de serie sobre 20 placas sintéticas | 20 / 20 | `src/equipos/placa.test.js` |
+| Placa: modelo · marca · modalidad | 19 / 20 · 18 / 20 · 19 / 20 | idem |
+| Sucursal: consultas correctas | 17 / 20 | `src/sucursal/sucursal.test.js` |
+| Sucursal: abstenciones cuando la guía no cubre | 5 / 5 | idem |
+| Recuperación de preguntas parafraseadas: términos vs. híbrida | 1 / 4 → 3 / 4 | `src/core/semantica.test.js` |
+| Red: typosquatting · túnel · DGA · beaconing (precisión) | 100 % · 100 % · 85 % · 57 % | `src/red/red.test.js` |
+| Red: alertas del agente procesadas por Wazuh | 153 / 153 | `infra/red/VERIFICADO-WAZUH.md` |
+| Delegación al par desde el teléfono | 0.3-0.5 s a 237-240 tok/s en la RTX | `evidencia/medicion-telefono-9sep.md` |
+
+El beaconing va con su 57 % a la vista: el tráfico legítimo también es periódico y la
+periodicidad no prueba mando y control.
 
 ## Cómo ejecutarlo
 
