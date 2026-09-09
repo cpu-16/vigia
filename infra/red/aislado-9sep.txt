@@ -1,0 +1,114 @@
+# Prueba aislada del agente Red (9-sep-2026, 16:17)
+
+ALCANCE: esto prueba que ESTE proceso —productor, consumidor, reglas y el modelo
+QVAC que redacta los casos— corrió dentro de un namespace de red sin más interfaz
+que un loopback caído, sin rutas, y que desde ese mismo namespace un curl a
+internet falla. NO prueba que toda la laptop tuvo cero egreso durante la demo.
+
+Reproducir:   bash infra/red/aislado.sh 2>&1 | tee infra/red/aislado-9sep.txt
+Sin root: unshare --user --map-root-user --net (namespaces de usuario de Fedora).
+El GGUF ya estaba en disco y se enlaza en infra/red/cache: dentro no hay red para
+descargarlo, así que si el modelo carga es porque estaba local.
+
+----------------------------------------------------------------------------
+fecha: 2026-09-09T16:17:26-05:00 · host: fedora · node v24.14.1
+modelo: /home/gar16/.qvac/models/f7cce66406dee646_Qwen3-1.7B-Q4_0.gguf
+esperando el lock de GPU /tmp/vigia-gpu.lock (una prueba con modelo a la vez)…
+== namespace de red ==
+net:[4026533724]
+1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN mode DEFAULT group default qlen 1000\    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+-- rutas IPv4 --
+-- rutas IPv6 --
+(sin líneas arriba = sin rutas: nada que enrutar fuera de este namespace)
+-- /proc/net/route --
+
+== agente Red dentro del namespace: productor | consumidor, con QVAC local ==
+productor · /home/gar16/datos/HACKATHON-ISD-2026/hackpty/fixtures/red/benigno.bind.log
+  perfil 800 consultas sin espera · evaluación a ritmo temporal ÷ 5
+  inyectados 80 eventos etiquetados (dga 20, typosquat 20, tunnel 20, beacon 20)
+
+Vigía · Red (Ovnicom) — consumidor adicional del stream DNS
+Replay temporal · transporte de demo (tubería local); en producción, consumidor Kafka.
+Lista blanca congelada: 16 SLD · Alertas → JSONL local · QoE → archivo SQL local · Explicación → QVAC local
+
+16:19:45 ·    209 eventos ·   205 c/s · dga 0 typo 2 túnel 0 beacon 0 · → JSONL 2 · QVAC typosquat: respaldo determinista
+16:19:46 ·    487 eventos ·   278 c/s · dga 0 typo 4 túnel 0 beacon 0 · → JSONL 4 · QVAC typosquat: respaldo determinista
+16:19:47 ·    569 eventos ·    81 c/s · dga 1 typo 5 túnel 0 beacon 0 · → JSONL 6 · QVAC dga: explicación verificada
+16:19:48 ·    573 eventos ·     4 c/s · dga 3 typo 5 túnel 0 beacon 0 · → JSONL 8 · QVAC dga: explicación verificada
+16:19:50 ·    766 eventos ·   129 c/s · dga 4 typo 7 túnel 0 beacon 0 · → JSONL 11 · QVAC dga: explicación verificada
+16:19:51 ·    849 eventos ·    50 c/s · dga 5 typo 8 túnel 1 beacon 0 · → JSONL 14 · QVAC typosquat: respaldo determinista
+16:19:53 ·    984 eventos ·    85 c/s · dga 7 typo 9 túnel 1 beacon 0 · → JSONL 17 · QVAC typosquat: respaldo determinista
+productor · fin: 800 de perfil + 3000 de evaluación
+16:19:54 ·   1040 eventos ·    39 c/s · dga 9 typo 10 túnel 1 beacon 0 · → JSONL 20 · QVAC dga: respaldo determinista
+16:19:56 ·   1092 eventos ·    34 c/s · dga 11 typo 11 túnel 1 beacon 0 · → JSONL 23 · QVAC dga: explicación verificada
+16:19:57 ·   1170 eventos ·    73 c/s · dga 13 typo 11 túnel 1 beacon 0 · → JSONL 25 · QVAC dga: explicación verificada
+16:19:59 ·   1244 eventos ·    48 c/s · dga 15 typo 12 túnel 1 beacon 0 · → JSONL 28 · QVAC typosquat: respaldo determinista
+16:20:00 ·   1435 eventos ·   178 c/s · dga 17 typo 12 túnel 1 beacon 0 · → JSONL 30 · QVAC dga: explicación verificada
+16:20:01 ·   1509 eventos ·    70 c/s · dga 19 typo 12 túnel 1 beacon 0 · → JSONL 32 · QVAC dga: explicación verificada
+16:20:02 ·   1535 eventos ·    26 c/s · dga 21 typo 12 túnel 1 beacon 0 · → JSONL 34 · QVAC dga: respaldo determinista
+16:20:03 ·   1608 eventos ·    64 c/s · dga 23 typo 12 túnel 1 beacon 0 · → JSONL 36 · QVAC dga: explicación verificada
+16:20:04 ·   1679 eventos ·    68 c/s · dga 24 typo 12 túnel 1 beacon 1 · → JSONL 38 · QVAC beacon: explicación verificada
+16:20:05 ·   1885 eventos ·   187 c/s · dga 25 typo 12 túnel 1 beacon 2 · → JSONL 40 · QVAC dga: explicación verificada
+16:20:06 ·   2127 eventos ·   225 c/s · dga 27 typo 12 túnel 1 beacon 2 · → JSONL 42 · QVAC dga: explicación verificada
+16:20:07 ·   2328 eventos ·   179 c/s · dga 29 typo 12 túnel 1 beacon 2 · → JSONL 44 · QVAC dga: explicación verificada
+16:20:07 ·   3000 eventos · 14943 c/s · dga 29 typo 12 túnel 1 beacon 2 · → JSONL 44
+
+{
+  "consultas": 3000,
+  "alertas": 44,
+  "por_familia": {
+    "dga": 29,
+    "typosquat": 12,
+    "tunnel": 1,
+    "beacon": 2
+  },
+  "latencias_evento_alerta_ms": {
+    "n": 44,
+    "mediana": 0.5564999999987776
+  },
+  "api": null,
+  "destino_qoe": "Archivo SQL local; pendiente de insertar"
+}
+
+== control: intento de salida a internet DESDE EL MISMO namespace ==
+curl: (7) Failed to connect to example.com port 443 after 93 ms: Could not connect to server
+curl https://example.com → código de salida 7
+curl: (7) Failed to connect to 1.1.1.1 port 443 after 0 ms: Could not connect to server
+curl https://1.1.1.1 (sin DNS) → código de salida 7
+
+== registro de rendimiento: carga del modelo y últimas dos inferencias ==
+   (execution_mode 'local' = el modelo corrió aquí; 'delegated' sería en otro par)
+{'stage': 'load', 'model': 'Qwen3-1.7B Q4_0', 'execution_mode': 'local', 'status': 'ok', 'load_ms': 3781.8, 'fallback_a_local': False, 'provider': None}
+{'stage': 'completion', 'model': 'Qwen3-1.7B Q4_0', 'execution_mode': 'local', 'backend_actual': 'gpu', 'status': 'ok', 'end_to_end_ms': 552.3, 'output_tokens': 43}
+{'stage': 'completion', 'model': 'Qwen3-1.7B Q4_0', 'execution_mode': 'local', 'backend_actual': 'gpu', 'status': 'ok', 'end_to_end_ms': 554.3, 'output_tokens': 42}
+----------------------------------------------------------------------------
+
+Qué quedó en infra/red/salida/aislado/ (todo local, ningún destino de red):
+  alertas.jsonl  44 líneas
+  casos.jsonl    44 líneas
+  qoe.jsonl      10 líneas
+  qoe.sql        15 líneas
+
+Un caso redactado por el modelo dentro del namespace:
+{
+    "familia": "typosquat",
+    "ventana": {
+        "desde": 1788957836251,
+        "hasta": 1788958136251,
+        "ms": 300000
+    },
+    "caso": {
+        "severidad": "media",
+        "titulo": "Posible suplantaci\u00f3n de marca",
+        "resumen": "distancia: 1; homoglifos: 0; longitud: 13.",
+        "accion_sugerida": "validar_marca",
+        "modelo_verificado": false,
+        "seleccion_modelo": {
+            "severidad": "media",
+            "titulo": "typosquat",
+            "resumen": "evidencia_insuficiente",
+            "accion_sugerida": "validar_marca"
+        },
+        "ms": 515.2
+    }
+}

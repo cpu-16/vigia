@@ -46,8 +46,19 @@ docker compose up -d
 echo "  panel en https://127.0.0.1:8444 (admin / SecretPassword)"
 
 echo
-echo "▸ Ahora, desde la raíz del repositorio:"
+echo "▸ Reglas de Vigía en el gestor, desde la raíz del repositorio:"
 echo "   docker cp infra/red/local_rules.xml single-node-wazuh.manager-1:/var/ossec/etc/rules/local_rules.xml"
 echo "   docker exec single-node-wazuh.manager-1 /var/ossec/bin/wazuh-control restart"
-echo "   CLICKHOUSE_LOCAL=1 node src/red/demo.js"
+echo
+echo "▸ Credenciales de la API local del gestor (transporte que pide el reto):"
+echo "   docker inspect single-node-wazuh.manager-1 --format '{{range .Config.Env}}{{println .}}{{end}}' | grep API_"
+echo
+echo "▸ Tablero de Grafana: importar infra/red/grafana-tablero.json (panel + variables zona y sitio)"
+echo
+echo "▸ La escena del video, dos procesos y una tubería local:"
+echo "   export WAZUH_API_URL=https://127.0.0.1:55000 WAZUH_API_USER=wazuh-wui WAZUH_API_PASS=<API_PASSWORD>"
+echo "   export CLICKHOUSE_LOCAL=1 VENTANA_QOE_MS=5000"
+echo "   node src/red/productor.js --velocidad 1 | node src/red/demo.js --stdin"
+echo
+echo "▸ Si se prefiere el transporte por archivo (localfile del agente de Wazuh):"
 echo "   docker cp infra/red/salida/alertas.jsonl single-node-wazuh.manager-1:/var/log/vigia/alertas.jsonl"

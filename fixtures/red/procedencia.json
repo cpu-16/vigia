@@ -1,9 +1,11 @@
 {
-  "fuente": "Patrocinador Ovnicom, queries.2, primeras 14000 líneas sin modificar",
+  "fuente": "Registro DNS entregado por Ovnicom para el reto (queries.2), primeras 14000 líneas sin modificar",
+  "formato": "Query log de BIND9",
+  "naturaleza": "El reto declara que los datos suministrados son sintéticos; no son tráfico real de clientes ni se afirma que lo sean",
   "fecha_extraccion": "2026-09-09",
   "entrenamiento_lista_blanca": "líneas 1–4000",
   "evaluacion": "líneas 4001–14000",
   "etiqueta_benigna": "Supuesto basado en el perfilado proporcionado, no verdad de terreno auditada",
-  "sintetico": "Inyecciones etiquetadas, marcas ficticias, latency_ms y rcode de QoE",
+  "agregado_por_nosotros": "Inyecciones etiquetadas, marcas ficticias, nombres y perfiles de zona, latency_ms y rcode de QoE",
   "sha256": "c754dbc3cbace3c184c7dca66ccf4625a38ca7dfcd1164ae9134e829e2137c94"
 }

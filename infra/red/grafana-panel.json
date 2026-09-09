@@ -3,8 +3,62 @@
   "type": "timeseries",
   "title": "Experiencia DNS por sitio y zona — latencia y rcode SIMULADOS",
   "description": "Score = 100 menos las tres penalizaciones. Latencia uniforme y NXDOMAIN Bernoulli sintéticos; capacidad declarada. Filtro por zona y sitio. No representa calidad real medida.",
-  "datasource": {"type": "grafana-clickhouse-datasource", "uid": "${DS_CLICKHOUSE}"},
-  "targets": [{"refId": "A", "queryType": "sql", "rawSql": "SELECT timestamp AS time, concat(zona, ' / ', sitio) AS grupo, score AS experiencia, penalizacion_latencia AS penalizacion_latencia, penalizacion_nxdomain AS penalizacion_nxdomain, penalizacion_saturacion AS penalizacion_saturacion FROM red_qoe WHERE $__timeFilter(timestamp) AND zona IN (${zona:sqlstring}) AND sitio IN (${sitio:sqlstring}) ORDER BY time", "format": 0}],
-  "fieldConfig": {"defaults": {"min": 0, "max": 100, "unit": "none"}, "overrides": []},
-  "options": {"legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"]}, "tooltip": {"mode": "multi"}}
+  "datasource": {
+    "type": "grafana-clickhouse-datasource",
+    "uid": "${DS_CLICKHOUSE}"
+  },
+  "targets": [
+    {
+      "refId": "A",
+      "queryType": "sql",
+      "rawSql": "SELECT timestamp AS time, concat(zona, ' / ', sitio) AS grupo, score AS experiencia, penalizacion_latencia AS penalizacion_latencia, penalizacion_nxdomain AS penalizacion_nxdomain, penalizacion_saturacion AS penalizacion_saturacion FROM red_qoe WHERE $__timeFilter(timestamp) AND zona IN (${zona:sqlstring}) AND sitio IN (${sitio:sqlstring}) ORDER BY time",
+      "format": 0
+    }
+  ],
+  "fieldConfig": {
+    "defaults": {
+      "min": 0,
+      "max": 100,
+      "unit": "none",
+      "custom": {
+        "drawStyle": "line",
+        "lineWidth": 2,
+        "lineInterpolation": "linear",
+        "fillOpacity": 0,
+        "showPoints": "always",
+        "pointSize": 5,
+        "spanNulls": true,
+        "axisLabel": "puntos (0-100)"
+      }
+    },
+    "overrides": [
+      {
+        "matcher": {
+          "id": "byRegexp",
+          "options": "/^experiencia/"
+        },
+        "properties": [
+          {
+            "id": "custom.lineWidth",
+            "value": 3
+          }
+        ]
+      }
+    ]
+  },
+  "options": {
+    "legend": {
+      "displayMode": "table",
+      "placement": "bottom",
+      "showLegend": true,
+      "calcs": [
+        "mean",
+        "lastNotNull"
+      ]
+    },
+    "tooltip": {
+      "mode": "multi",
+      "sort": "desc"
+    }
+  }
 }

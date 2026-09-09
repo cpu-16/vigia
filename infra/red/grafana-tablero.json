@@ -1,0 +1,150 @@
+{
+  "uid": "vigia-red",
+  "title": "Vigía · experiencia DNS por zona",
+  "tags": [
+    "vigia",
+    "ovnicom"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "editable": true,
+  "refresh": "",
+  "time": {
+    "from": "2026-09-09T12:48:50.000Z",
+    "to": "2026-09-09T12:50:40.000Z"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "zona",
+        "label": "zona",
+        "type": "query",
+        "multi": true,
+        "includeAll": true,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "${DS_CLICKHOUSE}"
+        },
+        "query": "SELECT DISTINCT zona FROM red_qoe ORDER BY zona",
+        "refresh": 1,
+        "sort": 1,
+        "options": [],
+        "definition": "SELECT DISTINCT zona FROM red_qoe ORDER BY zona"
+      },
+      {
+        "name": "sitio",
+        "label": "sitio",
+        "type": "query",
+        "multi": true,
+        "includeAll": true,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "${DS_CLICKHOUSE}"
+        },
+        "query": "SELECT DISTINCT sitio FROM red_qoe ORDER BY sitio",
+        "refresh": 1,
+        "sort": 1,
+        "options": [],
+        "definition": "SELECT DISTINCT sitio FROM red_qoe ORDER BY sitio"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 41,
+      "type": "timeseries",
+      "title": "Experiencia DNS por sitio y zona — latencia y rcode SIMULADOS",
+      "description": "Score = 100 menos las tres penalizaciones. Latencia uniforme y NXDOMAIN Bernoulli sintéticos; capacidad declarada. Filtro por zona y sitio. No representa calidad real medida.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "${DS_CLICKHOUSE}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "sql",
+          "rawSql": "SELECT timestamp AS time, concat(zona, ' / ', sitio) AS grupo, score AS experiencia, penalizacion_latencia AS penalizacion_latencia, penalizacion_nxdomain AS penalizacion_nxdomain, penalizacion_saturacion AS penalizacion_saturacion FROM red_qoe WHERE $__timeFilter(timestamp) AND zona IN (${zona:sqlstring}) AND sitio IN (${sitio:sqlstring}) ORDER BY time",
+          "format": 0
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "unit": "none",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "lineInterpolation": "linear",
+            "fillOpacity": 0,
+            "showPoints": "always",
+            "pointSize": 5,
+            "spanNulls": true,
+            "axisLabel": "puntos (0-100)"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/^experiencia/"
+            },
+            "properties": [
+              {
+                "id": "custom.lineWidth",
+                "value": 3
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "h": 28,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      }
+    }
+  ],
+  "__inputs": [
+    {
+      "name": "DS_CLICKHOUSE",
+      "label": "ClickHouse",
+      "type": "datasource",
+      "pluginId": "grafana-clickhouse-datasource"
+    }
+  ]
+}
