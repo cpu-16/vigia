@@ -16,6 +16,8 @@
   *{box-sizing:border-box}
   body{margin:0;background:var(--papel);color:var(--tinta);font:17px/1.5 system-ui,-apple-system,sans-serif;
        -webkit-tap-highlight-color:transparent}
+  /* Se tabula con teclado (y con el teclado del teléfono): el foco se ve, en la turquesa de la acción. */
+  :focus-visible{outline:2px solid var(--accion);outline-offset:3px}
   .hoja{max-width:560px;margin:0 auto;padding:0 20px 120px;min-height:100dvh}
   header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:18px 0 10px;
          border-bottom:2px solid var(--tinta)}
@@ -30,18 +32,20 @@
   .avatar{width:38px;height:38px;border-radius:50%;background:var(--tinta);color:var(--papel);
           display:grid;place-items:center;font:600 15px system-ui;flex:none}
   .credencial input{border:0;background:transparent;font:600 17px system-ui;color:var(--tinta);width:100%;padding:2px 0}
-  .credencial input:focus{outline:0;border-bottom:2px solid var(--accion)}
+  .credencial input:focus{border-bottom:2px solid var(--accion)}
   .credencial time{font-size:12px;color:var(--tinta-suave);display:block}
 
   /* anillo de voz */
   .captura{display:grid;place-items:center;padding:34px 0 20px}
   .anillo{width:168px;height:168px;border-radius:50%;border:2px solid var(--tinta);background:var(--papel-alto);
-          display:grid;place-items:center;cursor:pointer;position:relative;transition:transform .12s}
+          display:grid;place-items:center;cursor:pointer;position:relative;transition:transform .12s;
+          appearance:none;-webkit-appearance:none;padding:0;color:inherit;font-family:inherit}
   .anillo:active{transform:scale(.97)}
   .anillo::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:1px solid var(--raya)}
   .anillo.grabando{border-color:var(--accion);box-shadow:0 0 0 0 rgba(15,123,133,.35);animation:latido 1.6s infinite}
+  .anillo.grabando b{margin-bottom:22px}   /* deja sitio a la onda mientras graba */
   @keyframes latido{70%{box-shadow:0 0 0 22px rgba(15,123,133,0)}100%{box-shadow:0 0 0 0 rgba(15,123,133,0)}}
-  .anillo b{font:400 19px var(--serif);display:block;text-align:center;line-height:1.25}
+  .anillo b{font:400 19px var(--serif);display:block;text-align:center;line-height:1.25;max-width:126px;margin:0 auto}
   .anillo em{font-style:normal;font-size:13px;color:var(--tinta-suave);display:block;margin-top:5px}
   .onda{position:absolute;bottom:34px;display:flex;gap:3px;align-items:flex-end;height:26px}
   .onda i{width:3px;background:var(--accion);border-radius:2px;height:3px;transition:height .07s}
@@ -52,13 +56,19 @@
   .placa-campos small{color:var(--tinta-suave)}
   .placa-campos .lin{font:12.5px/1.7 ui-monospace,Menlo,monospace;color:var(--tinta-suave);white-space:pre-wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--raya)}
   .losa{padding:16px 14px;border:1px solid var(--raya);border-radius:12px;background:var(--papel-alto);
-        text-align:center;cursor:pointer;font:500 15px system-ui;box-shadow:0 1px 0 var(--raya)}
+        text-align:center;cursor:pointer;font:500 15px system-ui;box-shadow:0 1px 0 var(--raya);
+        appearance:none;-webkit-appearance:none;color:var(--tinta);width:100%}
   .losa:active{transform:translateY(1px);box-shadow:none}
   .losa span{display:block;font-size:22px;margin-bottom:4px}
+  /* Ver un ejemplo y preguntar a la base NO son capturar: fila aparte, más chicas y de borde fino. */
+  .secundarias{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:18px}
+  .menor{appearance:none;-webkit-appearance:none;background:transparent;border:1px solid var(--raya);
+         border-radius:99px;padding:9px 16px;font:500 13.5px system-ui;color:var(--tinta-suave);cursor:pointer}
+  .menor:active{border-color:var(--tinta);color:var(--tinta)}
 
   textarea{width:100%;min-height:120px;padding:14px;border:1px solid var(--raya);border-radius:12px;
            background:var(--papel-alto);font:16px/1.5 system-ui;color:var(--tinta);resize:vertical}
-  textarea:focus{outline:0;border-color:var(--accion)}
+  textarea:focus{border-color:var(--accion)}
 
   /* revisión */
   .dicho{background:var(--papel-alto);border-left:3px solid var(--tinta);padding:14px 16px;margin:18px 0;
@@ -94,7 +104,7 @@
   details{margin:18px 0;font-size:14px;color:var(--tinta-suave)}
   summary{cursor:pointer;font:600 13px system-ui;letter-spacing:.04em;text-transform:uppercase}
   .tec{font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--tinta-suave);white-space:pre-wrap;margin-top:8px}
-  .oculto{display:none}
+  .oculto{display:none !important}
   .pendientes{background:var(--tinta);color:var(--papel);border-radius:12px;padding:12px 14px;margin:14px 0;
               display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px}
   .pendientes button{background:var(--papel);color:var(--tinta);border:0;border-radius:8px;padding:8px 12px;font:600 13px system-ui}
@@ -121,16 +131,18 @@
   <!-- 1 · capturar -->
   <section id="p1">
     <div class="captura">
-      <div class="anillo" id="anillo">
-        <b id="anilloTexto">Hablar<em>toca y cuenta la visita</em></b>
-        <div class="onda oculto" id="onda"></div>
-      </div>
+      <button type="button" class="anillo" id="anillo" aria-pressed="false">
+        <b id="anilloTexto">Iniciar grabación<em>toca y cuenta la visita</em></b>
+        <span class="onda oculto" id="onda"></span>
+      </button>
     </div>
     <div class="losas">
-      <div class="losa" id="btnEscribir"><span>✎</span>Escribir</div>
-      <div class="losa" id="btnFoto"><span>▣</span>Leer placa</div>
-      <div class="losa" id="btnEjemplo"><span>❦</span>Ejemplo</div>
-      <div class="losa" id="btnPreguntar"><span>?</span>Preguntar</div>
+      <button type="button" class="losa" id="btnEscribir"><span>✎</span>Escribir</button>
+      <button type="button" class="losa" id="btnFoto"><span>▣</span>Leer placa</button>
+    </div>
+    <div class="secundarias">
+      <button type="button" class="menor" id="btnEjemplo">Ver un ejemplo</button>
+      <button type="button" class="menor" id="btnPreguntar">Preguntar a la base</button>
     </div>
     <input type="file" id="archivoFoto" accept="image/*" capture="environment" hidden>
     <div id="placa"></div>
@@ -170,7 +182,9 @@ inicial(); $('#quien').oninput = () => { localStorage.setItem('quien', $('#quien
 // ── nodo: ¿hay quien infiera? ──
 let hayNodo = false;
 async function sondear() {
-  try { const r = await fetch('/api/evidencia', { cache: 'no-store' }); hayNodo = r.ok; const e = await r.json();
+  try { const r = await fetch('/api/evidencia', { cache: 'no-store' });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    hayNodo = true; const e = await r.json();
     $('#nodoTexto').textContent = e.modo === 'local' ? `nodo local · ${e.modelo}` : `nodo ${e.modo}`; }
   catch { hayNodo = false; $('#nodoTexto').textContent = 'sin nodo · se guarda aquí'; }
   $('#nodo').classList.toggle('si', hayNodo);
@@ -205,7 +219,8 @@ $('#anillo').onclick = async () => {
     rec = new MediaRecorder(stream); trozos = [];
     rec.ondataavailable = e => trozos.push(e.data);
     rec.onstop = async () => { stream.getTracks().forEach(t => t.stop()); pararOnda();
-      $('#anillo').classList.remove('grabando'); $('#anilloTexto').innerHTML = 'Transcribiendo…<em>un momento</em>';
+      $('#anillo').classList.remove('grabando'); $('#anillo').setAttribute('aria-pressed', 'false');
+      $('#anilloTexto').innerHTML = 'Transcribiendo…<em>un momento</em>';
       const blob = new Blob(trozos, { type: rec.mimeType });
       if (!hayNodo) { await encolar({ tipo: 'audio', blob }); $('#anilloTexto').innerHTML = 'Guardado aquí<em>sin nodo a la vista</em>'; return pintarPendientes(); }
       try {
@@ -216,7 +231,8 @@ $('#anillo').onclick = async () => {
       } catch { $('#anilloTexto').innerHTML = 'No se pudo<em>toca para reintentar</em>'; }
     };
     rec.start(); trozos = [];
-    $('#anillo').classList.add('grabando'); $('#anilloTexto').innerHTML = 'Escuchando<em>toca para parar</em>';
+    $('#anillo').classList.add('grabando'); $('#anillo').setAttribute('aria-pressed', 'true');
+    $('#anilloTexto').innerHTML = 'Detener grabación';
     onda(stream);
     setTimeout(() => rec?.state === 'recording' && rec.stop(), 90000);   // tope de 90 s
   } catch { $('#anilloTexto').innerHTML = 'Sin micrófono<em>usa Escribir</em>'; }
@@ -267,6 +283,12 @@ async function revisar() {
 }
 
 const esc = s => String(s ?? '').replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+
+// El estado (de dónde sale el dato) y la confianza viajan en inglés: así se guardan y así los pide
+// la hoja del reto. Aquí se traduce SOLO lo que se ve; la clase CSS sigue siendo el valor original.
+const ETIQUETA = { Confirmed: 'Confirmado', Reported: 'Reportado', Estimated: 'Estimado', Unknown: 'Desconocido',
+                   High: 'Alta', Medium: 'Media', Low: 'Baja' };
+
 function pintar(r) {
   // lo dicho, con la evidencia subrayada
   const citas = (r.borrador.equipment ?? []).flatMap(g => [g.modality_quote, g.quantity_quote, g.age_quote, g.manufacturer_quote]).filter(Boolean);
@@ -286,7 +308,7 @@ function pintar(r) {
       const det = [g.manufacturer ?? 'marca desconocida', g.model, g.age_years_max ? `~${g.age_years_max} años` : g.age_qualitative ?? 'edad desconocida'].filter(Boolean).join(' · ');
       return `<div class="fila"><div class="cifra">${g.quantity ?? '?'}</div>
         <div class="que"><b>${esc(g.modality)}</b><small>${esc(det)}</small></div>
-        <span class="sello ${est}">${est}</span></div>`;
+        <span class="sello ${est}">${ETIQUETA[est] ?? est}</span></div>`;
     }).join('');
 
   // Cuando el par se cae, esta respuesta la calculó otro hardware: hay que decirlo antes de que
@@ -365,7 +387,7 @@ $('#archivoFoto').onchange = async e => {
     $('#placa').innerHTML = `<div class="placa-campos">
       ${orden.map(([k, n]) => `<div class="fila"><div class="que"><b>${n}: ${esc(r.campos[k] ?? '—')}</b>
         <small>${esc(r.origen[k] ?? 'no aparece en la placa')}</small></div>
-        <span class="sello ${r.confianza[k] === 'High' ? 'Confirmed' : r.confianza[k] === 'Medium' ? 'Reported' : 'Unknown'}">${r.confianza[k]}</span></div>`).join('')}
+        <span class="sello ${r.confianza[k] === 'High' ? 'Confirmed' : r.confianza[k] === 'Medium' ? 'Reported' : 'Unknown'}">${ETIQUETA[r.confianza[k]] ?? esc(r.confianza[k])}</span></div>`).join('')}
       ${r.desacuerdos?.length ? `<div class="aviso"><b>El código y la etiqueta no coinciden</b>${r.desacuerdos.map(d => `${esc(d.campo)}: código «${esc(d.codigo)}» vs etiqueta «${esc(d.etiqueta)}»`).join('<br>')}</div>` : ''}
       <div class="lin">${esc(r.transcripcion)}\n\n${Math.round(r.ms)} ms · VisionPsy Nano 460M · ${r.requiereConfirmacion ? 'requiere que tú lo confirmes' : ''}</div></div>`;
     // Lo leído entra a la frase como una observación más, para que siga el mismo camino.

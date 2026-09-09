@@ -16,8 +16,13 @@
          padding:26px 0 14px;border-bottom:2px solid var(--tinta);margin-bottom:26px}
   h1{font:400 34px/1 var(--serif);margin:0}
   h1 small{display:block;font:500 11px/1.4 system-ui;letter-spacing:.16em;text-transform:uppercase;color:var(--tinta-suave);margin-top:7px}
+  /* Un solo estado de conexión, y sale de las respuestas: verde solo si el último sondeo respondió,
+     ámbar cuando lo que se ve en pantalla es lo anterior, gris mientras nunca haya llegado nada. */
   .vivo{font-size:13px;color:var(--tinta-suave);display:flex;align-items:center;gap:7px}
-  .punto{width:8px;height:8px;border-radius:50%;background:var(--confirmado);animation:latir 2s infinite}
+  .punto{width:8px;height:8px;border-radius:50%;background:var(--raya);flex:none}
+  .vivo.en-vivo .punto{background:var(--confirmado);animation:latir 2s infinite}
+  .vivo.anteriores{color:var(--estimado)}
+  .vivo.anteriores .punto{background:var(--estimado)}
   @keyframes latir{50%{opacity:.25}}
   h2{font:400 21px var(--serif);margin:34px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--raya);
      display:flex;justify-content:space-between;align-items:baseline;gap:12px}
@@ -51,7 +56,7 @@
 <div class="hoja">
   <header>
     <h1>Vigía<small>Tablero de base instalada</small></h1>
-    <span class="vivo"><a href="/verificar">Verificar un acta</a><i class="punto"></i><span id="vivo">en vivo</span></span>
+    <span class="vivo" id="conexion"><a href="/verificar">Verificar un acta</a><i class="punto"></i><span id="vivo" aria-live="polite">Sin datos</span></span>
   </header>
 
   <div class="kpis" id="kpis"></div>
@@ -81,7 +86,26 @@
 <script type="module">
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
-const traer = r => fetch(r, { cache: 'no-store' }).then(r => r.json()).catch(() => null);
+const traer = async r => { const res = await fetch(r, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`${r} → HTTP ${res.status}`); return res.json(); };
+
+// El estado viaja en inglés porque así se guarda y así lo pide la hoja del reto; aquí se traduce
+// solo lo que se ve. La clase CSS sigue siendo el valor en inglés (.Confirmed, .Reported…).
+const ESTADO = { Confirmed: 'Confirmado', Reported: 'Reportado', Estimated: 'Estimado', Unknown: 'Desconocido' };
+
+// Un solo estado de conexión, derivado de las respuestas reales. Cuando el sondeo falla NO se borra
+// ni se pone en cero lo que hay en pantalla: se conserva y se dice desde cuándo no hay respuesta.
+const hora = d => d.toLocaleTimeString('es-PA', { hour12: false });
+let ultimoDato = null, sinRespuestaDesde = null, sondeando = false;
+function conexion() {
+  const c = $('#conexion');
+  c.classList.toggle('en-vivo', !!ultimoDato && !sinRespuestaDesde);
+  c.classList.toggle('anteriores', !!ultimoDato && !!sinRespuestaDesde);
+  $('#vivo').textContent = !ultimoDato ? 'Sin datos'
+    : sinRespuestaDesde ? `Datos anteriores · sin respuesta desde ${hora(sinRespuestaDesde)}`
+    : `En vivo · actualizado ${hora(ultimoDato)}`;
+  c.title = ultimoDato ? `Últimos datos recibidos a las ${hora(ultimoDato)}` : 'El nodo todavía no ha respondido';
+}
 
 function tabla(el, cols, filas, pintaFila) {
   el.innerHTML = filas?.length
@@ -90,18 +114,24 @@ function tabla(el, cols, filas, pintaFila) {
 }
 
 async function refrescar() {
+  if (sondeando) return;                       // si el sondeo anterior no terminó, no se lanza otro
+  sondeando = true;
+  try { await pintar(); ultimoDato = new Date(); sinRespuestaDesde = null; }
+  catch { sinRespuestaDesde ??= new Date(); }   // se queda lo último pintado, con su marca de hora
+  finally { sondeando = false; conexion(); }
+}
+
+async function pintar() {
   const [inv, paises, modalidades, ren, inc, ev] = await Promise.all([
     traer('/api/inventario'), traer('/api/agregado?por=country'), traer('/api/agregado?por=modality'),
     traer('/api/renovaciones'), traer('/api/incompletos'), traer('/api/evidencia')]);
-  if (!inv) { $('#vivo').textContent = 'sin nodo'; return; }
-  $('#vivo').textContent = `en vivo · ${new Date().toLocaleTimeString('es-PA')}`;
 
   const equipos = inv.flatMap(s => s.equipos);
   const unidades = equipos.reduce((n, e) => n + (e.quantity ?? 0), 0);
   const corroborados = equipos.filter(e => e.corroborado).length;
   $('#kpis').innerHTML = [
     [inv.length, 'clientes'], [unidades, 'unidades de equipo'],
-    [corroborados, 'equipos corroborados por dos fuentes'],
+    [corroborados, 'equipos reportados por más de un observador'],
     [(ren ?? []).filter(r => r.clase === 'reemplazar').length, 'equipos que superan los 10 años'],
   ].map(([n, t]) => `<div class="kpi"><b>${n}</b><small>${t}</small></div>`).join('');
 
@@ -128,7 +158,7 @@ async function refrescar() {
   $('#clientes').innerHTML = inv.length ? inv.map(s => `
     <h2 style="margin-top:26px">${esc(s.customer?.name ?? 'sin nombre')}
       <span>${esc([s.customer?.city, s.customer?.country].filter(Boolean).join(', '))}</span></h2>
-    <table><tr><th>Cant.</th><th>Modalidad</th><th>Marca / modelo</th><th>Edad</th><th>Estado</th><th>Fuentes</th></tr>
+    <table><tr><th>Cant.</th><th>Modalidad</th><th>Marca / modelo</th><th>Edad</th><th>Estado</th><th>Observadores</th></tr>
     ${s.equipos.map(e => `<tr>
       <td class="n">${e.quantity ?? '?'}</td>
       <td>${esc(e.modality)}</td>
@@ -136,9 +166,9 @@ async function refrescar() {
       <td class="edad-${e.edad === 'reemplazar' ? 'reemplazar' : e.edad === 'planificar' ? 'planificar' : ''}">
         ${e.age_years_max != null ? e.age_years_max + ' años' : '—'}
         ${e.install_year_max ? `<br><small style="color:var(--tinta-suave)">inst. ~${e.install_year_max}</small>` : ''}</td>
-      <td><span class="sello ${e.status}">${e.status}</span></td>
+      <td><span class="sello ${e.status}">${esc(ESTADO[e.status] ?? e.status)}</span></td>
       <td>${esc(e.observadores.join(', ') || '—')}
-        ${e.corroborado ? '<br><span class="corr">✓ dos fuentes independientes</span>' : ''}</td>
+        ${e.corroborado ? `<br><span class="corr">✓ ${e.observadores.length} observadores distintos</span>` : ''}</td>
     </tr>`).join('')}</table>`).join('') : '<p class="vacio">Todavía no hay visitas guardadas.</p>';
 
   if (ev) $('#evidencia').textContent = [
@@ -154,6 +184,6 @@ async function refrescar() {
     ...(ev.ultimas ?? []).map(f => `  ${f.timestamp_utc?.slice(11, 19)} ${f.stage.padEnd(13)} ${String(f.model ?? '').padEnd(22)} ${f.execution_mode ?? ''} ${f.end_to_end_ms ? Math.round(f.end_to_end_ms) + ' ms' : (f.load_ms ? 'carga ' + Math.round(f.load_ms) + ' ms' : '')} ${f.throughput_tps ? Math.round(f.throughput_tps) + ' tok/s' : ''}`),
   ].join('\n');
 }
-refrescar(); setInterval(refrescar, 4000);
+conexion(); refrescar(); setInterval(refrescar, 4000);
 </script>
 </html>
