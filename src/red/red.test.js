@@ -19,7 +19,7 @@ const familias=['dga','typosquat','tunnel','beacon'];
 const resultados={},deteccionesModelo=[];
 const temporal=()=>mkdtempSync(fileURLToPath(new URL('./.prueba-',import.meta.url)));
 
-test('BIND9: línea del patrocinador, tipos, fechas, IPv6 y entradas malformadas',()=>{
+test('BIND9: línea del registro entregado por Ovnicom, tipos, fechas, IPv6 y entradas malformadas',()=>{
   assert.equal(muestra.filter(Boolean).length,14000);
   const e=muestra[0];assert.equal(e.dominio,'windows.msn.com');assert.equal(e.cliente,'190.14.210.226');assert.equal(e.ts,Date.parse('2026-09-09T12:48:52.607Z'));assert.equal(e.sld,'msn.com');
   const l=readFileSync(fixture,'utf8').split('\n')[0];
@@ -53,7 +53,7 @@ test('lista blanca aprende infraestructura multicliente sin usar inyecciones',as
   assert.ok(b.has(e.sld));assert.ok(!b.has('canal-prueba.example'));
   const d=new Detector({listaBlanca:new Set(['canal-prueba.example'])});assert.equal([...generar({familia:'tunnel'})].flatMap(e=>d.procesar(e)).length,0);
 });
-for(const [indice,familia]of familias.entries())test(`${familia}: precisión, recall y FP sobre 10000 consultas del patrocinador`,async()=>{
+for(const [indice,familia]of familias.entries())test(`${familia}: precisión, recall y FP sobre 10000 consultas del registro entregado`,async()=>{
   const maliciosos=[...generar({familia,n:120,semilla:20260909+indice,inicio:benignos[0].ts,cliente:`192.0.2.${40+indice}`})];
   assert.deepEqual(maliciosos,[...generar({familia,n:120,semilla:20260909+indice,inicio:benignos[0].ts,cliente:`192.0.2.${40+indice}`})]);
   const detector=new Detector({listaBlanca:blanca});let tp=0,fp=0,fn=0;
