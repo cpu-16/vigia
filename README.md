@@ -59,7 +59,7 @@ Un solo proyecto, un solo repositorio (rama `main`), un solo video. Cada jurado 
 |---|---|---|---|
 | 01 Philips · Base instalada | Equipos: captura por voz/texto/foto, extracción, identidad y duplicados, inventario, Customer 360 | `src/equipos/`, `app/index.html`, `app/tablero.html` | 0:12–1:28 |
 | 02 Tether · QVAC Psy | VisionPsy Nano lee la placa en la laptop; reglas deterministas sacan marca, modelo y serie; registro de rendimiento entregable | `src/equipos/placa.js`, `evidencia/registro-psy-placas-9sep.jsonl` | 0:42–1:09 |
-| 03 General · Sovereign Intelligence at the Edge | Todo lo anterior + delegación entre pares por llave pública (teléfono → laptop, laptop → Mac en otra casa), el par que se apaga y la laptop que lo nota, actas verificables en el navegador, prueba de aislamiento | `src/core/`, `src/puente/`, `app/verificar.html`, `evidencia/` | 3:02–4:19, y la evidencia común 4:19–4:55 |
+| 03 General · Sovereign Intelligence at the Edge | Todo lo anterior + delegación entre pares por llave pública (teléfono → laptop, teléfono → Mac y laptop → Mac en otra casa), el par que se apaga y la laptop que lo nota, actas verificables en el navegador, prueba de aislamiento | `src/core/`, `src/puente/`, `app/verificar.html`, `evidencia/` | 3:02–4:19, y la evidencia común 4:19–4:55 |
 | 05 Caja de Ahorros · Banca | Sucursal: procedimiento citado sin conexión, expediente, acta sellada y verificable; pantalla en `/sucursal` | `src/sucursal/`, `app/sucursal.html` | 1:28–2:22 |
 | 04 Ovnicom · Sentinel-DNS | Red: el registro DNS entregado por Ovnicom reproducido como flujo, detección por capas, alertas a Wazuh por su API local y score por zona en ClickHouse y Grafana | `src/red/`, `infra/red/` | 2:22–3:02, aislamiento 3:58–4:19 |
 
@@ -83,7 +83,9 @@ Un solo proyecto, un solo repositorio (rama `main`), un solo video. Cada jurado 
 | Red: alertas del agente procesadas por Wazuh | 153 / 153 por el lector de archivo · 150 / 150 por la API local (`POST /events`, `location: API-Webhook`) | `infra/red/VERIFICADO-WAZUH.md` |
 | Red: evento → alerta en el JSONL · evento → HTTP 200 del SIEM | mediana 1,08 ms · 1 175 ms (n = 150; la agrupación de 2,5 s domina, el POST son 13 ms) | `infra/red/VERIFICADO-WAZUH.md`, `infra/red/stream-9sep.txt` |
 | Red: el consumidor alerta antes de que el productor termine | prueba determinista, dos procesos y una tubería local | `src/red/stream.test.js` |
-| Delegación al par desde el teléfono | 0.3-0.5 s a 237-240 tok/s en la RTX | `evidencia/medicion-telefono-9sep.md` |
+| El producto corriendo en el teléfono, delegando a la laptop | 2.6–2.8 s a 122–128 tok/s en la RTX 4060 (Qwen3-1.7B bajo gramática) | `evidencia/telefono-puente-9sep.md` |
+| El mismo teléfono delegando a la Mac de otra casa | 0.98–1.6 s a 250–271 tok/s en el M5 Max | idem |
+| El puente del producto probado dentro de android-arm64 | 3 / 3 pruebas (1 se salta) | idem |
 | Delegación de la laptop a una Mac en otra casa, por llave pública | 0.65–1.17 s a 255–280 tok/s en el M5 Max | `evidencia/mac-par-9sep.md` |
 | El par se apaga: la laptop lo nota, recalcula local y lo dice | 12.8 s la solicitud que lo encuentra, 2.3 s la siguiente | idem |
 
@@ -92,7 +94,7 @@ periodicidad no prueba mando y control.
 
 ## Límites conocidos, dichos aquí y en el video
 
-- El teléfono captura y delega; hoy no infiere a bordo (el worker de Bare cae al cargar el modelo). Sin par a la vista, la captura queda en cola.
+- El teléfono captura y delega; hoy no infiere a bordo (el worker de Bare cae al cargar el modelo). Sin par a la vista, el nodo responde 503 diciendo que la captura queda pendiente; la app la deja en cola desde el navegador (`evidencia/telefono-puente-9sep.md`).
 - Cuando el par delegado se apaga, la laptop lo nota y recalcula local; cuando el par vuelve, no vuelve a delegar sola: hay que reiniciar el nodo.
 - La latencia y los códigos de respuesta DNS son sintéticos, porque el registro entregado solo trae consultas; cada fila lo marca.
 - El beaconing tiene 57 % de precisión: la periodicidad no prueba mando y control. Las reglas detectan; el modelo explica y no decide bloqueos.
@@ -180,7 +182,7 @@ LD_LIBRARY_PATH=$PREFIX/lib P2P_PROVEEDOR=<llave> node src/puente/nodo.js
 | Nodo | Equipo | Qué corrió ahí |
 |---|---|---|
 | Laptop | Fedora Linux, Intel + NVIDIA RTX 4060 8 GB (Vulkan), 31 GB RAM, Node 24.14.1 | Qwen3-1.7B, VisionPsy Nano, Whisper, y como proveedor P2P |
-| Teléfono | HONOR X6s, Android 14, 8× Cortex-A53, 3.7 GB RAM, Termux + Bare | El puente que delega por llave pública (el modelo a bordo hoy no carga: `evidencia/medicion-telefono-9sep.md`) |
+| Teléfono | HONOR X6s, Android 14, 8× Cortex-A53, 3.7 GB RAM, Termux + Bare, Node 24.18.0 | `src/puente/nodo.js` entero: sirve la PWA en localhost y delega por llave pública a la laptop y a la Mac (el modelo a bordo hoy no carga: `evidencia/telefono-puente-9sep.md`) |
 | Nodo remoto | MacBook Pro, Apple M5 Max (18 núcleos, GPU de 40), 128 GB, macOS 26.4, Metal, Node 24.14.1, en otra casa | Proveedor P2P del producto (Qwen3-1.7B), llave `49fa9472…` |
 
 Los números publicados salieron de este hardware. En otro equipo cambian los tiempos, no los
