@@ -8,15 +8,34 @@ Node 24.18.0. Conectado por cable; se entra a Termux por SSH sobre `adb forward 
 El SDK de QVAC corre dentro del teléfono y pide la inferencia a la laptop por su llave pública,
 por el DHT de Hyperswarm. Sin servidor intermedio y sin nube.
 
-| Momento | Tiempo |
-|---|---|
-| Conexión con el par y carga del modelo en el proveedor | 20.3 s |
-| Primera respuesta (en frío) | 0.7 s · 154 tok/s |
-| Respuestas siguientes (en caliente) | 0.3 y 0.5 s · 158 y 159 tok/s |
+**Quién decide si corre en GPU:** el `modelConfig` lo manda el CONSUMIDOR, o sea el teléfono, y
+viaja con la solicitud. Si el teléfono pide `device: 'cpu'`, la laptop ejecuta en su CPU aunque
+tenga la RTX libre. Hay que pedir GPU explícitamente. Medido las dos veces:
+
+| Lo que pide el teléfono | Carga en el par | En frío | En caliente | Velocidad | Dónde corrió |
+|---|---|---|---|---|---|
+| `device: 'cpu'` | 20.3 s | 0.7 s | 0.3 y 0.5 s | 154-159 tok/s | CPU de la laptop |
+| `--gpu` (`gpu_layers: 99`) | 20.7 s | 0.5 s | 0.3 y 0.2 s | **237-240 tok/s** | **RTX 4060** |
+
+O sea: la GPU da **1.5 veces** más velocidad, y se pierde entera si el consumidor no la pide.
+La VRAM apenas se movió (2 278 → 2 335 MB) porque el modelo es de 0.6 B.
 
 El script del teléfono corre con `fallbackToLocal: false` a propósito: si el par no está, falla
 en vez de disimular. Con una llave que no existe, el error lo dice con todas sus letras
 («provider … was not found on the DHT»).
+
+## Qué es exactamente el P2P aquí
+
+Es la pila de Pears (Hyperswarm sobre el DHT de Holepunch), y hace dos cosas:
+
+1. **Encontrar al proveedor por su llave pública**, sin servidor de por medio y sin importar en
+   qué red esté. Por eso funciona igual con la laptop al lado que con la Mac en otra casa.
+2. **Abrir un canal cifrado directo** entre los dos aparatos una vez encontrado.
+
+Lo que viaja por ese canal es el prompt y los tokens de vuelta. **El modelo se carga y se
+ejecuta en el proveedor**, nunca en el teléfono. Así que sí: la delegación del celular a la GPU
+de la laptop, o a la Mac, es exactamente eso, el P2P. Y por eso la versión del SDK importa: la
+0.19.0 quitó esta capacidad y por eso el proyecto está fijado en la 0.18.2.
 
 ## Lo que HOY no funciona: cargar un modelo dentro del teléfono
 
