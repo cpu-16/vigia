@@ -8,6 +8,7 @@
 // línea. Así que el modelo TRANSCRIBE y el código INTERPRETA. La identidad del activo nunca se
 // da por confirmada sola: siempre vuelve al colaborador para que la acepte.
 import { loadModel, completion, VISIONPSY_NANO_460M_MULTIMODAL_Q8_0, MMPROJ_VISIONPSY_NANO_460M_MULTIMODAL_Q8_0 } from '@qvac/sdk';
+import { identidadPlacaValida } from './revision.js';
 import { registrar, ms } from '../core/rendimiento.js';
 import { MARCAS, sinAcentos, normalizarModalidad } from './esquema.js';
 
@@ -80,11 +81,17 @@ export function parsearGS1(cadena) {
     lote: out['10'] || null, fabricacion: fecha(out['11']), vence: fecha(out['17']) };
 }
 
+// Una transcripción puede colapsar filas/columnas. Cada etiqueta termina al
+// aparecer otra; nunca se toma el resto completo de la placa como un campo.
+const ETIQUETAS = 'SERIAL\\s+NO|MFG\\s+DATE|MODEL|MODELO|MOD|TYPE|TIPO|S/N|SN|SERIAL|SERIE|REF|MFG|FECHA|INPUT|OUTPUT';
 const VALOR = (lineas, ...claves) => {
-  for (const l of lineas) for (const k of claves) {
-    const re = new RegExp(`(?:^|\\b)${k}\\s*[:.]?\\s*(.+)$`, 'i');
+  for (const l of lineas) for (const k of [...claves].sort((a,b) => b.length-a.length)) {
+    const re = new RegExp(`(?:^|\\s)${k}(?=\\s|[:.]|$)\\s*[:.]?\\s*(.*)$`, 'i');
     const m = l.match(re);
-    if (m && m[1].trim()) return m[1].trim().replace(/[|]+$/, '').trim();
+    if (!m) continue;
+    const resto = m[1].split(new RegExp(`(?:^|\\s)(?:${ETIQUETAS})(?=\\s|[:.]|$|(?<=INPUT)\\d)`, 'i'))[0];
+    const valor = resto.trim().replace(/[|]+$/, '').trim();
+    if (valor) return valor;
   }
   return null;
 };
@@ -117,15 +124,22 @@ export function parsearPlaca(lineas, { catalogo = [] } = {}) {
 
   // Coherencia: si el código y la etiqueta discrepan, se marca el desacuerdo y no se elige solo.
   const desacuerdos = [];
-  const serieEtiqueta = VALOR(L, 'S/N', 'SN', 'SERIAL');
+  const serieEtiqueta = VALOR(L, 'S/N', 'SN', 'SERIAL NO', 'SERIAL', 'SERIE');
   if (gs1?.serie && serieEtiqueta && gs1.serie !== serieEtiqueta) desacuerdos.push({ campo: 'serial', codigo: gs1.serie, etiqueta: serieEtiqueta });
 
+  const advertencias = [];
+  for (const k of ['model', 'serial']) {
+    if (campos[k] && !identidadPlacaValida(campos[k])) {
+      advertencias.push(`${k === 'model' ? 'Modelo' : 'Serie'} omitido: la lectura contiene etiquetas técnicas.`);
+      delete campos[k]; delete origen[k];
+    }
+  }
   const confianza = {};
   for (const k of ['manufacturer', 'model', 'serial', 'modality', 'mfg']) confianza[k] =
     campos[k] == null ? 'Low' : /GS1/.test(origen[k] ?? '') ? 'High' : 'Medium';
   for (const d of desacuerdos) confianza[d.campo] = 'Low';
 
-  return { campos, origen, confianza, desacuerdos, lineas: L,
+  return { campos, origen, confianza, desacuerdos, advertencias, lineas: L,
     // Nunca se confirma la identidad sin una persona: es la política del propio modelo Psy,
     // cuya ficha dice que no debe usarse para decisiones automatizadas.
     requiereConfirmacion: true };

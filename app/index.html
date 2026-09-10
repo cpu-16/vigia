@@ -258,7 +258,7 @@
 
 <script type="module">
 import { crearLectura } from "/lectura.js";
-import { revision, incorporarPlaca } from "/revision.js";
+import { revision, incorporarPlaca, corregirLecturaPlaca } from "/revision.js";
 const $ = s => document.querySelector(s);
 const lectura = crearLectura($('#lecturaVoz'));
 const estado = { texto: '', borrador: null, respuestas: {}, id: null, directo: null, ms: 0, fila: null, dups: [], fuente: 'texto', foto: null, capturaId: crypto.randomUUID() };
@@ -827,20 +827,26 @@ async function leerFotoRevisionInterno(blob) {
     }
     const campos = Object.entries(foto.campos ?? {}).filter(([k]) => ['manufacturer','model','serial','modality'].includes(k));
     cont.innerHTML = `<div class="placa-campos"><b>Esto leyó la foto</b><p>${campos.map(([k,v]) => `${esc(({manufacturer:'Marca',model:'Modelo',serial:'Serie',modality:'Tipo'})[k])}: ${esc(v)}`).join('<br>')}</p>
+      <p>Revisa la lectura con la foto. Corrige modelo y serie; si no se leen, déjalos vacíos.</p>
+      <label for="fotoModelo">Modelo</label><input id="fotoModelo" value="${esc(foto.campos?.model ?? '')}" maxlength="128" style="width:100%;min-height:44px;font:inherit;margin:6px 0 12px">
+      <label for="fotoSerie">Serie</label><input id="fotoSerie" value="${esc(foto.campos?.serial ?? '')}" maxlength="128" style="width:100%;min-height:44px;font:inherit;margin:6px 0 12px">
+      <details><summary>Ver transcripción original</summary><p>${esc(foto.transcripcion ?? 'Sin transcripción disponible')}</p></details>
       <label for="equipoFoto">¿A cuál de los equipos de esta visita corresponde?</label>
       <select id="equipoFoto" style="width:100%;min-height:44px;font:inherit;margin:8px 0">${estado.borrador.equipment.map((g,i) => `<option value="${i}">${g.quantity ?? '?'} × ${esc(g.modality)}${g.model ? ' · ' + esc(g.model) : ''}</option>`).join('')}</select>
       <p>Si elegiste un grupo, la placa se aplica a una sola unidad. Lo ya confirmado se conserva.</p>
       <button class="menor" id="usarFoto">Confirmar datos de esta foto</button><p id="conflictoFoto" role="alert"></p></div>`;
+    for (const id of ['#fotoModelo', '#fotoSerie']) $(id).oninput = () => { $('#conflictoFoto').textContent = ''; };
     const actual = estado.ultimaRevision?.preguntas?.[0]?.grupo;
     if (actual != null) $('#equipoFoto').value = String(actual);
     $('#usarFoto').onclick = async () => {
       $('#usarFoto').disabled = true;
       try {
         const indice = Number($('#equipoFoto').value);
-        const r = incorporarPlaca(estado.borrador, foto, indice);
+        const revisada = corregirLecturaPlaca(foto, { model: $('#fotoModelo').value, serial: $('#fotoSerie').value });
+        const r = incorporarPlaca(estado.borrador, revisada, indice);
         if (r.separada) estado.respuestas[`quantity:${indice}`] = 1;
         estado.borrador = r.borrador; estado.fuente = 'foto';
-        estado.foto = { ...foto, confirmado_por_colaborador: true };
+        estado.foto = { ...revisada, confirmado_por_colaborador: true };
         fotoPendienteRevision = null;
         await revisar();
         cont.textContent = r.separada ? 'Foto incorporada a una unidad. Las demás conservan sus datos pendientes.' : 'Foto incorporada. Conservamos las respuestas que ya habías confirmado.';

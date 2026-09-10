@@ -64,3 +64,27 @@ test('países equivalentes no fragmentan los agregados por idioma o acento',()=>
  assert.deepEqual(base.agregado('country'),[{clave:'Panamá',unidades:3,clientes:3,reemplazar:0}]);
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
+
+test('confirmar la unidad no valida por sí solo basura técnica del OCR', () => {
+ for (const serial of ['REF MFG DATE 2015-03 INPUT100-240V-60Hz6.0A', 'TYPE', 'INPUT100-240V']) {
+  assert.throws(()=>incorporarPlaca(borrador(),{...foto,campos:{...foto.campos,serial}},0),/etiquetas técnicas/);
+ }
+ assert.throws(()=>incorporarPlaca(borrador(),{...foto,campos:{...foto.campos,model:'NM-MR 700 TYPE SN REF'}},0),/etiquetas técnicas/);
+ for (const serial of ['REF-123','SN123','ABC/2026.001','0012345678']) {
+  assert.equal(incorporarPlaca(borrador(),{...foto,campos:{...foto.campos,serial}},0).borrador.equipment[0].serial,serial);
+ }
+});
+test('corrección humana conserva OCR y origen, y permite dejar una serie desconocida', async () => {
+ const {corregirLecturaPlaca}=await import('./revision.js');
+ const original={...foto,transcripcion:'MODEL NM-MR 700 SN REF MFG DATE 2015-03',campos:{...foto.campos,serial:'REF MFG DATE 2015-03'},origen:{serial:'etiqueta S/N'}};
+ const corregida=corregirLecturaPlaca(original,{model:'NM-MR 701',serial:'NMMR2519575'});
+ const g=incorporarPlaca(borrador(),corregida,0).borrador.equipment[0];
+ assert.equal(g.serial,'NMMR2519575');assert.equal(g.model,'NM-MR 701');
+ assert.equal(g.placa.lectura_original.campos.serial,'REF MFG DATE 2015-03');
+ assert.equal(g.placa.origen.serial,'corregido por colaborador');
+ assert.deepEqual(g.placa.correcciones.model,{anterior:'NM-MR 700',nuevo:'NM-MR 701'});
+ assert.equal(original.campos.serial,'REF MFG DATE 2015-03');
+ const sinSerie=incorporarPlaca(borrador(),corregirLecturaPlaca(original,{model:'NM-MR 700',serial:''}),0).borrador.equipment[0];
+ assert.equal(sinSerie.serial,undefined);assert.equal(sinSerie.verificado.serial,undefined);
+ assert.throws(()=>corregirLecturaPlaca(original,{model:'NM-MR 700',serial:'MFG DATE'}),/etiquetas técnicas/);
+});

@@ -105,3 +105,20 @@ test('una pantalla de oficina no se convierte en monitor de pacientes', () => {
   assert.equal(pistasDeEscena('A monitor on the wall in an office').modality, null);
   assert.equal(pistasDeEscena('A bedside patient monitor showing vital signs').modality, 'Patient Monitoring');
 });
+
+test('OCR aplanado delimita el modelo y nunca convierte etiquetas vacías en serie', () => {
+  const p = parsearPlaca(['NOVAMED MODEL NM-MR 700 TYPE SN REF MFG DATE 2015-03 INPUT100-240V-60Hz6.0A']);
+  assert.equal(p.campos.model, 'NM-MR 700');
+  assert.equal(p.campos.serial, undefined);
+  assert.equal(p.confianza.serial, 'Low');
+  assert.equal(p.campos.mfg, '2015-03');
+  assert.match(p.lineas[0], /TYPE SN REF/, 'se conserva el OCR original como evidencia');
+});
+test('etiquetas largas y prefijos legítimos no se confunden con ruido técnico', () => {
+  const p = parsearPlaca(['MODEL NM-MR 700 TYPE MR SERIAL NO REF-123 MFG DATE 2015-03 INPUT 100-240V']);
+  assert.equal(p.campos.serial, 'REF-123');
+  assert.equal(p.campos.model, 'NM-MR 700');
+  assert.equal(p.campos.modality, 'MR');
+  assert.deepEqual(parsearPlaca(['SERIAL NO NMMR2519575', '(01)07612345000017(21)NMMR2519575']).desacuerdos, []);
+  assert.equal(parsearPlaca(['SN', 'REF', 'MFG DATE 2015-03']).campos.serial, undefined);
+});
