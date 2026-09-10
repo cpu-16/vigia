@@ -36,3 +36,4 @@ ejecutan en las demostraciones. Se completa a medida que cada módulo los incorp
 | Grafana + `grafana-clickhouse-datasource` (Docker) | 11.3 | AGPLv3 / Apache 2.0 | Tablero `vigia-red` del score por zona |
 | Registro DNS de BIND9 entregado por Ovnicom para el reto | 8–9 sep 2026 | del patrocinador, declarado sintético por el reto | Entrada del módulo Red; los ataques, la latencia y los códigos de respuesta se generan y se marcan |
 | Placas sintéticas | `fixtures/placas/generar.py` | propias | Track 02; marcas y modelos ficticios del brief de Philips |
+| Fotos del catálogo de equipos (14 archivos `app/catalogo-*.jpg`) | Wikimedia Commons, descargadas el 8-sep 2026 | CC0, dominio público, CC BY 4.0 y CC BY-SA 2.0/3.0/4.0 según el archivo | Foto ilustrativa de la modalidad en `app/catalogo.html`; los equipos son ficticios y la foto no es del equipo. Título, autor, licencia y URL de cada una en `app/catalogo-FUENTES.json` |

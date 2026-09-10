@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F3EFE6">
+<title>Vigía · catálogo de equipos</title>
+<style>
+  /* Misma libreta de campo clínica que la app: papel cálido, tinta azul profunda, turquesa solo para la acción. */
+  :root{
+    --papel:#F3EFE6; --papel-alto:#FBF9F4; --tinta:#16262E; --tinta-suave:#5C6B72;
+    --raya:#DED7C7; --accion:#0F7B85; --accion-hondo:#0A5C63;
+    --serif:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--papel);color:var(--tinta);font:17px/1.5 system-ui,-apple-system,sans-serif;
+       -webkit-tap-highlight-color:transparent;overflow-x:hidden}
+  :focus-visible{outline:2px solid var(--accion);outline-offset:3px}
+  a{color:var(--accion-hondo)}
+
+  header{max-width:1180px;margin:0 auto;padding:14px 20px 10px;border-bottom:2px solid var(--tinta);
+         display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  h1{font:400 24px/1 var(--serif);margin:0;letter-spacing:-.01em}
+  h1 small{display:block;font:500 10px/1.4 system-ui;letter-spacing:.16em;text-transform:uppercase;
+           color:var(--tinta-suave);margin-top:5px}
+  .salidas{display:flex;gap:10px;flex-wrap:wrap}
+  .salidas a,.salidas button{appearance:none;-webkit-appearance:none;background:transparent;border:1px solid var(--raya);
+    border-radius:99px;padding:7px 13px;font:500 13px system-ui;color:var(--tinta-suave);cursor:pointer;text-decoration:none}
+  .salidas a:hover,.salidas button:hover{border-color:var(--tinta);color:var(--tinta)}
+
+  .aviso{max-width:1180px;margin:0 auto;padding:10px 20px 0;font-size:12.5px;line-height:1.45;color:var(--tinta-suave)}
+  .aviso b:first-child{display:block;max-width:78ch;font-weight:inherit}
+
+  /* filtros por modalidad */
+  .filtros{max-width:1180px;margin:0 auto;padding:10px 20px 0;display:flex;gap:8px;overflow-x:auto;
+           scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .filtros::-webkit-scrollbar{display:none}
+  .filtros button{appearance:none;-webkit-appearance:none;background:var(--papel-alto);border:1px solid var(--raya);
+    border-radius:99px;padding:7px 13px;font:500 13px system-ui;color:var(--tinta-suave);cursor:pointer;white-space:nowrap}
+  .filtros button span{color:var(--raya);font-variant-numeric:tabular-nums}
+  .filtros button[aria-pressed="true"] span{color:#8FB9BD}
+  .filtros button[aria-pressed="true"]{background:var(--tinta);border-color:var(--tinta);color:var(--papel)}
+
+  /* carrusel: una tarjeta por pantalla en el teléfono */
+  .pista{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;
+         -webkit-overflow-scrolling:touch;padding:6px 0 4px}
+  .pista::-webkit-scrollbar{display:none}
+  .ficha{flex:0 0 100%;scroll-snap-align:center;padding:12px 20px 4px;min-width:0}
+
+  .foto{position:relative;border:1px solid var(--raya);border-radius:14px;overflow:hidden;background:var(--papel-alto);
+        aspect-ratio:4/3;max-height:38dvh;box-shadow:0 1px 0 var(--raya)}
+  .foto img{width:100%;height:100%;object-fit:cover;display:block}
+  .foto .num{position:absolute;left:0;top:0;background:var(--tinta);color:var(--papel);
+             font:600 11px/1 system-ui;letter-spacing:.1em;padding:7px 10px;border-bottom-right-radius:10px}
+
+  .modalidad{display:block;margin:13px 0 4px;font:600 11px/1 system-ui;letter-spacing:.16em;
+             text-transform:uppercase;color:var(--accion-hondo)}
+  h2{margin:0;font:400 25px/1.15 var(--serif);letter-spacing:-.01em}
+  h2 b{display:block;font:600 17px/1.3 system-ui;letter-spacing:0;margin-top:4px}
+  .serie{margin:7px 0 0;font:12.5px/1.4 ui-monospace,Menlo,monospace;color:var(--tinta-suave)}
+  .dicho{background:var(--papel-alto);border-left:3px solid var(--tinta);padding:12px 14px;margin:12px 0 0;
+         font:16.5px/1.5 var(--serif)}
+  .dicho span{display:block;margin-top:8px;font:500 11px/1 system-ui;letter-spacing:.12em;
+              text-transform:uppercase;color:var(--tinta-suave)}
+  .credito{margin:10px 0 0;font-size:11.5px;line-height:1.45;color:var(--tinta-suave)}
+  .credito a{color:inherit}
+
+  /* navegación del carrusel */
+  nav{position:sticky;bottom:0;max-width:1180px;margin:0 auto;padding:10px 20px calc(12px + env(safe-area-inset-bottom));
+      display:flex;align-items:center;gap:12px;background:linear-gradient(to top,var(--papel) 68%,transparent)}
+  nav button{appearance:none;-webkit-appearance:none;flex:1;background:var(--papel-alto);border:1px solid var(--raya);
+    border-radius:12px;padding:12px 10px;font:500 15px system-ui;color:var(--tinta);cursor:pointer;
+    box-shadow:0 1px 0 var(--raya)}
+  nav button:active{transform:translateY(1px);box-shadow:none}
+  nav button.principal{background:var(--accion);border-color:var(--accion);color:#fff}
+  nav .cuenta{font:12px/1 ui-monospace,Menlo,monospace;color:var(--tinta-suave);min-width:62px;text-align:center}
+
+  /* laptop: rejilla, sin carrusel */
+  @media (min-width:820px){
+    header{padding:20px 20px 12px}
+    h1{font-size:31px}
+    .foto{max-height:none}
+    .pista{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:8px 20px;
+           overflow:visible;max-width:1180px;margin:0 auto;padding:6px 0 30px}
+    .ficha{padding:22px 20px}
+    nav{display:none}
+  }
+  @media print{
+    header .salidas,.filtros,nav,.aviso{display:none}
+    body{background:#fff}
+    .pista{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;overflow:visible}
+    .ficha{break-inside:avoid;padding:10px 0}
+    .foto{box-shadow:none}
+    .dicho{background:none}
+  }
+  @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+
+<header>
+  <h1>Catálogo de equipos<small>Vigía · base instalada</small></h1>
+  <div class="salidas">
+    <a href="/">← capturar</a>
+    <a href="/tablero">tablero</a>
+    <button type="button" id="imprimir">Imprimir</button>
+  </div>
+</header>
+
+<p class="aviso"><b>Catorce equipos <strong>ficticios</strong> del reto, cada uno con la frase que diría quien lo ve en sitio:
+eso es lo que la app escucha. Fotos ilustrativas de Wikimedia Commons
+(<a href="/catalogo-FUENTES.json">licencias</a>).</b></p>
+
+<div class="filtros" id="filtros" role="group" aria-label="Filtrar por modalidad"></div>
+<div class="pista" id="pista"></div>
+<nav>
+  <button type="button" id="ant">← Anterior</button>
+  <span class="cuenta" id="cuenta">1 / 14</span>
+  <button type="button" class="principal" id="sig">Siguiente →</button>
+</nav>
+
+<script>
+// Equipos ficticios del brief (marcas del reto), con su foto ilustrativa y su descripción de ejemplo.
+const EQUIPOS = [
+ {id:"nm-mr7-24-0042", fab:"NovaMed", mod:"NM-MR 700", tipo:"MR", serie:"NM-MR7-24-0042", foto:"catalogo-mr.jpg",
+  dicho:"Vi un resonador marca NovaMed, modelo NM-MR 700. Está en el ala nueva y se ve recién instalado."},
+ {id:"nm-us5-24-1187", fab:"NovaMed", mod:"NM-US 55", tipo:"Ultrasound", serie:"NM-US5-24-1187", foto:"catalogo-ultrasound.jpg",
+  dicho:"Hay un ecógrafo NovaMed NM-US 55 en consulta externa; lo usan todos los días."},
+ {id:"nm-xr1-23-0501", fab:"NovaMed", mod:"NM-XR 12", tipo:"X-Ray", serie:"NM-XR1-23-0501", foto:"catalogo-x-ray.jpg",
+  dicho:"Un equipo de rayos X NovaMed NM-XR 12, portátil, casi nuevo."},
+ {id:"ah-ct3-21-0301", fab:"Aurelia Health", mod:"AH-CT 320", tipo:"CT", serie:"AH-CT3-21-0301", foto:"catalogo-ct.jpg",
+  dicho:"Un tomógrafo Aurelia Health, modelo AH-CT 320, de unos cuatro años."},
+ {id:"ah-ct5-18-0077", fab:"Aurelia Health", mod:"AH-CT 510", tipo:"CT", serie:"AH-CT5-18-0077", foto:"catalogo-ah-ct5-18-0077.jpg",
+  dicho:"Tienen otro tomógrafo Aurelia Health AH-CT 510; el técnico dice que ya va para ocho años."},
+ {id:"bp-mr5-17-0910", fab:"BluePeak Medical", mod:"BP-MR 500", tipo:"MR", serie:"BP-MR5-17-0910", foto:"catalogo-bp-mr5-17-0910.jpg",
+  dicho:"Vi un resonador BluePeak Medical BP-MR 500; por la placa parece del 2017."},
+ {id:"bp-ct6-13-0005", fab:"BluePeak Medical", mod:"BP-CT 610", tipo:"CT", serie:"BP-CT6-13-0005", foto:"catalogo-bp-ct6-13-0005.jpg",
+  dicho:"Un tomógrafo BluePeak Medical BP-CT 610, viejito, instalado en 2013."},
+ {id:"oi-ct4-15-0223", fab:"Orion Imaging", mod:"OI-CT 450", tipo:"CT", serie:"OI-CT4-15-0223", foto:"catalogo-oi-ct4-15-0223.jpg",
+  dicho:"Tomógrafo Orion Imaging OI-CT 450, de alrededor de once años."},
+ {id:"oi-mr6-21-0410", fab:"Orion Imaging", mod:"OI-MR 620", tipo:"MR", serie:"OI-MR6-21-0410", foto:"catalogo-oi-mr6-21-0410.jpg",
+  dicho:"Resonador Orion Imaging, modelo OI-MR 620: el más nuevo que tienen en imágenes."},
+ {id:"hc-us4-22-2031", fab:"HelixCare", mod:"HC-US 40", tipo:"Ultrasound", serie:"HC-US4-22-2031", foto:"catalogo-hc-us4-22-2031.jpg",
+  dicho:"Ecógrafo HelixCare HC-US 40 en el área de maternidad, del 2022."},
+ {id:"hc-mr3-16-0068", fab:"HelixCare", mod:"HC-MR 300", tipo:"MR", serie:"HC-MR3-16-0068", foto:"catalogo-hc-mr3-16-0068.jpg",
+  dicho:"Un resonador HelixCare HC-MR 300; es abierto y lleva como nueve años ahí."},
+ {id:"zm-mr8-20-0150", fab:"Zenith MedTech", mod:"ZM-MR 810", tipo:"MR", serie:"ZM-MR8-20-0150", foto:"catalogo-zm-mr8-20-0150.jpg",
+  dicho:"Resonador Zenith MedTech ZM-MR 810, instalado en 2020."},
+ {id:"zm-ct4-19-0333", fab:"Zenith MedTech", mod:"ZM-CT 430", tipo:"CT", serie:"ZM-CT4-19-0333", foto:"catalogo-zm-ct4-19-0333.jpg",
+  dicho:"Tomógrafo Zenith MedTech ZM-CT 430; lo movieron a emergencias el año pasado."},
+ {id:"zm-pm9-24-7710", fab:"Zenith MedTech", mod:"ZM-PM 9", tipo:"Patient Monitoring", serie:"ZM-PM9-24-7710", foto:"catalogo-patient-monitoring.jpg",
+  dicho:"Monitor de paciente Zenith MedTech ZM-PM 9; hay varios iguales en cuidados intensivos."},
+];
+const TIPO = {MR:"Resonador magnético", CT:"Tomógrafo", Ultrasound:"Ecógrafo", "X-Ray":"Rayos X",
+              "Patient Monitoring":"Monitor de paciente"};
+
+const $ = s => document.querySelector(s);
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let fuentes = {};   // archivo -> crédito, se carga aparte y no bloquea la página
+let filtro = 'todas';
+
+function pintar() {
+  const lista = EQUIPOS.filter(e => filtro === 'todas' || e.tipo === filtro);
+  $('#pista').innerHTML = lista.map((e, i) => {
+    const f = fuentes[e.foto];
+    const credito = f
+      ? `Foto ilustrativa de la modalidad, no del equipo. Wikimedia Commons · ${esc(f.autor || 'autor no indicado')} · ${esc(f.licencia)} · <a href="${esc(f.url)}" rel="noopener">origen</a>.`
+      : 'Foto ilustrativa de la modalidad, no del equipo. Wikimedia Commons.';
+    return `<article class="ficha">
+      <div class="foto"><span class="num">${i + 1} / ${lista.length}</span>
+        <img src="/${e.foto}" alt="${esc(TIPO[e.tipo])}, foto ilustrativa" decoding="async" width="1100" height="825"></div>
+      <span class="modalidad">${esc(TIPO[e.tipo])}</span>
+      <h2>${esc(e.fab)}<b>${esc(e.mod)}</b></h2>
+      <p class="serie">Serie ${esc(e.serie)} · ficticio</p>
+      <p class="dicho">«${esc(e.dicho)}»<span>Así se dicta en la app</span></p>
+      <p class="credito">${credito}</p>
+    </article>`;
+  }).join('');
+  $('#pista').scrollLeft = 0;
+  cuenta();
+}
+
+function cuenta() {
+  const p = $('#pista'), n = p.children.length;
+  const i = p.clientWidth ? Math.round(p.scrollLeft / p.clientWidth) : 0;
+  $('#cuenta').textContent = `${Math.min(i + 1, n)} / ${n}`;
+}
+const ir = d => {
+  const p = $('#pista'), n = p.children.length;
+  const i = Math.max(0, Math.min(n - 1, Math.round(p.scrollLeft / p.clientWidth) + d));
+  p.scrollTo({left: i * p.clientWidth, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+};
+
+// filtros
+const tipos = ['todas', ...new Set(EQUIPOS.map(e => e.tipo))];
+$('#filtros').innerHTML = tipos.map(t => {
+  const n = t === 'todas' ? EQUIPOS.length : EQUIPOS.filter(e => e.tipo === t).length;
+  return `<button type="button" data-t="${esc(t)}" aria-pressed="${t === 'todas'}">${t === 'todas' ? 'Todas' : esc(TIPO[t])} <span>${n}</span></button>`;
+}).join('');
+$('#filtros').onclick = ev => {
+  const b = ev.target.closest('button'); if (!b) return;
+  filtro = b.dataset.t;
+  [...$('#filtros').children].forEach(x => x.setAttribute('aria-pressed', x === b));
+  pintar();
+};
+
+$('#ant').onclick = () => ir(-1);
+$('#sig').onclick = () => ir(1);
+$('#imprimir').onclick = () => print();
+$('#pista').addEventListener('scroll', cuenta, {passive: true});
+addEventListener('resize', cuenta);
+addEventListener('keydown', ev => {
+  if (ev.target.tagName === 'BUTTON' || ev.target.tagName === 'A') return;
+  if (ev.key === 'ArrowRight') ir(1);
+  if (ev.key === 'ArrowLeft') ir(-1);
+});
+
+pintar();
+fetch('/catalogo-FUENTES.json').then(r => r.json())
+  .then(d => { for (const f of d.fotos) fuentes[f.archivo] = f; pintar(); })
+  .catch(() => {});   // sin nodo, el catálogo se ve igual: solo pierde el crédito detallado
+</script>
