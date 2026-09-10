@@ -1,11 +1,13 @@
 {
-  "name": "Vigía",
-  "short_name": "Vigía",
-  "start_url": "/equipos",
+  "id": "/sucursal",
+  "name": "Vigía · Sucursal local",
+  "short_name": "Vigía local",
+  "start_url": "/sucursal",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#F3EFE6",
   "theme_color": "#F3EFE6",
-  "description": "Captura, revisión y consulta con QVAC en el nodo de Vigía.",
+  "description": "Consulta de texto local; requiere el nodo Termux y modelos instalados.",
   "icons": [
     {
       "src": "/icono-192.png",
@@ -25,7 +27,5 @@
       "type": "image/svg+xml",
       "purpose": "any"
     }
-  ],
-  "id": "/equipos",
-  "scope": "/"
+  ]
 }

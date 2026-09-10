@@ -4,6 +4,7 @@
 
 | Paquete | Versión | Licencia | Uso |
 |---|---|---|---|
+| `@qvac/llm-llamacpp` | **0.45.0** | ver paquete | Worker Bare de Sucursal local en Android; instalado por separado |
 | `@qvac/sdk` | **0.18.2** (fijada) | ver paquete | Toda la inferencia: LLM, ASR, TTS, visión, embeddings, delegación P2P |
 
 ### Pila P2P que arrastra el SDK (Holepunch / Pear)
@@ -28,7 +29,7 @@ ejecutan en las demostraciones. Se completa a medida que cada módulo los incorp
 | Constante del SDK | Modelo | Cuantización | Dónde corre |
 |---|---|---|---|
 | `QWEN3_1_7B_INST_Q4` | Qwen3-1.7B Instruct | Q4_0 | Laptop (RTX 4060, Vulkan) como nodo y como proveedor P2P; Mac (M5 Max, Metal) como proveedor P2P en otra casa |
-| `QWEN3_600M_INST_Q4` | Qwen3-0.6B Instruct | Q4_0 | Teléfono (HONOR X6s, CPU Cortex-A53) como respaldo a bordo; hoy no carga en ese aparato, ver `evidencia/medicion-telefono-9sep.md` |
+| `QWEN3_600M_INST_Q4` | Qwen3-0.6B Instruct | Q4_0 | Teléfono (HONOR X6s, CPU Cortex-A53): consulta breve en Sucursal local mediante QVAC Bare; ver `evidencia/sucursal-webapp-avion-10sep.md`. La prueba de carga del 9-sep falló; la integración separada del 10-sep funciona con contexto reducido y mmap. |
 | `TTS_MULTILINGUAL_SUPERTONIC2_Q8_0` | Supertonic 2 multilingüe, voz F1 en español | Q8_0 | Laptop (RTX 4060, Vulkan); lectura voluntaria en Philips y Sucursal |
 | `WHISPER_LARGE_V3_TURBO` | Whisper large-v3 turbo | — | Laptop (RTX 4060) |
 | `EMBEDDINGGEMMA_300M_Q8_0` | EmbeddingGemma 300M | Q8_0 | Laptop; experimento de recuperación semántica, no usado por la recuperación léxica actual de Sucursal |

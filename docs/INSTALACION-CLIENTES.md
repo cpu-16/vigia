@@ -1,9 +1,15 @@
 # Instalación para clientes y límites de la demostración
 
+## Instalar la interfaz como aplicación
+
+En Chrome/Brave de Android, abrir Vigía, entrar con la clave si corresponde y elegir **Añadir a pantalla de inicio → Instalar**. La opción depende del navegador. En la PWA principal se conserva el inicio en `/equipos` para no cambiar la identidad de instalaciones previas.
+
+Para **Vigía local**, arrancar primero el [nodo Termux](SUCURSAL-LOCAL-TERMUX.md), abrir `http://localhost:17321/sucursal` e instalar desde el menú. En el HONOR se verificaron el icono, la apertura en modo `standalone`, el service worker activo y el nodo disponible. La instalación añade la interfaz, no Bare ni los modelos. Android puede detener Termux por falta de memoria; en ese caso la pantalla informa que el nodo no está disponible y hay que volver a arrancarlo.
+
 ## Qué ejecuta QVAC hoy
 
 - **Enlace web de Vigía:** el teléfono es cliente de captura. La inferencia ocurre en el nodo que sirve la aplicación o en su par autorizado. Abrir el enlace o instalar la PWA no instala el SDK ni los modelos en el celular. Tailscale transporta la conexión; por sí mismo no es delegación QVAC entre pares.
-- **HONOR con nodo en Termux:** instalación independiente del SDK que delega texto a un par autorizado. Este modo se probó; no tiene modelo cargado a bordo ni ofrece las capacidades de foto, voz y sucursal del nodo completo.
+- **HONOR con nodo en Termux:** instalación independiente del SDK que delega texto a un par autorizado. Este modo delegado se probó. Además, el prototipo separado [Sucursal local](SUCURSAL-LOCAL-TERMUX.md) ejecuta Qwen3-0.6B en CPU del HONOR y responde consultas breves sin red. No ofrece las capacidades completas de foto, voz y expedientes del nodo principal.
 - **Nodo completo de la demostración:** portátil con voz y visión, con lenguaje delegado al Mac autorizado. Existe también una prueba separada de lenguaje local sin salida a Internet. Esa prueba no demuestra inferencia sin conexión en cualquier teléfono.
 
 ## ¿Otro teléfono incumple las reglas?
@@ -38,6 +44,6 @@ Sí aporta valor como siguiente versión de Philips si integra realmente el runt
 
 La ruta documentada es Expo/React Native con integración nativa de QVAC. La guía exige probar en dispositivo físico; no basta el emulador. Nuestro proyecto fija SDK 0.18.2 y la documentación pública evoluciona: antes de migrar hay que validar versiones y mantener funcionando la delegación existente. [Tutorial oficial](https://docs.qvac.tether.io/tutorials/expo/).
 
-Criterio para decidir el desarrollo: demostrar en el HONOR que un modelo pequeño carga, produce una salida útil sin conexión y se recupera al suspender y reabrir la app; medir descarga, almacenamiento, memoria, latencia y temperatura. Después integrar cámara/voz y una prueba con un segundo Android. Esta validación nativa aún no está realizada. Para la grabación actual, usar el flujo web comprobado y explicar dónde corre la IA.
+Criterio para decidir el desarrollo: demostrar en el HONOR que un modelo pequeño carga, produce una salida útil sin conexión y se recupera al suspender y reabrir la app; medir descarga, almacenamiento, memoria, latencia y temperatura. Después integrar cámara/voz y una prueba con un segundo Android. Esta validación nativa aún no está realizada. La prueba local del 10-sep valida una consulta breve mediante Termux/Bare, no la integración nativa de Android.
 
 La revisión de Philips ahora mantiene la fotografía en una barra fija y abre «Editar relato» dentro de la misma visita. Cancelar mantiene la revisión. Un cambio aplicado vuelve a comprobar las asociaciones; un fallo del nodo conserva la revisión anterior y la edición para reintentar.

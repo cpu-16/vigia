@@ -3,7 +3,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#F3EFE6">
-<link rel="manifest" href="/manifest.webmanifest">
+
+<link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">
+<script src="/pwa.js" defer></script>
 <title>Vigía · inteligencia local con evidencia</title>
 <style>
   /* Misma libreta de campo que el resto del producto: papel cálido, tinta profunda, turquesa para la acción. */
@@ -135,6 +137,6 @@ async function sondear() {
   }
 }
 sondear(); setInterval(sondear, 8000);
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+
 </script>
 </html>

@@ -3,7 +3,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#F3EFE6">
-<link rel="manifest" href="/manifest.webmanifest">
+
+<link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">
+<script src="/pwa.js" defer></script>
 <title>Vigía · base instalada</title>
 <style>
   /* Libreta de campo clínica: papel cálido, tinta azul profunda, turquesa solo para la acción. */
@@ -985,6 +987,6 @@ $('#btnPreguntar').onclick = async () => {
   } catch { $('#respuesta').innerHTML = '<div class="aviso">Sin nodo a la vista.</div>'; }
 };
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).then(r => r.update()).catch(() => {});
+
 </script>
 </html>
