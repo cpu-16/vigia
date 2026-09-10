@@ -27,4 +27,5 @@ test('lectura de balboas conserva montos y centavos, sin confundir separadores',
  assert.equal(prepararLectura('B/. 1,000.50'),'1000 balboas con 50 centésimos');
  assert.equal(prepararLectura('B/. 1.01'),'1 balboa con 1 centésimo');
  assert.equal(prepararLectura('B/. 80.001'),'B/. 80.001');
+ assert.equal(prepararLectura('Sucursal · Verificación · B/. 80.00'), 'Sucursal. Verificación. 80 balboas');
 });
