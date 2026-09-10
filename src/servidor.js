@@ -114,6 +114,8 @@ const paginaEntrar = (res, { aviso = null, code = 200 } = {}) => {
         background:var(--accion);border:0;border-radius:10px;cursor:pointer}
  button:hover{filter:brightness(1.08)}
  .aviso{margin:14px 0 0;color:var(--alerta);font-size:13.5px}
+ .pie{margin:20px 0 0;padding-top:16px;border-top:1px solid var(--raya);font-size:13px;line-height:1.5;color:var(--tinta-suave)}
+ .pie a{color:var(--accion);display:block;margin-top:7px;white-space:nowrap}
 </style>
 <form method="post" action="/entrar">
   <h1>Vigía</h1>
@@ -122,6 +124,7 @@ const paginaEntrar = (res, { aviso = null, code = 200 } = {}) => {
   <input id="clave" name="clave" type="password" autocomplete="current-password" autofocus required>
   <button type="submit">Entrar</button>
   ${aviso ? `<p class="aviso">${aviso}</p>` : ''}
+  ${process.env.MODO_EVALUACION === '1' ? `<p class="pie">¿Eres del jurado y no tienes la clave? Escríbeme y te la paso:<a href="https://wa.me/50768573845">WhatsApp +507 6857-3845</a><a href="mailto:gilberto@ciberpty.com">gilberto@ciberpty.com</a></p>` : ''}
 </form>`);
 };
 
