@@ -97,6 +97,10 @@
   .ops button:active{background:var(--tinta);color:var(--papel)}
   .pregunta input{width:100%;padding:12px;border:1px solid var(--raya);border-radius:10px;font:16px system-ui;margin-bottom:10px}
 
+  .sabido{border:1px solid var(--raya);background:var(--papel-alto);border-radius:12px;padding:14px;margin:16px 0;font-size:15px}
+  .sabido b{display:block;margin-bottom:8px}
+  .sabido label{display:block;margin:6px 0;line-height:1.4}
+  .sabido small{color:var(--tinta-suave);display:block;margin-left:24px}
   .aviso{border:1px solid var(--alerta);color:var(--alerta);border-radius:12px;padding:14px;margin:16px 0;font-size:15px}
   .aviso b{display:block;margin-bottom:4px}
   .barra{position:fixed;left:0;right:0;bottom:0;background:var(--papel);border-top:1px solid var(--raya);
@@ -236,6 +240,7 @@
       <p id="errorEdicion" role="status" aria-live="polite"></p>
     </div>
     <div id="filas"></div>
+    <div id="sug"></div>
     <div id="dups"></div>
     <div class="secundarias" style="margin:16px 0">
       <button type="button" id="guardarParcial" class="menor">Guardar con datos pendientes</button>
@@ -261,7 +266,7 @@ import { crearLectura } from "/lectura.js";
 import { revision, incorporarPlaca, corregirLecturaPlaca } from "/revision.js";
 const $ = s => document.querySelector(s);
 const lectura = crearLectura($('#lecturaVoz'));
-const estado = { texto: '', borrador: null, respuestas: {}, id: null, directo: null, ms: 0, fila: null, dups: [], fuente: 'texto', foto: null, capturaId: crypto.randomUUID() };
+const estado = { texto: '', borrador: null, respuestas: {}, origenes: {}, rechazadas: [], id: null, directo: null, ms: 0, fila: null, dups: [], fuente: 'texto', foto: null, capturaId: crypto.randomUUID() };
 let escrituraEdicion = Promise.resolve();
 let editandoRelato = false, aplicandoRelato = false, admiteFoto = true;
 let operaciones = 0, reiniciando = false, visitaGuardada = false;
@@ -391,7 +396,7 @@ async function procesarUno() {
     const item = items.find(i => i.id === activoCola) ?? items[0];
     if (!item) return;
     activoCola = item.id;
-    Object.assign(estado, { respuestas: {}, directo: null, foto: null, capturaId: item.capturaId ?? crypto.randomUUID(),
+    Object.assign(estado, { respuestas: {}, origenes: {}, rechazadas: [], directo: null, foto: null, capturaId: item.capturaId ?? crypto.randomUUID(),
       fuente: item.tipo === 'audio' ? 'voz' : item.tipo === 'foto' ? 'foto' : 'texto' });
     if (item.revision) {
       Object.assign(estado, item.revision);
@@ -604,8 +609,8 @@ async function revisarInterno() {
   if (estado.textoInterpretado && estado.textoInterpretado !== estado.texto) {
     // Los índices de grupo pueden cambiar al reextraer: nunca reutilizar respuestas por índice.
     estado.revisionAnterior = { texto: estado.textoInterpretado, borrador: estado.borrador,
-      respuestas: estado.respuestas, foto: estado.foto, directo: estado.directo };
-    Object.assign(estado, { borrador: null, respuestas: {}, foto: null, directo: null,
+      respuestas: estado.respuestas, origenes: estado.origenes, rechazadas: estado.rechazadas, foto: estado.foto, directo: estado.directo };
+    Object.assign(estado, { borrador: null, respuestas: {}, origenes: {}, rechazadas: [], foto: null, directo: null,
       ultimaRevision: null, textoInterpretado: null, fuente: 'texto' });
     const item = (await cola()).find(i => i.id === activoCola);
     if (item) {
@@ -615,7 +620,7 @@ async function revisarInterno() {
     }
   }
   if (estado.borrador && estado.textoInterpretado === estado.texto) {
-    const r = { ...estado.ultimaRevision, ...revision(estado.borrador, estado.respuestas) };
+    const r = { ...estado.ultimaRevision, ...revision(estado.borrador, estado.respuestas, estado.origenes) };
     estado.borrador = r.borrador; estado.ultimaRevision = r;
     await conservarRevision(); await pintarPendientes(); $('#p1').classList.add('oculto'); $('#p2').classList.remove('oculto'); $('#volver').classList.remove('oculto'); pintar(r); return;
   }
@@ -628,7 +633,7 @@ async function revisarInterno() {
   let r;
   try {
     const res = await fetch('/api/extraer', { method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ texto: estado.texto, respuestas: estado.respuestas }) });
+      body: JSON.stringify({ texto: estado.texto, respuestas: estado.respuestas, origenes: estado.origenes }) });
     // 503 = ni par ni modelo a bordo. El cuerpo trae el aviso, no un borrador: pintarlo revienta.
     if (!res.ok) return pendiente(estado.texto, (await res.json().catch(() => null))?.aviso);
     r = await res.json();
@@ -652,7 +657,7 @@ const esc = s => String(s ?? '').replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&
 // la hoja del reto. Aquí se traduce SOLO lo que se ve; la clase CSS sigue siendo el valor original.
 const ETIQUETA = { Confirmed: 'Confirmado', Reported: 'Reportado', Estimated: 'Estimado', Unknown: 'Desconocido',
                    High: 'Alta', Medium: 'Media', Low: 'Baja' };
-const CAMPO_ES = {site:'hospital',modality:'modalidad',manufacturer:'marca',model:'modelo',quantity:'cantidad',age:'antigüedad'};
+const CAMPO_ES = {site:'hospital','customer.location':'ciudad y país',modality:'modalidad',manufacturer:'marca',model:'modelo',quantity:'cantidad',age:'antigüedad'};
 const MODALIDAD_ES = { MR: 'resonador magnético', CT: 'tomógrafo', Ultrasound: 'ecógrafo', 'X-Ray': 'equipo de rayos X',
                        'Patient Monitoring': 'monitor de paciente', 'Image Guided Therapy': 'equipo de terapia guiada por imagen' };
 
@@ -695,6 +700,39 @@ function pintar(r) {
   const degradado = r.degradado
     ? `<div class="aviso"><b>Revisa esta captura</b>${esc(r.aviso ?? 'La respuesta no la calculó el par.')}
         <br><small>${esc(r.modelo ?? '')}</small></div>` : '';
+
+  // Lo que la base instalada ya sabe y este reporte no dijo. Nunca se aplica sola: se ofrece con
+  // su procedencia y la persona decide. Un campo que sí se dictó no llega hasta aquí.
+  // La revisión local no vuelve a preguntarle al nodo, así que arrastra las sugerencias de la
+  // respuesta anterior: se filtran contra el borrador de verdad. Un campo ya lleno no se ofrece.
+  // Una que ya se rechazó no vuelve: el panel se re-pinta entero en cada revisión y sin esto
+  // reaparecía marcada, así que el siguiente clic aplicaba justo lo que la persona había quitado.
+  const falta = x => !estado.rechazadas.includes(x.clave) && (x.campo === 'customer.location'
+    ? (r.borrador.customer?.city == null || r.borrador.customer?.country == null)
+    : r.borrador.equipment?.[x.grupo]?.[x.campo] == null);
+  const sug = (r.sugerencias ?? []).filter(falta);
+  $('#sug').innerHTML = sug.length ? `<div class="sabido"><b>Esto ya está en la base instalada</b>
+    ${sug.map((x, i) => `<label><input type="checkbox" data-i="${i}" checked> ${esc(CAMPO_ES[x.campo] ?? x.campo)}: <b>${esc(x.valor)}</b>
+      <small>${esc(x.desde)}</small></label>`).join('')}
+    <button class="menor" id="usarSug">Usar lo marcado</button>
+    <button class="menor" id="descartarSug">Descartar</button></div>` : '';
+  if (sug.length) {
+    $('#usarSug').onclick = async () => {
+      $('#sug').querySelectorAll('button, input').forEach(el => el.disabled = true);
+      for (const c of $('#sug').querySelectorAll('input')) {
+        const x = sug[Number(c.dataset.i)];
+        if (!c.checked) { estado.rechazadas.push(x.clave); continue; }
+        estado.respuestas[x.clave] = x.valor;
+        estado.origenes[x.clave] = 'inventario';   // lo aceptó una persona, pero el dato es de la base
+      }
+      await revisar();
+    };
+    $('#descartarSug').onclick = async () => {
+      $('#sug').querySelectorAll('button, input').forEach(el => el.disabled = true);
+      estado.rechazadas.push(...sug.map(x => x.clave));
+      await revisar();
+    };
+  }
 
   // duplicados, con la explicación campo por campo
   $('#dups').innerHTML = degradado + (r.duplicados ?? []).filter(d => d.veredicto !== 'nuevo').map(d => {

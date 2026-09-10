@@ -18,7 +18,7 @@ import { consultar, sinVerificar } from './equipos/consulta.js';
 import { cargarVista, mirar } from './equipos/placa.js';
 import { aplicarRespuestas } from './equipos/revision.js';
 import { preguntas, derivar, interpretarEdad } from './equipos/reglas.js';
-import { candidatos } from './equipos/duplicados.js';
+import { candidatos, aplanar, sugerencias } from './equipos/duplicados.js';
 import { Base } from './equipos/almacen.js';
 import { manejarSucursal, contextoSucursal } from './sucursal/http.js';
 import { crearEjecutor } from './puente/respaldo.js';
@@ -168,18 +168,18 @@ const servidor = createServer(async (req, res) => {
     }
 
     if (req.method === 'POST' && ruta === '/api/extraer') {
-      const { texto, respuestas } = await cuerpoJson(req);
+      const { texto, respuestas, origenes } = await cuerpoJson(req);
       const id = idSolicitud();
       console.log(`▸ [${id}] QVAC completion → ${llm.etiqueta} en ${llm.delegado ? 'par delegado' : llm.hardware} (json_schema «observacion»)`);
       // Si el par murió con el modelo ya cargado, la completion vuelve VACÍA y sin error: eso se
       // trata como caída y esta laptop recalcula con su propia RTX, diciéndolo. Ver puente/respaldo.js.
       const r = await ejecutarLlm(m => extraer(m, texto ?? '', { requestId: id }));
-      const borrador = aplicarRespuestas(r.borrador, respuestas);
+      const borrador = aplicarRespuestas(r.borrador, respuestas, origenes);
       console.log(`▸ [${id}] QVAC completion ✓ ${r.modo} · ${Math.round(r.ms)} ms · ${borrador.equipment.map(g => `${g.quantity ?? '?'}×${g.modality}`).join(', ') || 'sin equipos'}`);
       return json(res, { id, borrador, descartes: r.descartes, ms: r.ms,
         modo: r.modo, modelo: r.modelo, degradado: r.degradado, aviso: r.aviso,
         preguntas: preguntas(borrador, { yaContestadas: new Set(Object.keys(respuestas ?? {})) }),
-        duplicados: dupsDe(borrador), fila: r.fila });
+        duplicados: dupsDe(borrador), sugerencias: sugerencias(borrador, base.inventario()), fila: r.fila });
     }
 
     // ── guardar ──
@@ -297,9 +297,7 @@ const mediana = xs => { const v = xs.filter(x => typeof x === 'number').sort((a,
 // Las respuestas del colaborador pesan más que el modelo: entran tal cual, sin volver a inferir.
 // Duplicados contra lo que ya está guardado, con su explicación campo por campo.
 function dupsDe(b) {
-  const inv = base.inventario().flatMap(s => s.equipos.map(e => ({ site: { name: s.customer?.name, country: s.customer?.country },
-    modality: e.modality, manufacturer: e.manufacturer, model: e.model, quantity: e.quantity,
-    age: { min: e.age_years_min, max: e.age_years_max }, _resumen: `${e.quantity ?? '?'}×${e.modality} en ${s.customer?.name}` })));
+  const inv = aplanar(base.inventario());
   return (b.equipment ?? []).flatMap((g, i) => candidatos({ site: { name: b.customer?.name, country: b.customer?.country },
     modality: g.modality, manufacturer: g.manufacturer, model: g.model, quantity: g.quantity,
     age: { min: g.age_years_min, max: g.age_years_max } }, inv)

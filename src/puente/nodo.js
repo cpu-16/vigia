@@ -129,7 +129,7 @@ export function crearServidor() {
         return json(res, { eventos, acta });
       }
       if (req.method === 'POST' && url.pathname === '/api/extraer') {
-        const { texto, respuestas } = await cuerpoJson(req);
+        const { texto, respuestas, origenes } = await cuerpoJson(req);
         const id = idSolicitud();
         console.log(`▸ [${id}] extracción por ${modelos.delegado ? 'PAR delegado' : 'modelo a bordo'}`);
         const r = await extraerConRespaldo(texto ?? '', { requestId: id }).catch(e => {
@@ -139,11 +139,12 @@ export function crearServidor() {
           return null;
         });
         if (!r) return;
-        r.borrador = aplicarRespuestas(r.borrador, respuestas);
+        r.borrador = aplicarRespuestas(r.borrador, respuestas, origenes);
         console.log(`▸ [${id}] ${r.modo} · ${Math.round(r.ms)} ms · ${r.borrador.equipment.map(g => `${g.quantity ?? '?'}×${g.modality}`).join(', ') || 'sin equipos'}`);
         return json(res, { id, borrador: r.borrador, descartes: r.descartes, ms: r.ms, modo: r.modo,
           modelo: r.modelo, degradado: r.degradado, aviso: r.aviso, fila: r.fila,
-          preguntas: preguntas(r.borrador, { yaContestadas: new Set(Object.keys(respuestas ?? {})) }), duplicados: [] });
+          preguntas: preguntas(r.borrador, { yaContestadas: new Set(Object.keys(respuestas ?? {})) }),
+          duplicados: [], sugerencias: [] });   // el teléfono no carga la base instalada: no tiene con qué sugerir
       }
       res.writeHead(404); res.end('no está');
     } catch (e) { json(res, { error: String(e?.message ?? e) }, 500); }

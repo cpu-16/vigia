@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { normalizarModalidad, numerosEn } from './esquema.js';
 import { validar, normalizarPais } from './extraer.js';
 import { derivar, preguntas } from './reglas.js';
-import { comparar, candidatos } from './duplicados.js';
+import { comparar, candidatos, sugerencias } from './duplicados.js';
 
 test('modalidades y numerales en es/en/pt', () => {
   assert.equal(normalizarModalidad('resonadores'), 'MR');
@@ -107,6 +107,51 @@ test('duplicados: Fellegi-Sunter explica campo por campo y nunca fusiona sola', 
   const inv = [{ id: 'a', site: sitio, modality: 'CT', manufacturer: 'Aurelia Health', quantity: 1, age: { min: 5, max: 5 } },
                { id: 'b', site: sitio, modality: 'MR', manufacturer: null, quantity: 2, age: { min: 7, max: 7 } }];
   assert.deepEqual(candidatos(nuevo, inv).map(c => c.existente.id), ['b']);
+});
+
+test('sugerencias: el inventario rellena lo que no se dijo, y nunca pisa lo dicho', () => {
+  const customer = { name: 'Hospital DemoCare Pacific', city: 'Ciudad de Panamá', country: 'Panama' };
+  const inventario = [{ customer, equipos: [
+    { modality: 'MR', manufacturer: 'NovaMed', model: 'NM-MR 700', quantity: 2, age_years_min: 6, age_years_max: 8,
+      observadores: ['ana', 'luis'], corroborado: true, ultima_fecha: '2026-09-03' }] }];
+
+  // Dicté el hospital y la modalidad; la base pone el modelo y la ciudad que no dije.
+  const b = { customer: { name: 'Hospital DemoCare Pacific', city: null, country: null },
+    equipment: [{ modality: 'MR', manufacturer: 'NovaMed', model: null, quantity: 2, age_years_min: 7, age_years_max: 7 }] };
+  const s = sugerencias(b, inventario);
+  assert.deepEqual(s.map(x => [x.clave, x.valor]), [
+    ['customer.location:null', 'Ciudad de Panamá, Panama'], ['model:0', 'NM-MR 700']]);
+  assert.equal(s.at(-1).desde, 'visita del 2026-09-03 · 2 observadores');
+
+  // Lo que sí dije no se toca, aunque el registro diga otra cosa.
+  const dicho = { customer, equipment: [{ ...b.equipment[0], model: 'NM-MR 500' }] };
+  assert.deepEqual(sugerencias(dicho, inventario), []);
+
+  // Otro hospital: el registro no aplica, no hay nada que sugerir.
+  const otro = { customer: { name: 'Hospital DemoCare North', city: null, country: null }, equipment: b.equipment };
+  assert.deepEqual(sugerencias(otro, inventario), []);
+
+  // Equipo parecido pero no el mismo (marca distinta): no se completa desde un candidato dudoso.
+  const dudoso = { customer, equipment: [{ modality: 'MR', manufacturer: 'Orion Imaging', model: null, quantity: 2, age_years_min: 7, age_years_max: 7 }] };
+  assert.deepEqual(sugerencias(dudoso, inventario).filter(x => x.clave.startsWith('model')), []);
+
+  // Sin hospital todavía, un equipo idéntico NO se completa: el sitio ausente aporta 0 bits y
+  // «2 NovaMed MR de 7 años» llegaría a «mismo» contra el equipo de cualquier otro hospital.
+  const anonimo = { customer: { name: null, city: null, country: null }, equipment: [b.equipment[0]] };
+  assert.deepEqual(sugerencias(anonimo, inventario), []);
+
+  // El país que sí se dictó manda, aunque la ficha diga otro: no se ofrece reescribirlo.
+  const conPais = { customer: { name: customer.name, city: null, country: 'Brazil' }, equipment: [b.equipment[0]] };
+  assert.deepEqual(sugerencias(conPais, inventario).filter(x => x.campo === 'customer.location'), []);
+
+  // Ficha a medias (país sin ciudad): «Panama» solo se escribiría en el campo de la ciudad y
+  // dejaría la pregunta por contestada. No se ofrece media respuesta.
+  const aMedias = [{ customer: { name: customer.name, city: null, country: 'Panama' }, equipos: inventario[0].equipos }];
+  assert.deepEqual(sugerencias(b, aMedias).filter(x => x.campo === 'customer.location'), []);
+
+  // Un equipo sin observadores con nombre no dice «1 observadores».
+  const anonimos = [{ customer, equipos: [{ ...inventario[0].equipos[0], observadores: [] }] }];
+  assert.match(sugerencias(b, anonimos).at(-1).desde, /· 1 observador$/);
 });
 
 // Con PRUEBA_MODELO=1: los 10 prompts oficiales del xlsx + uno en portugués contra el modelo real.

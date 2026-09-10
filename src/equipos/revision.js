@@ -2,8 +2,14 @@
 import { preguntas, interpretarEdad } from './reglas.js';
 import { MARCAS, MODALIDADES } from './esquema.js';
 
-export function aplicarRespuestas(b, respuestas = {}) {
+// origenes: { clave: 'inventario' }. Un dato que la persona aceptó pero que salió de la base
+// instalada no vale lo mismo que uno que ella dictó: el acta los distingue.
+// La lista es cerrada a propósito: esto viaja del navegador al acta FIRMADA, y un cliente que
+// mandara `origenes: {'model:0': 'cita'}` haría que el registro sellado jurara que hubo una cita.
+const ORIGENES = new Set(['inventario', 'colaborador']);
+export function aplicarRespuestas(b, respuestas = {}, origenes = {}) {
   const out = structuredClone(b);
+  const origen = clave => ORIGENES.has(origenes?.[clave]) ? origenes[clave] : 'colaborador';
   for (const [clave, valor] of Object.entries(respuestas ?? {})) {
     if (valor == null || valor === 'No sé' || valor === '') continue;
     const [campo, g] = clave.split(':');
@@ -22,13 +28,16 @@ export function aplicarRespuestas(b, respuestas = {}) {
     else if (campo === 'manufacturer' && MARCAS.includes(valor)) grupo.manufacturer = valor;
     else if (campo === 'model') grupo.model = valor;
     else if (campo === 'age') { const edad = interpretarEdad(valor); if (edad) [grupo.age_years_min, grupo.age_years_max] = edad; }
-    if (grupo) grupo.verificado = { ...(grupo.verificado ?? {}), [campo]: 'colaborador' };
+    // El sitio no cuelga de ningún grupo: sin esta rama, el dato del que más importa la
+    // procedencia (la ciudad y el país que puso la base) llegaba al acta sin marca ninguna.
+    if (grupo) grupo.verificado = { ...(grupo.verificado ?? {}), [campo]: origen(clave) };
+    else if (campo.startsWith('customer.')) out.customer.verificado = { ...(out.customer.verificado ?? {}), [campo.slice(9)]: origen(clave) };
   }
   return out;
 }
 
-export function revision(borrador, respuestas = {}) {
-  const b = aplicarRespuestas(borrador, respuestas);
+export function revision(borrador, respuestas = {}, origenes = {}) {
+  const b = aplicarRespuestas(borrador, respuestas, origenes);
   return { borrador: b, preguntas: preguntas(b, { yaContestadas: new Set(Object.keys(respuestas)) }) };
 }
 
