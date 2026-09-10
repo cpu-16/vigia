@@ -6,6 +6,20 @@
 |---|---|---|---|
 | `@qvac/sdk` | **0.18.2** (fijada) | ver paquete | Toda la inferencia: LLM, ASR, visión, embeddings, delegación P2P |
 
+### Pila P2P que arrastra el SDK (Holepunch / Pear)
+
+Se declaran porque son el transporte real de la delegación entre pares, no un detalle interno:
+el nodo que presta cómputo se anuncia y se encuentra por llave pública en este DHT.
+
+| Paquete | Versión | Licencia |
+|---|---|---|
+| `hyperswarm` | 4.17.0 | MIT |
+| `hyperdht` | 6.34.0 | MIT |
+| `hyperdrive` | 13.3.3 | Apache-2.0 |
+| `hypercore` | 11.35.2 | MIT |
+| `corestore` | 7.12.2 | MIT |
+| `hyperbee` | 2.27.3 | MIT |
+
 ## Modelos
 
 Se declaran con el nombre exacto de la constante del SDK, cuantización y hardware donde se

@@ -24,6 +24,21 @@ tres espacios, **Equipos, Sucursal y Red**, que comparten runtime, registro, sel
   placa), y las tablas de las demás mediciones en `evidencia/sucursal-gpu-9sep.md`,
   `evidencia/mac-par-9sep.md` y `evidencia/medicion-telefono-9sep.md`.
 
+## El canal entre pares: Hyperswarm sobre el DHT de Holepunch
+
+La delegación no pasa por ningún servidor nuestro ni por un puerto abierto. `@qvac/sdk` 0.18.2
+trae la pila de Holepunch —la misma de Pear— y es por ahí que un nodo encuentra a otro **por su
+llave pública**: `hyperswarm` 4.17.0 sobre `hyperdht` 6.34.0, con `corestore` 7.12.2 y
+`hyperdrive` 13.3.3 para el registro de modelos. `startQVACProvider` publica la llave del que
+presta cómputo (`src/puente/proveedor.js`) y `delegate.providerPublicKey` la consume
+(`src/core/runtime.js`). Medido entre casas distintas y entre el teléfono y la laptop:
+`evidencia/mac-par-9sep.md` y `evidencia/telefono-puente-9sep.md`.
+
+Tailscale aparece en las demostraciones, pero **en otra capa y nunca en la inferencia**: su Funnel
+publica una URL HTTPS para que la interfaz se abra desde un navegador cualquiera, protegida con la
+clave de equipo (`CLAVE`). Un navegador no habla el DHT; los nodos sí, y es entre nodos donde
+ocurre el cómputo. Apagar Tailscale no cambia dónde se infiere: solo deja de haber URL pública.
+
 ## Base preexistente declarada (artículo 11.c)
 
 Antes del inicio de la competencia, el equipo desarrolló una librería propia de experimentación
