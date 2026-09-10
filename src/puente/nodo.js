@@ -106,7 +106,10 @@ export function crearServidor() {
   return createServer(async (req, res) => {
     const url = new URL(req.url, 'http://x');
     try {
-      if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/app')) return archivo(res, 'index.html');
+      // Las mismas rutas que el servidor de la laptop: `/` es la portada del producto y la app
+      // de campo vive en `/equipos`. Si no, la misma PWA se comporta distinto según quién la sirva.
+      if (req.method === 'GET' && url.pathname === '/') return archivo(res, 'inicio.html');
+      if (req.method === 'GET' && (url.pathname === '/equipos' || url.pathname === '/app')) return archivo(res, 'index.html');
       if (req.method === 'GET' && /^\/[\w.-]+$/.test(url.pathname) && existsSync(join(APP, url.pathname.slice(1)))) return archivo(res, url.pathname.slice(1));
       if (req.method === 'GET' && url.pathname === '/api/evidencia')
         return json(res, { nodo: HARDWARE, modo: modelos.delegado ? 'delegado' : (PROVEEDOR ? 'local (par caído)' : 'local'),

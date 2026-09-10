@@ -145,7 +145,7 @@ teléfono, como se hace en el hospital. Fotos ilustrativas de Wikimedia Commons
 <div id="pared" tabindex="-1" aria-hidden="true">
   <div class="escena">
     <img class="equipo" id="paredFoto" alt="">
-    <img class="chapa" id="paredChapa" alt="Placa de identificación sintética">
+    <img class="chapa" id="paredChapa" alt="Placa de identificación sintética" onerror="this.hidden=true">
     <div class="sin" id="paredSin" hidden></div>
     <span class="rotulo" id="paredRotulo"></span>
     <div class="mandos">
@@ -219,7 +219,7 @@ function pintar() {
       ? `Foto ilustrativa de la modalidad, no del equipo. Wikimedia Commons · ${esc(f.autor || 'autor no indicado')} · ${esc(f.licencia)} · <a href="${esc(f.url)}" rel="noopener">origen</a>.`
       : 'Foto ilustrativa de la modalidad, no del equipo. Wikimedia Commons.';
     const chapa = e.placa
-      ? `<img class="chapa" src="/placas/${esc(e.placa)}" alt="Placa sintética de ${esc(e.mod)}" loading="lazy">`
+      ? `<img class="chapa" src="/placas/${esc(e.placa)}" alt="Placa sintética de ${esc(e.mod)}" loading="lazy" onerror="this.remove()">`
       : `<span class="sin">${SIN_PLACA}</span>`;
     return `<article class="ficha">
       <div class="foto"><span class="num">${i + 1} / ${lista.length}</span>
