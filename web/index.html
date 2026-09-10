@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#16262e">
+<meta name="description" content="Vigía convierte observaciones de campo en información verificable con QVAC. Equipos, Sucursal y Red: inteligencia local con evidencia.">
+<title>Vigía · inteligencia local con evidencia</title>
+<link rel="icon" href="assets/vigia-logo.png" type="image/png">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+<header>
+<a class="marca" href="#contenido"><img src="assets/vigia-logo.png" width="34" height="34" alt="">Vigía</a>
+<nav aria-label="Principal"><a href="#demo">Ver demostración</a><a href="https://github.com/cpu-16/vigia">Código</a></nav>
+</header>
+<main id="contenido">
+<section class="presentacion" aria-label="Vigía, inteligencia local con evidencia">
+<img class="banner" src="assets/vigia-banner.png" width="2161" height="728" alt="Vigía. Inteligencia local con evidencia. Equipos, Sucursal y Red.">
+<div class="entrada">
+<h1>Lo que ocurre en campo,<br>con respaldo para decidir.</h1>
+<div><p>Dicta una visita, consulta un procedimiento o investiga una señal de red. Vigía transforma esa información con QVAC y muestra la fuente, el nodo y lo que falta confirmar.</p>
+<a class="boton" href="https://fedora.taild88ec5.ts.net:8443/">Abrir Vigía <span aria-hidden="true">↗</span></a>
+<p class="nota">Acceso al nodo de demostración con clave del equipo. Los datos son ficticios.</p></div>
+</div>
+</section>
+<section id="demo" class="demo">
+<div class="titulo"><h2>Vigía, en funcionamiento.</h2><span>4 min 10 s · Demostración real</span></div>
+<video controls playsinline preload="none" poster="assets/demo-portada.jpg" width="1920" height="1080" aria-label="Demostración de Vigía: Equipos, Sucursal, Red e inferencia local en modo avión">
+<source src="media/vigia-demo.mp4" type="video/mp4">
+<track kind="captions" src="media/vigia-demo.vtt" srclang="es" label="Español">
+Tu navegador no reproduce este video. <a href="media/vigia-demo.mp4">Descargar la demostración</a>.
+</video>
+<p class="nota">Voz y capturas reales, con esperas abreviadas. Incluye una consulta desde la webapp del HONOR en modo avión.</p>
+</section>
+<section class="espacios" aria-labelledby="tres">
+<h2 id="tres">Tres espacios. Una evidencia que se puede revisar.</h2>
+<dl>
+<div><dt>Equipos <small>Philips</small></dt><dd>Voz, texto y fotografías para construir el inventario. La persona confirma los campos, revisa duplicados y prioriza la siguiente visita.</dd></div>
+<div><dt>Sucursal <small>Caja de Ahorros</small></dt><dd>Procedimientos con fuentes, expedientes y actas verificables. El prototipo local permite una consulta breve sin red en el teléfono.</dd></div>
+<div><dt>Red <small>Ovnicom</small></dt><dd>Señales DNS, explicación con QVAC y revisión en Wazuh, ClickHouse y Grafana. El operador decide; no se bloquea tráfico automáticamente.</dd></div>
+</dl>
+<img class="capturas" src="assets/vigia-capturas.jpg" width="1600" height="1120" loading="lazy" alt="Capturas reales de la revisión de equipos, el tablero, Sucursal y el panel de Grafana">
+</section>
+<section class="alcance" aria-labelledby="local">
+<h2 id="local">La inferencia tiene un lugar.</h2>
+<p>QVAC ejecuta en el nodo propio o delega a un par autorizado por llave pública. El sitio presenta el proyecto; la IA trabaja en los equipos de demostración.</p>
+<details><summary>Qué funciona sin conexión y qué sigue siendo experimental</summary>
+<p>La app principal conserva capturas pendientes si pierde el nodo. Sucursal local ejecutó Qwen3-0.6B en la CPU del HONOR, con modelos descargados y Termux activo. Instalar una PWA no instala QVAC ni esos modelos. No es una APK autónoma.</p>
+<p>Las consultas requieren revisión humana. Red utiliza un replay finito de datos sintéticos, con latencia y códigos de respuesta simulados; no representa monitoreo continuo de producción.</p>
+</details>
+</section>
+</main>
+<footer><span>Vigía · HackPTY · Panamá, 2026</span><a href="https://github.com/cpu-16/vigia">Proyecto y evidencia ↗</a></footer>
+</body>
+</html>
