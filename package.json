@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Vigía: inteligencia local con evidencia, sobre @qvac/sdk 0.18.2 (HackPTY, Decentralized AI Hackathon 2026)",
+  "description": "Vigía: inteligencia local con evidencia, sobre @qvac/sdk 0.18.2 (ciberpty, Decentralized AI Hackathon 2026)",
   "license": "MIT",
   "engines": { "node": ">=22" },
   "scripts": {

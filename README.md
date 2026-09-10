@@ -39,7 +39,7 @@ La persona confirma el inventario y revisa las fuentes. En Red, las reglas detec
 
 El prototipo **Sucursal local** sirve su web desde Termux y ejecuta Qwen3-0.6B mediante QVAC Bare en la CPU del HONOR. Una consulta breve funcionó con Wi-Fi y datos apagados y sin puente al servidor: **6.7 s de carga + 19.3 s de inferencia**. [Resultado y controles](evidencia/sucursal-webapp-avion-10sep.md).
 
-Ya abre desde su icono como **Vigía local** en el HONOR. [Instalar la interfaz](docs/INSTALACION-CLIENTES.md) · [Captura instalada](evidencia/pwa/honor-instalada.png). Es una extensión de texto con modelos previamente instalados. **Instalar la PWA no instala QVAC ni los modelos.** No es una APK autónoma y todavía necesita el nodo Termux activo; no incluye voz, foto ni expedientes completos. En la app principal, sin acceso al nodo, se conservan capturas pendientes.
+Ya abre desde su icono como **Vigía local** en el HONOR. [Instalar la interfaz](docs/INSTALACION-CLIENTES.md) · [Apertura y nueva consulta en modo avión](evidencia/pwa-v5/README.md). Es una extensión de texto con modelos previamente instalados. **Instalar la PWA no instala QVAC ni los modelos.** No es una APK autónoma y todavía necesita el nodo Termux activo; no incluye voz, foto ni expedientes completos. En la app principal, sin acceso al nodo, se conservan capturas pendientes.
 
 ## Empezar
 
@@ -53,6 +53,10 @@ VISION=1 npm start
 
 Abre **http://localhost:7320**. Para elegir GPU, activar voz en GPU, desplegar el nodo o conectar un par: [guía de ejecución](docs/EJECUCION.md). Para el prototipo Android: [requisitos y paquete Termux](docs/SUCURSAL-LOCAL-TERMUX.md).
 
+## Para evaluar
+
+[Guía por track](docs/GUIA-EVALUACION.md) · [Qué diferencia a Sucursal de lo existente](docs/DIFERENCIACION-CAJA.md).
+
 ## Evidencia y alcance
 
 - [Mediciones con denominadores y hardware](docs/MEDICIONES.md), [modelos y componentes de terceros](THIRD_PARTY.md).
@@ -62,4 +66,4 @@ Abre **http://localhost:7320**. Para elegir GPU, activar voz en GPU, desplegar e
 
 **Base preexistente declarada:** una librería propia de experimentación con QVAC sirvió como referencia de diseño y mediciones; su código no se incorporó al producto entregado. [Procedencia por componente](evidencia/procedencia.md), conforme al artículo 11.c.
 
-Equipo **HackPTY** · Decentralized AI Hackathon 2026 · Panamá · [MIT](LICENSE)
+Equipo **ciberpty** · Decentralized AI Hackathon 2026 · Panamá · [MIT](LICENSE)

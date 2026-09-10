@@ -1,0 +1,14 @@
+{
+  "antes": {
+    "airplane_mode_on": "0",
+    "wifi_on": "1",
+    "mobile_data": "1"
+  },
+  "despues": {
+    "airplane_mode_on": "0",
+    "wifi_on": "1",
+    "mobile_data": "1"
+  },
+  "reverse_antes": "UsbFfs tcp:7320 tcp:7320",
+  "reverse_despues": "UsbFfs tcp:7320 tcp:7320"
+}

@@ -13,7 +13,7 @@
 <a class="saltar" href="#contenido">Saltar al contenido</a>
 <header>
 <a class="marca" href="#contenido"><img src="assets/vigia-logo.png" width="34" height="34" alt="">Vigía</a>
-<nav aria-label="Principal"><a href="#demo">Ver demostración</a><a href="https://github.com/cpu-16/vigia">Código</a></nav>
+<nav aria-label="Principal"><a href="#demo">Ver demostración</a><a href="#evaluar">Para evaluar</a><a href="https://github.com/cpu-16/vigia">Código</a></nav>
 </header>
 <main id="contenido">
 <section class="presentacion" aria-label="Vigía, inteligencia local con evidencia">
@@ -26,13 +26,13 @@
 </div>
 </section>
 <section id="demo" class="demo">
-<div class="titulo"><h2>Vigía, en funcionamiento.</h2><span>4 min 10 s · Demostración real</span></div>
+<div class="titulo"><h2>Vigía, en funcionamiento.</h2><span>4 min 22 s · Demostración real</span></div>
 <video controls playsinline preload="none" poster="assets/demo-portada.jpg" width="1920" height="1080" aria-label="Demostración de Vigía: Equipos, Sucursal, Red e inferencia local en modo avión">
 <source src="media/vigia-demo.mp4" type="video/mp4">
 <track kind="captions" src="media/vigia-demo.vtt" srclang="es" label="Español">
 Tu navegador no reproduce este video. <a href="media/vigia-demo.mp4">Descargar la demostración</a>.
 </video>
-<p class="nota">Voz y capturas reales, con esperas abreviadas. Incluye una consulta desde la webapp del HONOR en modo avión.</p>
+<p class="nota">Voz y capturas reales, con esperas abreviadas. Incluye la apertura desde el icono de Vigía local y una nueva consulta real en el HONOR en modo avión.</p>
 </section>
 <section class="espacios" aria-labelledby="tres">
 <h2 id="tres">Tres espacios. Una evidencia que se puede revisar.</h2>
@@ -43,6 +43,17 @@ Tu navegador no reproduce este video. <a href="media/vigia-demo.mp4">Descargar l
 </dl>
 <img class="capturas" src="assets/vigia-capturas.jpg" width="1600" height="1120" loading="lazy" alt="Capturas reales de la revisión de equipos, el tablero, Sucursal y el panel de Grafana">
 </section>
+<section id="evaluar" class="evaluar" aria-labelledby="evaluar-titulo">
+<h2 id="evaluar-titulo">Del reto a la prueba.</h2>
+<p>Equipo <strong>ciberpty</strong> · Producto <strong>Vigía</strong>. Cada recorrido tiene código, evidencia y límites documentados.</p>
+<div class="tabla-scroll"><table><caption>Guía de revisión por track</caption><thead><tr><th>Track</th><th>Qué comprobar</th><th>Código y evidencia</th></tr></thead><tbody>
+<tr><th scope="row">Philips · Equipos</th><td>Dictado → revisión de campos y placa → inventario.</td><td><a href="https://github.com/cpu-16/vigia/tree/main/src/equipos">Implementación</a> · <a href="https://github.com/cpu-16/vigia/blob/main/docs/MEDICIONES.md">Mediciones</a></td></tr>
+<tr><th scope="row">Caja · Sucursal</th><td>Procedimiento con fuente → expediente → acta verificable.</td><td><a href="https://github.com/cpu-16/vigia/tree/main/src/sucursal">Implementación</a> · <a href="https://github.com/cpu-16/vigia/blob/main/docs/DIFERENCIACION-CAJA.md">Diferenciación</a></td></tr>
+<tr><th scope="row">Ovnicom · Red</th><td>Replay DNS → explicación QVAC → Wazuh y Grafana.</td><td><a href="https://github.com/cpu-16/vigia/tree/main/infra/red">Integración y reproducción</a></td></tr>
+<tr><th scope="row">General · QVAC</th><td>Inferencia en equipos propios, delegación por llave y consulta local.</td><td><a href="https://github.com/cpu-16/vigia/tree/main/src/puente">Nodos</a> · <a href="https://github.com/cpu-16/vigia/blob/main/evidencia/sucursal-webapp-avion-10sep.md">Prueba sin red</a></td></tr>
+</tbody></table></div>
+<p class="nota">VisionPsy se usa para leer placas en Equipos. No presentamos el track QVAC Psy.</p>
+</section>
 <section class="alcance" aria-labelledby="local">
 <h2 id="local">La inferencia tiene un lugar.</h2>
 <p>QVAC ejecuta en el nodo propio o delega a un par autorizado por llave pública. El sitio presenta el proyecto; la IA trabaja en los equipos de demostración.</p>
@@ -52,6 +63,6 @@ Tu navegador no reproduce este video. <a href="media/vigia-demo.mp4">Descargar l
 </details>
 </section>
 </main>
-<footer><span>Vigía · HackPTY · Panamá, 2026</span><a href="https://github.com/cpu-16/vigia">Proyecto y evidencia ↗</a></footer>
+<footer><span>Vigía · ciberpty · Panamá, 2026</span><a href="https://github.com/cpu-16/vigia">Proyecto y evidencia ↗</a></footer>
 </body>
 </html>
