@@ -13,6 +13,10 @@ import { MARCAS, sinAcentos, normalizarModalidad } from './esquema.js';
 
 const SDK_VERSION = '0.18.2';
 export const PROMPT = 'Read all the text printed on this label, line by line.';
+// Una foto de campo casi nunca es una placa: es el equipo entero, en su sala. Para eso el mismo
+// modelo describe la escena en una frase. Va en inglés porque VisionPsy Nano está entrenado en
+// inglés, y no hace falta traducirla: el extractor ya recibe inglés (los 10 prompts del reto lo son).
+export const PROMPT_ESCENA = 'Describe this photo in one short sentence: what medical device is shown, and any brand or text visible on it.';
 
 export async function cargarVista({ etiqueta = 'VisionPsy Nano 460M Q8_0', hardware = 'laptop-rtx4060', device = 'gpu', ctx = 2048 } = {}) {
   const t0 = performance.now();
@@ -133,4 +137,26 @@ export async function leerPlaca(vista, imagen, { requestId, catalogo } = {}) {
   const t = await transcribir(vista, imagen, { requestId });
   const p = parsearPlaca(t.lineas, { catalogo });
   return { ...p, transcripcion: t.texto, ms: t.ms, fila: t.fila };
+}
+
+// mirar(): la foto que llega no viene rotulada. Se intenta LEER primero, porque leer da datos
+// duros —marca, modelo, serie— y una descripción no. Si de la lectura no sale ni marca ni modelo
+// ni serie, entonces no era una placa: se le pide al mismo modelo que DESCRIBA lo que ve, y eso
+// entra a la visita como una observación más, nunca como identidad del activo.
+export async function mirar(vista, imagen, { requestId, catalogo } = {}) {
+  const r = await leerPlaca(vista, imagen, { requestId, catalogo });
+  if (r.campos.manufacturer || r.campos.model || r.campos.serial) return { ...r, modo: 'placa' };
+  const d = await transcribir(vista, imagen, { requestId, prompt: PROMPT_ESCENA, maxTokens: 90 });
+  return { ...r, modo: 'escena', descripcion: d.texto, pistas: pistasDeEscena(d.texto),
+    ms: r.ms + d.ms, filaEscena: d.fila };
+}
+
+// De una descripción libre solo se acepta lo que el catálogo puede sostener: la modalidad, y la
+// marca únicamente si es una de las seis del reto. Medido el 9-sep: sobre una foto de feria el
+// modelo inventó la marca «Soyo». Una descripción es una pista para la persona, no una identidad,
+// y lo que entra al reporte sale de aquí, no de la frase cruda.
+export function pistasDeEscena(texto) {
+  const t = sinAcentos(texto ?? '');
+  return { modality: normalizarModalidad(texto ?? ''),
+           manufacturer: MARCAS.find(m => t.includes(sinAcentos(m))) ?? null };
 }

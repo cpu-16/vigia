@@ -15,6 +15,7 @@
   header{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;
          padding:26px 0 14px;border-bottom:2px solid var(--tinta);margin-bottom:26px}
   h1{font:400 34px/1 var(--serif);margin:0}
+  h1 a{color:inherit;text-decoration:none}
   h1 small{display:block;font:500 11px/1.4 system-ui;letter-spacing:.16em;text-transform:uppercase;color:var(--tinta-suave);margin-top:7px}
   /* Un solo estado de conexión, y sale de las respuestas: verde solo si el último sondeo respondió,
      ámbar cuando lo que se ve en pantalla es lo anterior, gris mientras nunca haya llegado nada. */
@@ -55,7 +56,7 @@
 
 <div class="hoja">
   <header>
-    <h1>Vigía<small>Tablero de base instalada</small></h1>
+    <h1><a href="/">Vigía</a><small>Tablero de base instalada</small></h1>
     <span class="vivo" id="conexion"><a href="/catalogo.html">Catálogo de equipos</a> · <a href="/verificar">Verificar un acta</a><i class="punto"></i><span id="vivo" aria-live="polite">Sin datos</span></span>
   </header>
 

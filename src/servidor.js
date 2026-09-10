@@ -13,7 +13,7 @@ import { llaveNodo, sellar, verificar } from './core/sello.js';
 import { RUTA as RUTA_RENDIMIENTO, RUN_ID } from './core/rendimiento.js';
 import { extraer } from './equipos/extraer.js';
 import { consultar, sinVerificar } from './equipos/consulta.js';
-import { cargarVista, leerPlaca } from './equipos/placa.js';
+import { cargarVista, mirar } from './equipos/placa.js';
 import { preguntas, derivar } from './equipos/reglas.js';
 import { candidatos } from './equipos/duplicados.js';
 import { Base } from './equipos/almacen.js';
@@ -22,6 +22,7 @@ import { conRespaldo } from './puente/respaldo.js';
 
 const PUERTO = Number(process.env.PUERTO ?? 7320);
 const APP = resolve('app');
+const PLACAS = resolve('fixtures/placas');
 const base = new Base(process.env.OBSERVACIONES ?? 'datos/observaciones.jsonl');
 const llave = llaveNodo();
 const idSolicitud = () => `V-${randomBytes(2).toString('hex').toUpperCase()}`;
@@ -62,7 +63,7 @@ const json = (res, obj, code = 200) => { res.writeHead(code, { 'content-type': '
 const cuerpo = async (req, max = 12e6) => { const p = []; let n = 0; for await (const c of req) { n += c.length; if (n > max) throw new Error('cuerpo muy grande'); p.push(c); } return Buffer.concat(p); };
 const cuerpoJson = async req => JSON.parse((await cuerpo(req)).toString('utf8') || '{}');
 const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
-  '.json': 'application/json; charset=utf-8', '.webmanifest': 'application/manifest+json', '.svg': 'image/svg+xml', '.png': 'image/png' };
+  '.json': 'application/json; charset=utf-8', '.webmanifest': 'application/manifest+json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg' };
 
 // ── clave de equipo (opcional) ─────────────────────────────────────────────────────────────
 // Con `CLAVE` definida el nodo queda cerrado: TODA ruta —páginas y `/api/*`— exige la cookie
@@ -129,11 +130,15 @@ const servidor = createServer(async (req, res) => {
     if (CLAVE && ruta === '/entrar') { res.writeHead(303, { location: '/' }); return res.end(); }
 
     // ── app ──
-    if (req.method === 'GET' && (ruta === '/' || ruta === '/app')) return archivo(res, 'index.html');
+    // `/` es la portada del producto (los tres espacios); la app de campo vive en `/equipos`.
+    // `/app` se conserva porque es lo que quedó instalado en el teléfono.
+    if (req.method === 'GET' && ruta === '/') return archivo(res, 'inicio.html');
+    if (req.method === 'GET' && (ruta === '/equipos' || ruta === '/app')) return archivo(res, 'index.html');
     if (req.method === 'GET' && ruta === '/tablero') return archivo(res, 'tablero.html');
     if (req.method === 'GET' && ruta === '/verificar') return archivo(res, 'verificar.html');
     if (req.method === 'GET' && ruta === '/sucursal') return archivo(res, 'sucursal.html');
     if (req.method === 'GET' && /^\/[\w.-]+$/.test(ruta) && existsSync(join(APP, ruta.slice(1)))) return archivo(res, ruta.slice(1));
+    if (req.method === 'GET' && /^\/placas\/[\w-]+\.png$/.test(ruta)) return archivoDe(res, PLACAS, ruta.slice(8));
 
     // ── captura ──
     if (req.method === 'POST' && ruta === '/api/dictar') {
@@ -201,8 +206,8 @@ const servidor = createServer(async (req, res) => {
       const tmp = `/tmp/vigia-placa-${id}.png`;
       await writeFile(tmp, bytes);
       console.log(`▸ [${id}] QVAC visión → VisionPsy Nano 460M (${bytes.length} bytes)`);
-      const r = await leerPlaca(vista, tmp, { requestId: id, catalogo: CATALOGO });
-      console.log(`▸ [${id}] visión ✓ ${Math.round(r.ms)} ms · ${Object.entries(r.campos).map(([k, v]) => `${k}=${v}`).join(' · ') || 'sin campos'}`);
+      const r = await mirar(vista, tmp, { requestId: id, catalogo: CATALOGO });
+      console.log(`▸ [${id}] visión ✓ ${r.modo} · ${Math.round(r.ms)} ms · ${Object.entries(r.campos).map(([k, v]) => `${k}=${v}`).join(' · ') || r.descripcion || 'sin campos'}`);
       return json(res, { id, ...r });
     }
 
@@ -249,9 +254,11 @@ const servidor = createServer(async (req, res) => {
   } catch (e) { console.error('✗', e); json(res, { error: String(e?.message ?? e) }, 500); }
 });
 
-async function archivo(res, nombre) {
-  const p = join(APP, nombre);
-  if (!p.startsWith(APP) || !existsSync(p)) { res.writeHead(404); return res.end('no está'); }
+const archivo = (res, nombre) => archivoDe(res, APP, nombre);
+
+async function archivoDe(res, dir, nombre) {
+  const p = join(dir, nombre);
+  if (!p.startsWith(dir) || !existsSync(p)) { res.writeHead(404); return res.end('no está'); }
   res.writeHead(200, { 'content-type': TIPOS[extname(p)] ?? 'application/octet-stream', 'cache-control': 'no-cache' });
   res.end(await readFile(p));
 }

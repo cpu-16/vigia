@@ -46,7 +46,7 @@ src/equipos/     módulo Philips: captura, extracción, identidad de activos, in
 src/sucursal/    módulo banca: procedimiento citado, acta verificable
 src/red/         módulo red: consumidor del stream DNS, clasificación, salidas
 src/puente/      proveedor P2P (presta la GPU por llave pública), nodo del teléfono, respaldo cuando el par cae
-app/             interfaz web instalable (PWA), tablero, pantalla de sucursal y verificador de actas
+app/             interfaz web instalable (PWA): portada, app de campo, catálogo, tablero, sucursal y verificador
 fixtures/        datos sintéticos
 evidencia/       procedencia, rendimiento, pruebas de no salida de datos
 ```
@@ -57,7 +57,7 @@ Un solo proyecto, un solo repositorio (rama `main`), un solo video. Cada jurado 
 
 | Track | Módulo | Carpeta | Minuto del video |
 |---|---|---|---|
-| 01 Philips · Base instalada | Equipos: captura por voz/texto/foto, extracción, identidad y duplicados, inventario, Customer 360 | `src/equipos/`, `app/index.html`, `app/tablero.html` | 0:12–1:28 |
+| 01 Philips · Base instalada | Equipos: captura por voz/texto/foto, extracción, identidad y duplicados, inventario, Customer 360, cola sin conexión | `src/equipos/`, `app/index.html`, `app/tablero.html`, `app/catalogo.html` | 0:12–1:28 |
 | 02 Tether · QVAC Psy | VisionPsy Nano lee la placa en la laptop; reglas deterministas sacan marca, modelo y serie; registro de rendimiento entregable | `src/equipos/placa.js`, `evidencia/registro-psy-placas-9sep.jsonl` | 0:42–1:09 |
 | 03 General · Sovereign Intelligence at the Edge | Todo lo anterior + delegación entre pares por llave pública (teléfono → laptop, teléfono → Mac y laptop → Mac en otra casa), el par que se apaga y la laptop que lo nota, actas verificables en el navegador, prueba de aislamiento | `src/core/`, `src/puente/`, `app/verificar.html`, `evidencia/` | 3:02–4:19, y la evidencia común 4:19–4:55 |
 | 05 Caja de Ahorros · Banca | Sucursal: procedimiento citado sin conexión, expediente, acta sellada y verificable; pantalla en `/sucursal` | `src/sucursal/`, `app/sucursal.html` | 1:28–2:22 |
@@ -73,6 +73,7 @@ Un solo proyecto, un solo repositorio (rama `main`), un solo video. Cada jurado 
 | Placa: número de serie sobre 20 placas sintéticas | 20 / 20 | `src/equipos/placa.test.js`; corrida entregable en `evidencia/registro-psy-placas-9sep.jsonl` |
 | Placa: modelo · marca · modalidad | 18 / 20 · 16 / 20 · 18 / 20 | idem (corrida del 9-sep en la RTX 4060; las placas nítidas dan 38 / 40 campos) |
 | Placa: tiempo hasta el primer token · velocidad | mediana 1.0 s · 218 tok/s | idem |
+| Foto sin placa: el modelo describe y el filtro corta la marca inventada | 1.8 s leer + 2.3 s describir, 0 marcas falsas en 2 corridas | `src/equipos/placa.js` (`mirar`, `pistasDeEscena`), prueba en `placa.test.js` |
 | Sucursal: consultas correctas | 19 / 20 | `src/sucursal/sucursal.test.js`; `evidencia/sucursal-gpu-9sep.md` (tres corridas: 17, 18 y 19 de 20) |
 | Sucursal: abstenciones cuando la guía no cubre | 5 / 5 | idem |
 | Sucursal: latencia por consulta | 375–923 ms en la RTX 4060 (4.5–17 s en CPU) | `evidencia/sucursal-gpu-9sep.md` |
@@ -96,7 +97,8 @@ periodicidad no prueba mando y control.
 
 - El teléfono captura y delega; hoy no infiere a bordo (el worker de Bare cae al cargar el modelo). Sin par a la vista, el nodo responde 503 diciendo que la captura queda pendiente; la app la deja en cola desde el navegador (`evidencia/telefono-puente-9sep.md`).
 - Cuando el par delegado se apaga, la laptop lo nota y recalcula local; cuando el par vuelve, no vuelve a delegar sola: hay que reiniciar el nodo.
-- La cola sin conexión de la app reenvía capturas de texto; una captura de voz que quedó pendiente no se procesa después.
+- La cola sin conexión guarda nota, dictado y foto, y las reenvía cuando vuelve el nodo, de una en una porque cada visita se confirma antes de guardarse. Lo que no hace es interpretar a bordo: sin nodo no hay respuesta, solo resguardo.
+- De una foto sin placa legible el modelo describe la escena, y de esa descripción solo se acepta la modalidad y una marca del catálogo. Medido el 9-sep: sobre la misma foto inventó «Soyo» y «SARK» en dos corridas; ninguna llegó al inventario (`src/equipos/placa.test.js`).
 - La latencia y los códigos de respuesta DNS son sintéticos, porque el registro entregado solo trae consultas; cada fila lo marca.
 - El beaconing tiene 57 % de precisión: la periodicidad no prueba mando y control. Las reglas detectan; el modelo explica y no decide bloqueos.
 - El endpoint `/events` de Wazuh admite 100 eventos por petición y 30 peticiones por minuto, fijo en el manager: el agente agrupa hasta 100 alertas o 2,5 s. El JSONL local se escribe siempre, antes de cualquier envío, y es el respaldo si la API no responde.
@@ -114,7 +116,8 @@ node --test                 # 59 pruebas deterministas, sin modelos, ~3 s (8 má
 
 # nodo completo (extracción, dictado y lectura de placa)
 GGML_VK_VISIBLE_DEVICES=1 VISION=1 node src/servidor.js
-#   app en http://localhost:7320  ·  tablero en /tablero  ·  sucursal en /sucursal  ·  verificador en /verificar
+#   portada en http://localhost:7320  ·  app de campo en /equipos  ·  catálogo en /catalogo.html
+#   tablero en /tablero  ·  sucursal en /sucursal  ·  verificador en /verificar
 
 # reto 04 (Ovnicom): el stream DNS en dos procesos, una tubería local
 node src/red/productor.js --velocidad 1 | node src/red/demo.js --stdin

@@ -22,6 +22,7 @@
   header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:18px 0 10px;
          border-bottom:2px solid var(--tinta)}
   h1{font:400 30px/1 var(--serif);margin:0;letter-spacing:-.01em}
+  h1 a{color:inherit;text-decoration:none}
   h1 small{display:block;font:500 11px/1.4 system-ui;letter-spacing:.16em;text-transform:uppercase;color:var(--tinta-suave);margin-top:6px}
   .nodo{font-size:12px;color:var(--tinta-suave);display:flex;align-items:center;gap:6px;white-space:nowrap}
   .punto{width:8px;height:8px;border-radius:50%;background:var(--alerta)}
@@ -106,14 +107,40 @@
   summary{cursor:pointer;font:600 13px system-ui;letter-spacing:.04em;text-transform:uppercase}
   .tec{font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--tinta-suave);white-space:pre-wrap;margin-top:8px}
   .oculto{display:none !important}
-  .pendientes{background:var(--tinta);color:var(--papel);border-radius:12px;padding:12px 14px;margin:14px 0;
-              display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px}
-  .pendientes button{background:var(--papel);color:var(--tinta);border:0;border-radius:8px;padding:8px 12px;font:600 13px system-ui}
+  /* Los tres pasos del ciclo, siempre a la vista: capturar no depende de que haya nodo. */
+  .pasos{display:flex;margin:14px 0 0;border:1px solid var(--raya);border-radius:12px;overflow:hidden;background:var(--papel-alto)}
+  .paso{flex:1;padding:9px 7px 10px;text-align:center;border-right:1px solid var(--raya);opacity:.4}
+  .paso:last-child{border-right:0}
+  .paso.vivo{opacity:1;background:var(--papel);box-shadow:inset 0 -3px 0 var(--accion)}
+  .paso i{font-style:normal;font:600 10px system-ui;letter-spacing:.1em;color:var(--accion-hondo)}
+  .paso b{display:block;font:600 12.5px system-ui;margin-top:2px}
+  .paso small{display:block;font-size:11px;color:var(--tinta-suave);line-height:1.25;margin-top:2px}
+  .explica{margin:9px 0 2px;font-size:13.5px;line-height:1.4;color:var(--tinta-suave);text-align:center}
+  .explica b{color:var(--tinta);font-weight:600}
+
+  .cola{border:1px solid var(--tinta);border-radius:12px;padding:13px 14px;margin:14px 0;background:var(--papel-alto)}
+  .cola h3{margin:0 0 6px;font:600 11px system-ui;letter-spacing:.12em;text-transform:uppercase;color:var(--tinta-suave)}
+  .cola .item{display:flex;align-items:center;gap:11px;padding:8px 0;border-bottom:1px solid var(--raya)}
+  .cola .item:last-of-type{border-bottom:0}
+  .cola .item img,.cola .item .ico{width:46px;height:46px;border:1px solid var(--raya);border-radius:8px;flex:none}
+  .cola .item img{object-fit:cover}
+  .cola .item .ico{display:grid;place-items:center;font-size:20px;background:var(--papel)}
+  .cola .item b{display:block;font:600 14.5px system-ui}
+  .cola .item small{display:block;font-size:12px;color:var(--tinta-suave)}
+  .cola button{width:100%;margin-top:11px;padding:13px;border:0;border-radius:10px;background:var(--accion);
+               color:#fff;font:600 15px system-ui;cursor:pointer}
+  .cola button[disabled]{background:var(--raya);color:var(--tinta-suave)}
+
+  .visto{background:var(--papel-alto);border:1px solid var(--raya);border-radius:14px;padding:14px 16px;margin:16px 0}
+  .visto img{width:100%;max-height:210px;object-fit:cover;border-radius:10px;display:block;margin-bottom:12px}
+  .visto .frase{font:400 18px/1.45 var(--serif)}
+  .visto .quien{display:block;margin-top:9px;font:500 11px system-ui;letter-spacing:.11em;
+                text-transform:uppercase;color:var(--tinta-suave)}
 </style>
 
 <div class="hoja">
   <header>
-    <h1>Vigía<small>Base instalada</small></h1>
+    <h1><a href="/">Vigía</a><small>Base instalada</small></h1>
     <span class="nodo" id="nodo"><i class="punto"></i><span id="nodoTexto">buscando nodo…</span></span>
   </header>
 
@@ -125,8 +152,17 @@
     </div>
   </div>
 
-  <div id="pendientes" class="pendientes oculto">
-    <span id="pendTexto"></span><button id="procesar">Procesar</button>
+  <div class="pasos" id="pasos">
+    <div class="paso" data-p="1"><i>PASO 1</i><b>Capturas</b><small>foto, voz o nota</small></div>
+    <div class="paso" data-p="2"><i>PASO 2</i><b>Se guarda aquí</b><small>con su hora, en el teléfono</small></div>
+    <div class="paso" data-p="3"><i>PASO 3</i><b>Se interpreta</b><small>y queda sellada</small></div>
+  </div>
+  <p class="explica" id="explica"></p>
+
+  <div id="pendientes" class="cola oculto">
+    <h3 id="pendTexto"></h3>
+    <div id="pendLista"></div>
+    <button id="procesar">Interpretar</button>
   </div>
 
   <!-- 1 · capturar -->
@@ -140,12 +176,11 @@
     </div>
     <div class="losas">
       <button type="button" class="losa" id="btnEscribir"><span>✎</span>Escribir</button>
-      <button type="button" class="losa" id="btnFoto"><span>▣</span>Leer placa</button>
+      <button type="button" class="losa" id="btnFoto"><span>▣</span>Tomar foto</button>
     </div>
     <div class="secundarias">
       <button type="button" class="menor" id="btnEjemplo">Ver un ejemplo</button>
       <button type="button" class="menor" id="btnPreguntar">Preguntar a la base</button>
-      <a class="menor" style="text-decoration:none" href="/sucursal">Sucursal</a>
       <a class="menor" style="text-decoration:none" href="/catalogo.html">Catálogo</a>
     </div>
     <input type="file" id="archivoFoto" accept="image/*" capture="environment" hidden>
@@ -188,6 +223,7 @@ let hayNodo = false, degradado = false, avisoNodo = null;
 const pintarNodo = () => { $('#nodo').classList.toggle('si', hayNodo && !degradado);
                            $('#nodo').classList.toggle('aviso', hayNodo && degradado); };
 async function sondear() {
+  const habia = hayNodo;
   try { const r = await fetch('/api/evidencia', { cache: 'no-store' });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const e = await r.json();
@@ -204,7 +240,10 @@ async function sondear() {
     avisoNodo = 'No hay ningún nodo a la vista: la captura queda guardada en el teléfono.';
     $('#nodoTexto').textContent = 'sin nodo · se guarda aquí'; }
   pintarNodo();
-  pintarPendientes();
+  await pintarPendientes();
+  // Apareció un nodo y hay capturas esperando: se interpretan solas, que es lo que la persona
+  // espera al salir del sótano. Solo si está en la pantalla de captura y no a medio revisar otra.
+  if (hayNodo && !habia && !$('#p1').classList.contains('oculto') && !estado.borrador) procesarUno();
 }
 sondear(); setInterval(sondear, 5000);
 
@@ -215,16 +254,50 @@ const db = () => new Promise((ok, err) => { const r = indexedDB.open('vigia', 1)
 async function encolar(item) { const d = await db(); return new Promise(ok => { const t = d.transaction('cola', 'readwrite'); t.objectStore('cola').add({ ...item, ts: Date.now() }); t.oncomplete = ok; }); }
 async function cola() { const d = await db(); return new Promise(ok => { const r = d.transaction('cola').objectStore('cola').getAll(); r.onsuccess = () => ok(r.result); }); }
 async function vaciar(id) { const d = await db(); return new Promise(ok => { const t = d.transaction('cola', 'readwrite'); t.objectStore('cola').delete(id); t.oncomplete = ok; }); }
+// El ciclo en tres pasos y en cuál estás ahora. Sin nodo no se bloquea nada: se captura igual,
+// se guarda aquí con su hora, y el paso 3 espera. Es el caso del sótano del hospital.
+function pintarPasos(pendientes) {
+  const vivo = pendientes ? (hayNodo ? 3 : 2) : 1;
+  for (const p of document.querySelectorAll('.paso')) p.classList.toggle('vivo', Number(p.dataset.p) === vivo);
+  $('#explica').innerHTML = hayNodo
+    ? (pendientes ? `Hay nodo: <b>se pueden interpretar las ${pendientes} que quedaron guardadas</b>.`
+                  : 'Hay nodo a la vista: <b>lo que captures se interpreta aquí mismo</b>, sin salir a internet.')
+    : (pendientes ? `Sin nodo. <b>${pendientes} captura(s) esperando</b>: se interpretan solas en cuanto aparezca uno.`
+                  : 'Sin nodo a la vista. <b>Captura igual</b>: se guarda aquí y se interpreta cuando vuelva.');
+}
+const HORA = ts => new Date(ts ?? Date.now()).toLocaleString('es-PA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+const NOMBRE = { foto: 'Foto', audio: 'Dictado', texto: 'Nota' };
+const recorte = t => String(t ?? '').slice(0, 42).replace(/[<>&]/g, ' ');
+let urlsVivas = [];
 async function pintarPendientes() {
   const c = await cola();
   $('#pendientes').classList.toggle('oculto', !c.length);
+  pintarPasos(c.length);
+  urlsVivas.forEach(URL.revokeObjectURL); urlsVivas = [];
   $('#pendTexto').textContent = `${c.length} captura${c.length === 1 ? '' : 's'} guardada${c.length === 1 ? '' : 's'} en el teléfono`;
+  $('#pendLista').innerHTML = c.map(i => {
+    let medio = `<span class="ico">${i.tipo === 'audio' ? '🎙' : '✎'}</span>`;
+    if (i.tipo === 'foto' && i.blob) { const u = URL.createObjectURL(i.blob); urlsVivas.push(u); medio = `<img src="${u}" alt="">`; }
+    return `<div class="item">${medio}<div><b>${NOMBRE[i.tipo] ?? i.tipo}</b>
+      <small>${HORA(i.ts)}${i.texto ? ' · ' + recorte(i.texto) : ''}</small></div></div>`;
+  }).join('');
   $('#procesar').disabled = !hayNodo;
-  $('#procesar').textContent = hayNodo ? 'Procesar' : 'Sin nodo';
+  $('#procesar').textContent = hayNodo
+    ? `Interpretar la más vieja${c.length > 1 ? ` · quedan ${c.length - 1}` : ''}` : 'Esperando un nodo…';
 }
-$('#procesar').onclick = async () => {
-  for (const item of await cola()) { estado.texto = item.texto; await vaciar(item.id); await revisar(); break; }
-};
+
+// Se procesa de a una porque cada visita se revisa y se confirma antes de guardarla. Sale de la
+// cola primero; si el nodo falla, cada camino la vuelve a encolar en vez de perderla.
+async function procesarUno() {
+  const [item] = await cola();
+  if (!item || !hayNodo) return;
+  await vaciar(item.id);
+  await pintarPendientes();
+  if (item.tipo === 'foto') return verFoto(item.blob);
+  if (item.tipo === 'audio') return dictarBlob(item.blob);
+  estado.texto = item.texto; return revisar();
+}
+$('#procesar').onclick = procesarUno;
 
 // ── voz ──
 let rec = null, trozos = [], audioCtx = null;
@@ -236,16 +309,7 @@ $('#anillo').onclick = async () => {
     rec.ondataavailable = e => trozos.push(e.data);
     rec.onstop = async () => { stream.getTracks().forEach(t => t.stop()); pararOnda();
       $('#anillo').classList.remove('grabando'); $('#anillo').setAttribute('aria-pressed', 'false');
-      $('#anilloTexto').innerHTML = 'Transcribiendo…<em>un momento</em>';
-      const blob = new Blob(trozos, { type: rec.mimeType });
-      if (!hayNodo) { await encolar({ tipo: 'audio', blob }); $('#anilloTexto').innerHTML = 'Guardado aquí<em>sin nodo a la vista</em>'; return pintarPendientes(); }
-      try {
-        const r = await fetch('/api/dictar', { method: 'POST', body: blob });
-        const t = await r.json();
-        if (!r.ok || t.error) { $('#anilloTexto').innerHTML = 'No se pudo transcribir<em>toca para reintentar</em>'; return; }
-        if (t.silencio) { $('#anilloTexto').innerHTML = 'No se oyó nada<em>acércate al micrófono</em>'; return; }
-        estado.texto = t.texto; await revisar();
-      } catch { $('#anilloTexto').innerHTML = 'No se pudo<em>toca para reintentar</em>'; }
+      await dictarBlob(new Blob(trozos, { type: rec.mimeType }));
     };
     rec.start(); trozos = [];
     $('#anillo').classList.add('grabando'); $('#anillo').setAttribute('aria-pressed', 'true');
@@ -254,6 +318,26 @@ $('#anillo').onclick = async () => {
     setTimeout(() => rec?.state === 'recording' && rec.stop(), 90000);   // tope de 90 s
   } catch { $('#anilloTexto').innerHTML = 'Sin micrófono<em>usa Escribir</em>'; }
 };
+// dictarBlob(): lo transcribe el nodo. Si el nodo no está o falla, el audio vuelve a la cola;
+// antes una nota de voz pendiente quedaba guardada y nadie la volvía a mirar nunca.
+async function dictarBlob(blob) {
+  if (!hayNodo) { await encolar({ tipo: 'audio', blob });
+    $('#anilloTexto').innerHTML = 'Guardado aquí<em>sin nodo a la vista</em>'; return pintarPendientes(); }
+  $('#anilloTexto').innerHTML = 'Transcribiendo…<em>un momento</em>';
+  try {
+    const r = await fetch('/api/dictar', { method: 'POST', body: blob });
+    const t = await r.json();
+    if (!r.ok || t.error) throw new Error(t.error ?? `HTTP ${r.status}`);
+    if (t.silencio) { $('#anilloTexto').innerHTML = 'No se oyó nada<em>acércate al micrófono</em>'; return; }
+    $('#anilloTexto').innerHTML = 'Iniciar grabación<em>toca y cuenta la visita</em>';
+    estado.texto = t.texto; return revisar();
+  } catch {
+    await encolar({ tipo: 'audio', blob });
+    $('#anilloTexto').innerHTML = 'No se pudo transcribir<em>queda guardado aquí</em>';
+    return pintarPendientes();
+  }
+}
+
 function onda(stream) {
   audioCtx = new AudioContext(); const an = audioCtx.createAnalyser(); an.fftSize = 64;
   audioCtx.createMediaStreamSource(stream).connect(an);
@@ -324,6 +408,8 @@ const esc = s => String(s ?? '').replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&
 // la hoja del reto. Aquí se traduce SOLO lo que se ve; la clase CSS sigue siendo el valor original.
 const ETIQUETA = { Confirmed: 'Confirmado', Reported: 'Reportado', Estimated: 'Estimado', Unknown: 'Desconocido',
                    High: 'Alta', Medium: 'Media', Low: 'Baja' };
+const MODALIDAD_ES = { MR: 'resonador magnético', CT: 'tomógrafo', Ultrasound: 'ecógrafo', 'X-Ray': 'equipo de rayos X',
+                       'Patient Monitoring': 'monitor de paciente', 'Image Guided Therapy': 'equipo de terapia guiada por imagen' };
 
 function pintar(r) {
   // lo dicho, con la evidencia subrayada
@@ -406,35 +492,79 @@ async function guardar() {
     <div class="losas" style="grid-template-columns:1fr">
       <a class="losa" style="color:inherit;text-decoration:none" href="/verificar#acta=${aB64url(JSON.stringify(r.acta))}"><span>✓</span>Verificar esta acta</a>
     </div>`;
-  $('#accion').textContent = 'Nueva visita';
+  // Si quedaron capturas esperando, el botón lleva a la siguiente en vez de dejarlas ahí.
+  const quedan = (await cola()).length;
+  $('#accion').textContent = quedan ? `Seguir con la siguiente (${quedan})` : 'Nueva visita';
   $('#accion').disabled = false; $('#accion').onclick = () => location.reload();
   $('#volver').classList.add('oculto');
 }
 
-// ── leer la placa: el modelo Psy transcribe, las reglas interpretan ──
+// ── la foto: el modelo Psy lee la placa; si no hay placa, describe lo que ve ──
+// En campo casi nunca tienes la placa delante: tienes el equipo, en su sala, con gente pasando.
+// Por eso la misma foto sirve para las dos cosas y la app dice cuál de las dos pasó.
 $('#btnFoto').onclick = () => $('#archivoFoto').click();
-$('#archivoFoto').onchange = async e => {
-  const f = e.target.files?.[0]; if (!f) return;
-  $('#placa').innerHTML = '<div class="pregunta"><p>Leyendo la placa…</p></div>';
+$('#archivoFoto').onchange = e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) verFoto(f); };
+
+const sumarAlTexto = frase => {
+  $('#texto').classList.remove('oculto');
+  $('#texto').value = ($('#texto').value ? $('#texto').value + ' ' : '') + frase;
+  $('#accion').disabled = false;
+};
+
+async function verFoto(blob) {
+  if (!hayNodo) {
+    await encolar({ tipo: 'foto', blob });
+    $('#placa').innerHTML = '<div class="aviso"><b>Foto guardada en el teléfono</b>No hay nodo a la vista. Se interpreta sola en cuanto aparezca uno.</div>';
+    return pintarPendientes();
+  }
+  const u = URL.createObjectURL(blob); urlsVivas.push(u);
+  $('#placa').innerHTML = `<div class="visto"><img src="${u}" alt=""><div class="frase">Mirando la foto…</div></div>`;
+  let res, r;
   try {
-    const res = await fetch('/api/placa', { method: 'POST', body: f });
-    const r = await res.json();
-    if (!res.ok || r.error) { $('#placa').innerHTML = `<div class="aviso"><b>No se pudo leer</b>${esc(r.aviso ?? r.error ?? `el nodo respondió ${res.status}`)}</div>`; return; }
-    const orden = [['manufacturer', 'Marca'], ['model', 'Modelo'], ['modality', 'Tipo'], ['serial', 'Serie'], ['mfg', 'Fabricación']];
-    $('#placa').innerHTML = `<div class="placa-campos">
+    res = await fetch('/api/placa', { method: 'POST', body: blob });
+    r = await res.json();
+  } catch {
+    await encolar({ tipo: 'foto', blob });
+    $('#placa').innerHTML = '<div class="aviso"><b>El nodo no respondió</b>La foto queda guardada aquí y se reintenta después.</div>';
+    return pintarPendientes();
+  }
+  if (!res.ok || r.error) {
+    await encolar({ tipo: 'foto', blob });
+    $('#placa').innerHTML = `<div class="aviso"><b>No se pudo mirar</b>${esc(r?.aviso ?? r?.error ?? `el nodo respondió ${res.status}`)}<br><small>La foto queda guardada aquí.</small></div>`;
+    return pintarPendientes();
+  }
+
+  // Sin placa legible el modelo no inventa una identidad: describe la escena y lo dice. Al reporte
+  // entra solo la pista filtrada (modalidad, y marca solo si es del catálogo); la frase del modelo
+  // se muestra como cita, porque una descripción puede traer una marca que no existe.
+  if (r.modo === 'escena') {
+    const p = r.pistas ?? {};
+    const nombre = MODALIDAD_ES[p.modality] ?? null;
+    $('#placa').innerHTML = `<div class="visto"><img src="${u}" alt="">
+      <div class="frase">«${esc(r.descripcion || 'no se distingue el equipo')}»</div>
+      <span class="quien">Lo que ve el modelo · VisionPsy Nano 460M · ${Math.round(r.ms)} ms</span></div>
+      <div class="aviso"><b>No hay una placa legible en esta foto</b>
+        ${nombre ? `Se anota <b style="display:inline">un ${nombre}</b>${p.manufacturer ? ` marca ${esc(p.manufacturer)}` : ''}. De la descripción no sale ni el modelo ni la serie: acércate a la placa o dilo tú.`
+                 : 'No se reconoce el tipo de equipo. Acércate a la placa, o dilo tú y la app te pregunta el resto.'}</div>`;
+    if (nombre) sumarAlTexto(`En la foto se ve un ${nombre}${p.manufacturer ? ` marca ${p.manufacturer}` : ''}.`);
+    return;
+  }
+
+  const orden = [['manufacturer', 'Marca'], ['model', 'Modelo'], ['modality', 'Tipo'], ['serial', 'Serie'], ['mfg', 'Fabricación']];
+  $('#placa').innerHTML = `<div class="visto" style="padding-bottom:4px"><img src="${u}" alt="">
+      <span class="quien">Placa leída · VisionPsy Nano 460M · ${Math.round(r.ms)} ms</span></div>
+    <div class="placa-campos">
       ${orden.map(([k, n]) => `<div class="fila"><div class="que"><b>${n}: ${esc(r.campos[k] ?? '—')}</b>
         <small>${esc(r.origen[k] ?? 'no aparece en la placa')}</small></div>
         <span class="sello ${r.confianza[k] === 'High' ? 'Confirmed' : r.confianza[k] === 'Medium' ? 'Reported' : 'Unknown'}">${ETIQUETA[r.confianza[k]] ?? esc(r.confianza[k])}</span></div>`).join('')}
       ${r.desacuerdos?.length ? `<div class="aviso"><b>El código y la etiqueta no coinciden</b>${r.desacuerdos.map(d => `${esc(d.campo)}: código «${esc(d.codigo)}» vs etiqueta «${esc(d.etiqueta)}»`).join('<br>')}</div>` : ''}
-      <div class="lin">${esc(r.transcripcion)}\n\n${Math.round(r.ms)} ms · VisionPsy Nano 460M · ${r.requiereConfirmacion ? 'requiere que tú lo confirmes' : ''}</div></div>`;
-    // Lo leído entra a la frase como una observación más, para que siga el mismo camino.
-    const partes = [r.campos.quantity ?? 'Un', r.campos.modality ?? 'equipo',
-      r.campos.manufacturer ? `marca ${r.campos.manufacturer}` : null, r.campos.model ? `modelo ${r.campos.model}` : null].filter(Boolean);
-    $('#texto').classList.remove('oculto');
-    $('#texto').value = ($('#texto').value ? $('#texto').value + ' ' : '') + `Placa leída: ${partes.join(' ')}.`;
-    $('#accion').disabled = false;
-  } catch { $('#placa').innerHTML = '<div class="aviso"><b>No se pudo leer</b>Revisa que el nodo esté a la vista.</div>'; }
-};
+      <div class="lin">${esc(r.transcripcion)}\n\n${r.requiereConfirmacion ? 'requiere que tú lo confirmes' : ''}</div></div>`;
+  // Lo leído entra a la frase como una observación más, para que siga el mismo camino.
+  const partes = ['Un', r.campos.modality ?? 'equipo',
+    r.campos.manufacturer ? `marca ${r.campos.manufacturer}` : null,
+    r.campos.model ? `modelo ${r.campos.model}` : null].filter(Boolean);
+  sumarAlTexto(`Placa leída: ${partes.join(' ')}.`);
+}
 
 // ── preguntar a la base instalada en lenguaje natural ──
 $('#btnPreguntar').onclick = async () => {

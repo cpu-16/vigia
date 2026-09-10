@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { parsearGS1, parsearPlaca } from './placa.js';
+import { pistasDeEscena, parsearGS1, parsearPlaca } from './placa.js';
 
 const verdad = JSON.parse(readFileSync(new URL('../../fixtures/placas/verdad.json', import.meta.url), 'utf8'));
 const catalogo = verdad.map(v => ({ gtin: v.gtin, model: v.model, manufacturer: v.manufacturer, modality: v.modality }));
@@ -88,4 +88,15 @@ test('VisionPsy transcribe las placas sintéticas y las reglas las interpretan',
   const nitidas = verdad.filter(v => v.dificultad === 'nitida').length;
   assert.ok(conteo.serial >= nitidas * 0.8, `serie: ${conteo.serial}/${n}`);
   assert.ok(conteo.model >= nitidas * 0.8, `modelo: ${conteo.model}/${n}`);
+});
+
+test('la descripción de una escena solo aporta modalidad y marcas del catálogo', () => {
+  // Frase real de VisionPsy Nano sobre `app/catalogo-mr.jpg` (9-sep): inventa la marca «Soyo».
+  const p = pistasDeEscena("A white MRI machine, branded 'Soyo', is displayed at a trade show, with text in Japanese.");
+  assert.equal(p.modality, 'MR');
+  assert.equal(p.manufacturer, null);                     // Soyo no es una de las seis: no entra
+
+  assert.deepEqual(pistasDeEscena('A CT scanner from Orion Imaging in a hospital room'),
+    { modality: 'CT', manufacturer: 'Orion Imaging' });    // marca del catálogo, sí
+  assert.deepEqual(pistasDeEscena('a corridor with a door'), { modality: null, manufacturer: null });
 });

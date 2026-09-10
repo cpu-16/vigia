@@ -1,7 +1,7 @@
 {
   "name": "Vigía · base instalada",
   "short_name": "Vigía",
-  "start_url": "/",
+  "start_url": "/equipos",
   "display": "standalone",
   "background_color": "#F3EFE6",
   "theme_color": "#F3EFE6",

@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F3EFE6">
+<link rel="manifest" href="/manifest.webmanifest">
+<title>Vigía · inteligencia local con evidencia</title>
+<style>
+  /* Misma libreta de campo que el resto del producto: papel cálido, tinta profunda, turquesa para la acción. */
+  :root{
+    --papel:#F3EFE6; --papel-alto:#FBF9F4; --tinta:#16262E; --tinta-suave:#5C6B72;
+    --raya:#DED7C7; --accion:#0F7B85; --accion-hondo:#0A5C63;
+    --alerta:#9C4221; --confirmado:#2F6B4F; --estimado:#8A6D1F;
+    --serif:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--papel);color:var(--tinta);font:17px/1.5 system-ui,-apple-system,sans-serif;
+       -webkit-tap-highlight-color:transparent}
+  :focus-visible{outline:2px solid var(--accion);outline-offset:3px}
+  .hoja{max-width:640px;margin:0 auto;padding:0 20px 60px;min-height:100dvh}
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:22px 0 12px;
+         border-bottom:2px solid var(--tinta)}
+  h1{font:400 34px/1 var(--serif);margin:0;letter-spacing:-.015em}
+  h1 small{display:block;font:500 11px/1.4 system-ui;letter-spacing:.16em;text-transform:uppercase;
+           color:var(--tinta-suave);margin-top:7px}
+  .nodo{font-size:12px;color:var(--tinta-suave);display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .punto{width:8px;height:8px;border-radius:50%;background:var(--alerta)}
+  .nodo.si .punto{background:var(--confirmado)}
+  .nodo.aviso .punto{background:var(--estimado)}
+
+  .lema{font:400 21px/1.45 var(--serif);margin:20px 0 4px}
+  .lema b{font-weight:400;background:rgba(15,123,133,.16);padding:1px 4px;border-radius:3px;
+        -webkit-box-decoration-break:clone;box-decoration-break:clone}
+  .sub{color:var(--tinta-suave);font-size:14.5px;margin:0 0 22px}
+
+  /* los tres espacios */
+  .espacio{display:block;text-decoration:none;color:inherit;background:var(--papel-alto);
+           border:1px solid var(--raya);border-radius:14px;padding:18px 18px 16px;margin-bottom:12px;
+           box-shadow:0 1px 0 var(--raya);position:relative}
+  a.espacio:active{transform:translateY(1px);box-shadow:none}
+  .espacio .track{font:600 10.5px system-ui;letter-spacing:.14em;text-transform:uppercase;color:var(--accion-hondo)}
+  .espacio h2{margin:6px 0 0;font:400 26px/1.1 var(--serif)}
+  .espacio p{margin:7px 0 0;color:var(--tinta-suave);font-size:14.5px;line-height:1.45}
+  .espacio .ir{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:22px;color:var(--raya)}
+  a.espacio:hover .ir{color:var(--accion)}
+  .espacio.quieto{background:transparent;border-style:dashed}
+  .espacio.quieto .ir{display:none}
+  .espacio code{font:12.5px ui-monospace,Menlo,monospace;color:var(--tinta-suave)}
+
+  .secundarias{display:flex;flex-wrap:wrap;gap:9px;margin:22px 0 0}
+  .secundarias a,.secundarias button{appearance:none;-webkit-appearance:none;background:transparent;
+    border:1px solid var(--raya);border-radius:99px;padding:9px 15px;font:500 13.5px system-ui;
+    color:var(--tinta-suave);cursor:pointer;text-decoration:none}
+  .secundarias a:hover,.secundarias button:hover{border-color:var(--tinta);color:var(--tinta)}
+
+  details{margin:24px 0 0;border-top:1px solid var(--raya);padding-top:14px}
+  summary{cursor:pointer;font:600 11px system-ui;letter-spacing:.13em;text-transform:uppercase;color:var(--tinta-suave)}
+  table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13.5px}
+  td{padding:7px 0;border-bottom:1px solid var(--raya);vertical-align:top}
+  td:first-child{font:600 11px system-ui;letter-spacing:.1em;text-transform:uppercase;color:var(--tinta-suave);width:78px;padding-top:9px}
+  td b{display:block;font-weight:600}
+  td small{color:var(--tinta-suave)}
+  .cierre{margin:26px 0 0;padding:14px 16px;border-left:3px solid var(--tinta);background:var(--papel-alto);
+          font:16px/1.55 var(--serif)}
+</style>
+
+<div class="hoja">
+  <header>
+    <h1>Vigía<small>Inteligencia local con evidencia</small></h1>
+    <span class="nodo" id="nodo"><i class="punto"></i><span id="nodoTexto">buscando nodo…</span></span>
+  </header>
+
+  <p class="lema">Lo que una persona ve en campo se vuelve un dato revisable <b>sin salir de su equipo.</b></p>
+  <p class="sub">Tres espacios, un mismo motor: la misma inferencia local, el mismo registro de rendimiento,
+     el mismo sellado y el mismo verificador.</p>
+
+  <a class="espacio" href="/equipos">
+    <span class="track">Track 01 · Philips</span>
+    <h2>Equipos</h2>
+    <p>Un técnico cuenta o fotografía lo que hay en el hospital; sale inventario con su evidencia,
+       sin duplicar lo que ya estaba.</p>
+    <span class="ir">→</span>
+  </a>
+
+  <a class="espacio" href="/sucursal">
+    <span class="track">Track 05 · Caja de Ahorros</span>
+    <h2>Sucursal</h2>
+    <p>Se cayó el enlace al CORE: el cajero pregunta y recibe el paso citado de la guía,
+       con acta firmada y verificable.</p>
+    <span class="ir">→</span>
+  </a>
+
+  <div class="espacio quieto">
+    <span class="track">Track 04 · Ovnicom</span>
+    <h2>Red</h2>
+    <p>El registro DNS reproducido como flujo, clasificado por capas y alertado a Wazuh. No tiene pantalla propia
+       a propósito: vive donde vive un SOC.<br>
+       <code>node src/red/productor.js | node src/red/demo.js --stdin</code></p>
+  </div>
+
+  <div class="secundarias">
+    <a href="/verificar">Verificar un acta</a>
+    <a href="/tablero">Tablero</a>
+    <a href="/catalogo.html">Catálogo de equipos</a>
+  </div>
+
+  <details id="ev">
+    <summary>Evidencia técnica · dónde corre cada modelo</summary>
+    <table id="tablaEv"><tr><td colspan="2"><small>consultando al nodo…</small></td></tr></table>
+  </details>
+
+  <p class="cierre">Toda la inferencia ocurre en este dispositivo o en un par autorizado por su llave pública.
+     Ninguna llamada a una API de inferencia en la nube.</p>
+</div>
+
+<script type="module">
+const $ = s => document.querySelector(s);
+const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+async function sondear() {
+  try {
+    const e = await (await fetch('/api/evidencia', { cache: 'no-store' })).json();
+    const degradado = /par ca[ií]do/i.test(e.modo ?? '');
+    $('#nodo').classList.toggle('si', !degradado);
+    $('#nodo').classList.toggle('aviso', degradado);
+    $('#nodoTexto').textContent = `nodo ${e.modo}`;
+    $('#tablaEv').innerHTML = (e.modelos ?? []).map(m => `<tr><td>${esc(m.tarea)}</td>
+      <td><b>${esc(m.modelo)}</b><small>${esc(m.hardware)} · ${esc(m.modo)}</small></td></tr>`).join('')
+      + `<tr><td>SDK</td><td><b>${esc(e.sdk)}</b><small>Node ${esc(e.node)} · llave del nodo ${esc(e.llave_nodo)}</small></td></tr>`
+      + `<tr><td>Medido</td><td><b>${e.inferencias} inferencia(s) en esta corrida</b>
+         <small>TTFT mediana ${e.ttft_ms_mediana ?? '—'} ms · ${e.tps_mediana ?? '—'} tok/s · cadena ${e.cadena?.valida ? 'íntegra' : 'rota'}</small></td></tr>`;
+  } catch {
+    $('#nodoTexto').textContent = 'sin nodo a la vista';
+    $('#tablaEv').innerHTML = '<tr><td colspan="2"><small>El nodo no responde. Las capturas se guardan en el teléfono hasta que vuelva.</small></td></tr>';
+  }
+}
+sondear(); setInterval(sondear, 8000);
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+</script>
+</html>
