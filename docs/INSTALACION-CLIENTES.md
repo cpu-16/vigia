@@ -31,3 +31,13 @@ En Equipos:
 3. **Borrar pendientes** pide confirmación, elimina las capturas y revisiones de ese navegador y abre una visita vacía. Conserva el nombre del colaborador y los registros del servidor. Otros dispositivos/orígenes conservan sus propios datos.
 
 El borrado se bloquea durante una operación o grabación y las demás pestañas se recargan al detectar la limpieza para impedir que vuelvan a escribir borradores antiguos. Esto elimina los borradores, no la caché de archivos necesaria para abrir sin red. El tablero muestra registros del servidor: su limpieza no forma parte de este botón.
+
+## Decisión sobre una APK para trabajo de campo
+
+Sí aporta valor como siguiente versión de Philips si integra realmente el runtime QVAC: captura con cámara y micrófono, borradores duraderos, descarga explícita de modelos y ejecución local cuando el dispositivo lo soporte. La alternativa es delegar a un equipo autorizado de la organización, mostrando ese modo de forma visible. Un contenedor de la web no incorpora automáticamente esas capacidades.
+
+La ruta documentada es Expo/React Native con integración nativa de QVAC. La guía exige probar en dispositivo físico; no basta el emulador. Nuestro proyecto fija SDK 0.18.2 y la documentación pública evoluciona: antes de migrar hay que validar versiones y mantener funcionando la delegación existente. [Tutorial oficial](https://docs.qvac.tether.io/tutorials/expo/).
+
+Criterio para decidir el desarrollo: demostrar en el HONOR que un modelo pequeño carga, produce una salida útil sin conexión y se recupera al suspender y reabrir la app; medir descarga, almacenamiento, memoria, latencia y temperatura. Después integrar cámara/voz y una prueba con un segundo Android. Esta validación nativa aún no está realizada. Para la grabación actual, usar el flujo web comprobado y explicar dónde corre la IA.
+
+La revisión de Philips ahora mantiene la fotografía en una barra fija y abre «Editar relato» dentro de la misma visita. Cancelar mantiene la revisión. Un cambio aplicado vuelve a comprobar las asociaciones; un fallo del nodo conserva la revisión anterior y la edición para reintentar.

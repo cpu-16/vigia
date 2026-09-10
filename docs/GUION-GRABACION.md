@@ -23,7 +23,7 @@ Repo: cpu-16/vigia. Philips + General + Caja de Ahorros + Ovnicom. Narración en
 
 > «Estoy en Hospital DemoCare Pacific, Ciudad de Panamá, Panamá. Vi dos resonadores NovaMed de siete años; no conozco el modelo.»
 
-Responde un dato si lo solicita. Durante la revisión pulsa **Añadir foto del equipo**, fotografía la placa y confirma la unidad correspondiente. Muestra que siguen siendo dos unidades: una con serie y la otra con el modelo pendiente. Pulsa **Guardar con datos pendientes**, confirma si los viste directamente y guarda.
+Responde un dato si lo solicita. Si necesitas corregir la transcripción, usa **Editar relato**: se abre dentro de la visita. Aplica el cambio y revisa los datos. Durante las preguntas pulsa **Tomar foto** en la barra inferior, fotografía la placa y confirma la unidad correspondiente. Muestra que siguen siendo dos unidades: una con serie y la otra con el modelo pendiente. Pulsa **Guardar con datos pendientes**, confirma si los viste directamente y guarda.
 
 > «Whisper transcribe mediante QVAC. El modelo extrae lo dicho; las respuestas que confirmo no necesitan otra inferencia. Ahora incorporo una placa sin volver al inicio. VisionPsy la lee, yo confirmo y se aplica a una unidad. Lo desconocido permanece desconocido.»
 
