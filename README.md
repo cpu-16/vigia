@@ -4,7 +4,7 @@
 
 Vigía convierte **voz, fotos y observaciones de campo en información revisable**. Usa QVAC para inferir en equipos propios o delegar a pares autorizados; cada resultado indica dónde se ejecutó y qué evidencia lo respalda.
 
-**[Instalación](docs/EJECUCION.md) · [Sucursal en el teléfono](docs/SUCURSAL-LOCAL-TERMUX.md) · [Mediciones](docs/MEDICIONES.md) · [Límites](docs/PRODUCTO-Y-LIMITES.md)**
+**[Ver demostración](https://vigia.ciberpty.com/#demo) · [Abrir Vigía](https://fedora.taild88ec5.ts.net:8443/) · [Instalación](docs/EJECUCION.md)**
 
 <details>
 <summary><strong>Ver Vigía en movimiento · 18 segundos</strong></summary>
