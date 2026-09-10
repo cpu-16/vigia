@@ -122,7 +122,13 @@ const ESTADO = { Confirmed: 'Confirmado', Reported: 'Reportado', Estimated: 'Est
 
 // Un solo estado de conexión, derivado de las respuestas reales. Cuando el sondeo falla NO se borra
 // ni se pone en cero lo que hay en pantalla: se conserva y se dice desde cuándo no hay respuesta.
-const hora = d => d.toLocaleTimeString('es-PA', { hour12: false });
+const fechaHora = valor => {
+ if (!valor) return 'Sin fecha';
+ const d = new Date(valor); if (!Number.isFinite(d.getTime())) return 'Fecha no disponible';
+ return d.toLocaleString('es-PA', {timeZone:'America/Panama',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}) + ' · Panamá (UTC−5)';
+};
+const hora = d => fechaHora(d);
+
 let inventarioActual = [];
 let ultimoDato = null, sinRespuestaDesde = null, sondeando = false;
 function conexion() {
@@ -131,7 +137,7 @@ function conexion() {
   c.classList.toggle('anteriores', !!ultimoDato && !!sinRespuestaDesde);
   $('#vivo').textContent = !ultimoDato ? 'Sin datos'
     : sinRespuestaDesde ? `Datos anteriores · sin respuesta desde ${hora(sinRespuestaDesde)}`
-    : `En vivo · actualizado ${hora(ultimoDato)}`;
+    : `Consulta del tablero · actualizado ${hora(ultimoDato)}`;
   c.title = ultimoDato ? `Últimos datos recibidos a las ${hora(ultimoDato)}` : 'El nodo todavía no ha respondido';
 }
 
@@ -198,7 +204,7 @@ async function pintar() {
     `Inferencias ${ev.inferencias} · TTFT mediana ${ev.ttft_ms_mediana ?? '—'} ms · ${ev.tps_mediana ?? '—'} tok/s`,
     ``,
     `Últimas llamadas (evidencia/rendimiento.jsonl):`,
-    ...(ev.ultimas ?? []).map(f => `  ${f.timestamp_utc?.slice(11, 19)} ${f.stage.padEnd(13)} ${String(f.model ?? '').padEnd(22)} ${f.execution_mode ?? ''} ${f.end_to_end_ms ? Math.round(f.end_to_end_ms) + ' ms' : (f.load_ms ? 'carga ' + Math.round(f.load_ms) + ' ms' : '')} ${f.throughput_tps ? Math.round(f.throughput_tps) + ' tok/s' : ''}`),
+    ...(ev.ultimas ?? []).map(f => `  ${fechaHora(f.timestamp_utc)} ${f.stage.padEnd(13)} ${String(f.model ?? '').padEnd(22)} ${f.execution_mode ?? ''} ${f.end_to_end_ms ? Math.round(f.end_to_end_ms) + ' ms' : (f.load_ms ? 'carga ' + Math.round(f.load_ms) + ' ms' : '')} ${f.throughput_tps ? Math.round(f.throughput_tps) + ' tok/s' : ''}`),
   ].join('\n');
 }
 
@@ -209,7 +215,8 @@ function pintarClientes() {
   $('#clientes').innerHTML = seleccion.length ? seleccion.map(s => `
     <h2 style="margin-top:26px">${esc(s.customer?.name ?? 'sin nombre')}
       <span>${esc([s.customer?.city, s.customer?.country].filter(Boolean).join(', '))}</span></h2>
-    <table><tr><th>Cant.</th><th>Modalidad</th><th>Marca / modelo</th><th>Edad</th><th>Estado</th><th>Observadores</th></tr>
+    <p class="ayuda">Último registro del cliente: ${esc(fechaHora(s.equipos.map(e=>e.ultimo_registro).filter(Boolean).sort().at(-1)))}</p>
+    <table><tr><th>Cant.</th><th>Modalidad</th><th>Marca / modelo</th><th>Edad</th><th>Estado</th><th>Observadores</th><th>Último registro</th></tr>
     ${s.equipos.map(e => `<tr>
       <td class="n">${e.quantity ?? '?'}</td>
       <td>${esc(e.modality)}</td>
@@ -220,6 +227,7 @@ function pintarClientes() {
       <td><span class="sello ${e.status}">${esc(ESTADO[e.status] ?? e.status)}</span></td>
       <td>${esc(e.observadores.join(', ') || '—')}
         ${e.corroborado ? `<br><span class="corr">✓ ${e.observadores.length} observadores distintos</span>` : ''}</td>
+      <td>${esc(fechaHora(e.ultimo_registro))}<br><small>Fecha declarada de observación: ${esc(e.ultima_fecha ?? 'sin fecha')}</small></td>
     </tr>`).join('')}</table>`).join('') : '<p class="vacio">No hay visitas para esta búsqueda.</p>';
 }
 function pintarPrioridades() {
@@ -230,13 +238,13 @@ function pintarPrioridades() {
   if(faltan.length||antiguedad) pendientes.push({s,e,faltan,antiguedad,peso:(e.quantity==null?4:0)+(antiguedad?3:0)+faltan.length});
  }
  pendientes.sort((a,b)=>b.peso-a.peso);
- $('#prioridades').innerHTML=pendientes.length?pendientes.slice(0,8).map(({s,e,faltan,antiguedad})=>`<article class="prioridad"><b>${esc(s.customer?.name)} · ${esc(e.modality)} · ${e.quantity??'?'} unidad(es)</b><p>${faltan.length?'Completar '+esc(faltan.join(', '))+'. ':''}${antiguedad?'Evaluar antigüedad junto con condición, uso y mantenimiento. La edad por sí sola no determina el reemplazo.':''}</p><small>Última observación: ${esc(e.ultima_fecha??'sin fecha')}</small></article>`).join(''):'<p class="vacio">Sin pendientes de completitud o antigüedad para esta selección.</p>';
+ $('#prioridades').innerHTML=pendientes.length?pendientes.slice(0,8).map(({s,e,faltan,antiguedad})=>`<article class="prioridad"><b>${esc(s.customer?.name)} · ${esc(e.modality)} · ${e.quantity??'?'} unidad(es)</b><p>${faltan.length?'Completar '+esc(faltan.join(', '))+'. ':''}${antiguedad?'Evaluar antigüedad junto con condición, uso y mantenimiento. La edad por sí sola no determina el reemplazo.':''}</p><small>Último registro: ${esc(fechaHora(e.ultimo_registro))}. Fecha declarada de observación: ${esc(e.ultima_fecha??'sin fecha')}</small></article>`).join(''):'<p class="vacio">Sin pendientes de completitud o antigüedad para esta selección.</p>';
 }
 $('#buscarCliente').oninput=()=>{pintarClientes();pintarPrioridades();};
 $('#exportar').onclick=()=>{
  const seguro=v=>{let t=String(v??'');if(/^[=+@-]/.test(t))t="'"+t;return '"'+t.replace(/"/g,'""')+'"';};
- const filas=[['Cliente','Ciudad','País','Modalidad','Cantidad','Marca','Modelo','Serie','Edad mínima','Edad máxima','Estado','Última observación']];
- for(const s of seleccionados())for(const e of s.equipos)filas.push([s.customer?.name,s.customer?.city,s.customer?.country,e.modality,e.quantity,e.manufacturer,e.model,e.serial,e.age_years_min,e.age_years_max,ESTADO[e.status]??e.status,e.ultima_fecha]);
+ const filas=[['Cliente','Ciudad','País','Modalidad','Cantidad','Marca','Modelo','Serie','Edad mínima','Edad máxima','Estado','Fecha de observación','Último registro (UTC)' ]];
+ for(const s of seleccionados())for(const e of s.equipos)filas.push([s.customer?.name,s.customer?.city,s.customer?.country,e.modality,e.quantity,e.manufacturer,e.model,e.serial,e.age_years_min,e.age_years_max,ESTADO[e.status]??e.status,e.ultima_fecha,e.ultimo_registro]);
  const u=URL.createObjectURL(new Blob(['\ufeff'+filas.map(r=>r.map(seguro).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download='vigia-inventario.csv';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);
 };
 

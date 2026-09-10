@@ -232,7 +232,7 @@ async function verificar(cambio = null) {
   if (!texto.trim()) { $('#salida').innerHTML = ''; return; }
   const r = await verificarEntrada(texto);
   const desde = new URLSearchParams(location.search).get('desde');
-  const siguiente = `<nav class="continuar" aria-label="Siguiente acción"><a href="${desde === 'sucursal' ? '/sucursal' : '/equipos'}">${desde === 'sucursal' ? 'Iniciar otra atención' : 'Registrar otra visita'}</a><a href="/tablero">Ver tablero</a><a href="/">Inicio</a></nav>`;
+  const siguiente = `<nav class="continuar" aria-label="Siguiente acción"><a href="${desde === 'sucursal' ? '/sucursal' : '/equipos'}">${desde === 'sucursal' ? 'Iniciar otra atención' : 'Registrar otra visita'}</a><a href="/sucursal#historialSucursal">Historial de Sucursal</a><a href="/tablero">Ver tablero</a><a href="/">Inicio</a></nav>`;
   $('#salida').innerHTML = siguiente + (cambio ? pintarCambio(cambio) : '') + pintarVeredicto(r) + pintarDetalle(r);
   $('#salida').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }

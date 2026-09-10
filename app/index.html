@@ -259,6 +259,7 @@
 import { revision, incorporarPlaca } from "/revision.js";
 const $ = s => document.querySelector(s);
 const estado = { texto: '', borrador: null, respuestas: {}, id: null, directo: null, ms: 0, fila: null, dups: [], fuente: 'texto', foto: null, capturaId: crypto.randomUUID() };
+let escrituraEdicion = Promise.resolve();
 let editandoRelato = false, aplicandoRelato = false, admiteFoto = true;
 let operaciones = 0, reiniciando = false, visitaGuardada = false;
 const generacion = localStorage.getItem('vigia-cola-generacion');
@@ -521,6 +522,7 @@ $('#texto').oninput = () => $('#accion').disabled = !$('#texto').value.trim();
 
 // ── revisar ──
 $('#accion').onclick = async () => {
+  if (editandoRelato) return $('#aplicarRelato').onclick();
   if ($('#p1').classList.contains('oculto')) return guardar();
   estado.texto = $('#texto').value.trim() || estado.texto;
   if (!estado.texto) return;
@@ -534,14 +536,20 @@ function mostrarEdicion() {
   pintar(estado.ultimaRevision);
 }
 $('#volver').onclick = () => { if (!operaciones && !leyendoFoto) mostrarEdicion(); };
-$('#relatoEditado').oninput = async () => { estado.edicionTexto = $('#relatoEditado').value; await conservarRevision(); };
+$('#relatoEditado').oninput = () => {
+  estado.edicionTexto = $('#relatoEditado').value;
+  escrituraEdicion = escrituraEdicion.catch(() => {}).then(() => conservarRevision());
+  escrituraEdicion.catch(e => { $('#errorEdicion').textContent = 'No se pudo conservar el borrador: ' + e.message; });
+  $('#accion').disabled = !estado.edicionTexto.trim();
+};
 $('#cancelarRelato').onclick = async () => {
   if (aplicandoRelato) return;
+  await escrituraEdicion.catch(() => {});
   delete estado.edicionTexto; editandoRelato = false; $('#editorRelato').classList.add('oculto');
   $('#errorEdicion').textContent = ''; await conservarRevision(); pintar(estado.ultimaRevision);
 };
 $('#aplicarRelato').onclick = async () => {
-  if (aplicandoRelato || operaciones) return;
+  if (aplicandoRelato) return;
   const texto = $('#relatoEditado').value.trim();
   if (!texto) { $('#errorEdicion').textContent = 'Escribe el relato antes de aplicar.'; return; }
   if (texto === estado.texto) { $('#cancelarRelato').click(); return; }
@@ -549,8 +557,11 @@ $('#aplicarRelato').onclick = async () => {
   aplicandoRelato = true; $('#aplicarRelato').disabled = true; $('#cancelarRelato').disabled = true;
   $('#relatoEditado').disabled = true; $('#errorEdicion').textContent = 'Revisando el relato corregido…';
   const anterior = structuredClone(estado);
-  const item = (await cola()).find(i => i.id === activoCola);
+  let item;
+  $('#accion').disabled = true; $('#accion').textContent = 'Aplicando cambios…';
   try {
+    await escrituraEdicion;
+    item = (await cola()).find(i => i.id === activoCola);
     estado.texto = texto; await revisar();
     if (!estado.borrador || estado.textoInterpretado !== texto) throw new Error('El nodo no pudo revisar el cambio. Conservamos la revisión anterior y tu edición para reintentar.');
     delete estado.edicionTexto; editandoRelato = false; $('#texto').value = texto;
@@ -558,7 +569,7 @@ $('#aplicarRelato').onclick = async () => {
     await conservarRevision();
   } catch (e) {
     for (const k of Object.keys(estado)) delete estado[k]; Object.assign(estado, anterior);
-    if (item) await transaccion('readwrite', c => c.put({ ...item, revision: structuredClone(estado) }));
+    if (item) await transaccion('readwrite', c => c.put({ ...item, revision: structuredClone(estado) })).catch(() => {});
     $('#errorEdicion').textContent = e.message;
   } finally {
     aplicandoRelato = false; $('#aplicarRelato').disabled = false; $('#cancelarRelato').disabled = false; $('#relatoEditado').disabled = false;
@@ -721,6 +732,8 @@ function pintar(r) {
     $('#accion').disabled = true; $('#guardarParcial').disabled = true;
     $('#preg').querySelectorAll('button, input').forEach(el => el.disabled = true);
   }
+
+  if (editandoRelato) { $('#accion').textContent = aplicandoRelato ? 'Aplicando cambios…' : 'Aplicar cambios'; $('#accion').disabled = aplicandoRelato || !$('#relatoEditado').value.trim(); }
 
   $('#tec').textContent = [
     `solicitud ${r.id} · ${Math.round(r.ms)} ms`,

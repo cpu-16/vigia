@@ -167,5 +167,12 @@ test('abstención documentada: acta registra falta de respaldo sin inventar actu
   assert.equal(cerrado.code,200);assert.equal(verificar(cerrado.datos.acta).valido,true);
   assert.equal(cerrado.datos.acta.datos.resultado_asistente.estado,'sin_respaldo');
   assert.equal(cerrado.datos.acta.pasos.length,0);
+  const historial=await pedir(puerto,'GET','/api/sucursal/expedientes');
+  assert.equal(historial.code,200);assert.equal(historial.datos.expedientes.length,1);
+  const ficha=historial.datos.expedientes[0];assert.equal(ficha.id,id);assert.equal(ficha.estado,'cerrado');
+  assert.equal(ficha.cierre,cerrado.datos.acta.cierre);assert.ok(ficha.apertura.endsWith('Z'));
+  const recargado=new Expediente(join(dir,'exp.jsonl'));assert.deepEqual(recargado.listar(),historial.datos.expedientes);
+  assert.equal((await pedir(puerto,'DELETE','/api/sucursal/expedientes')).code,404);
+  assert.equal((await pedir(puerto,'GET',`/api/sucursal/expedientes/${id}/acta`)).datos.sello.hash,cerrado.datos.acta.sello.hash);
  }finally{servidor.close();rmSync(dir,{recursive:true,force:true});}
 });

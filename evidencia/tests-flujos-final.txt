@@ -1,0 +1,108 @@
+
+> vigia@0.1.0 test
+> node --test
+
+✔ la evidencia pública conserva métricas sin prompts, respuestas ni rutas de fotos (1.280288ms)
+✔ registrar escribe una línea JSON con esquema, run_id y hora (0.660457ms)
+﹣ completar mide TTFT, tokens y throughput con el modelo real (0.077246ms) # SKIP
+✔ canónico: el orden de las llaves no cambia la huella (0.518128ms)
+✔ sellar y verificar; tocar un campo invalida; otra llave no verifica (3.236482ms)
+✔ eventos: cadena válida, se reabre del disco, y una alteración se detecta (1.054101ms)
+✔ coseno: idénticos 1, opuestos −1, ortogonales 0 (0.653073ms)
+✔ la fusión por rango premia lo que sale alto en las dos listas (0.670515ms)
+✔ la fusión no mezcla escalas: un coseno y un puntaje de términos no se suman (0.127426ms)
+✔ sin índice semántico, la búsqueda híbrida se comporta como la exacta (2.310074ms)
+﹣ la capa semántica del SDK recupera preguntas parafraseadas (0.186977ms) # SKIP
+✔ el canónico y la huella del navegador dan lo mismo que los de Node (6.412902ms)
+✔ acta sellada en Node: WebCrypto la da por válida y lee su sello (6.636445ms)
+✔ un campo alterado, un sello ausente y una llave ajena: los tres se rechazan con su motivo (2.501864ms)
+✔ el botón «probar una alteración» cambia un carácter y el acta deja de verificar (2.489459ms)
+✔ cadena de 3 actas encadenadas: íntegra, y rota al alterar la del medio (2.578388ms)
+✔ el silencio sigue siendo silencio aunque ffmpeg escriba metadatos WAV (88.04857ms)
+✔ clasificarEdad sigue la regla COCIR (0.503332ms)
+✔ guardar e inventariar: una observación por grupo, el inventario consolida (3.396031ms)
+✔ dos observadores distintos corroboran, sin duplicar unidades; el estado sigue la hoja del reto (10.755099ms)
+✔ Customer 360, agregados, renovaciones e incompletos (1.179836ms)
+✔ las observaciones son inmutables y la cadena se puede verificar (0.784277ms)
+✔ reintentar una captura conserva los eventos incluso después de reiniciar (0.714115ms)
+✔ guardado nocturno: fecha de Panamá y hora UTC del evento sin alterar fecha declarada (0.771959ms)
+✔ la pregunta del reto: clientes en Brasil con resonadores de más de siete años (1.406783ms)
+✔ agrupar por país, ciudad y modalidad (0.301508ms)
+✔ los filtros de calidad de dato (0.258466ms)
+✔ alerta de información no verificada recientemente (0.187199ms)
+✔ una consulta sin resultados devuelve cero, no un invento (0.124252ms)
+﹣ el modelo traduce la pregunta a filtros y el código ejecuta la consulta (0.149641ms) # SKIP
+✔ un filtro inválido no devuelve todo el inventario (0.672396ms)
+✔ modalidades y numerales en es/en/pt (3.194321ms)
+✔ validar: la guarda tumba lo que el reporte no dice (portugués incluido) (3.22812ms)
+✔ menciones: numeral + tipo en la misma cláusula, en tres idiomas (2.995219ms)
+✔ derivar: estado y confianza según la hoja del reto (0.514047ms)
+✔ preguntas: una a la vez, en el orden del reto, sin repetir las contestadas (0.352266ms)
+✔ duplicados: Fellegi-Sunter explica campo por campo y nunca fusiona sola (0.470437ms)
+﹣ extraer: los 10 prompts oficiales + español + portugués con el modelo real (0.085524ms) # SKIP
+✔ la edad de una unidad no se atribuye a todos los equipos del grupo (0.987508ms)
+✔ las respuestas de edad conservan intervalos y límites abiertos (0.399864ms)
+✔ cadena de elementos GS1: con paréntesis y corrida (1.243117ms)
+✔ interpretar la placa: el código manda sobre la etiqueta y la marca sale de la lista del reto (1.257588ms)
+✔ sin código, la etiqueta sirve pero con menos confianza; una marca ajena no entra (0.20163ms)
+✔ si el código y la etiqueta discrepan, se marca el desacuerdo y baja la confianza (0.164216ms)
+✔ el modelo no puede colar una marca que no está impresa (0.146671ms)
+﹣ VisionPsy transcribe las placas sintéticas y las reglas las interpretan (0.057236ms) # SKIP
+✔ la descripción de una escena solo aporta modalidad y marcas del catálogo (0.57561ms)
+✔ una pantalla de oficina no se convierte en monitor de pacientes (0.26621ms)
+✔ la revisión humana conserva respuestas y omite pendientes sin inferencia (1.858614ms)
+✔ foto de una unidad conserva cantidad total y no inventa antigüedad de instalación (0.318207ms)
+✔ placa contradictoria o de otro equipo conserva los datos originales (0.340892ms)
+✔ inventario no colapsa unidad identificada y resto del grupo (12.109768ms)
+✔ una serie no puede asignarse a dos unidades de la misma visita (0.186638ms)
+✔ cantidad inválida no se acepta como respuesta confirmada (0.16442ms)
+✔ una edad abierta confirmada no se reemplaza silenciosamente ni se pide otra vez (0.821106ms)
+✔ países equivalentes no fragmentan los agregados por idioma o acento (0.806031ms)
+✔ la caída del par en dos consultas recarga una vez y ambas responden local (10.191797ms)
+✔ una entrada demasiado larga no desconecta el par (0.469792ms)
+✔ el respaldo trata la respuesta vacía del par como caída, no como resultado (1.30127ms)
+✔ un resultado útil del par no activa el respaldo (0.190244ms)
+✔ sin modelo a bordo, el nodo sigue solo delegado y lo dice en vez de morir (0.315502ms)
+▸ guardadas 2 observaciones en el teléfono · acta 76a80aadecfd…
+✔ el nodo del teléfono guarda la observación y devuelve un acta que verifica en otro equipo (39.96965ms)
+﹣ delegación P2P real: el par autorizado ejecuta y una llave falsa no (0.208946ms) # SKIP
+✔ BIND9: línea del registro entregado por Ovnicom, tipos, fechas, IPv6 y entradas malformadas (9.045812ms)
+Métricas dga {"tp":101,"fp":18,"fn":19,"benignas":10000,"inyectadas":120,"precision":0.8487394957983193,"recall":0.8416666666666667,"falsos_positivos_por_10000":18}
+Métricas typosquat {"tp":120,"fp":0,"fn":0,"benignas":10000,"inyectadas":120,"precision":1,"recall":1,"falsos_positivos_por_10000":0}
+Métricas tunnel {"tp":113,"fp":0,"fn":7,"benignas":10000,"inyectadas":120,"precision":1,"recall":0.9416666666666667,"falsos_positivos_por_10000":0}
+Métricas beacon {"tp":113,"fp":84,"fn":7,"benignas":10000,"inyectadas":120,"precision":0.5736040609137056,"recall":0.9416666666666667,"falsos_positivos_por_10000":84}
+✔ reproducción con intervalos, mezcla, límites y cancelación (104.953691ms)
+✔ ventanas: expiran claves, rasgos e intervalos; capacidad y orden (0.520567ms)
+✔ Damerau-Levenshtein completo y homoglifos (0.271696ms)
+✔ lista blanca aprende infraestructura multicliente sin usar inyecciones (28.772843ms)
+✔ dga: precisión, recall y FP sobre 10000 consultas del registro entregado (801.377044ms)
+✔ typosquat: precisión, recall y FP sobre 10000 consultas del registro entregado (804.004331ms)
+✔ tunnel: precisión, recall y FP sobre 10000 consultas del registro entregado (692.975357ms)
+✔ beacon: precisión, recall y FP sobre 10000 consultas del registro entregado (660.937117ms)
+✔ túnel, DGA y beacon no confunden controles benignos sintéticos (1.605713ms)
+✔ zona gris de periodicidad se expone sin producir amenaza (0.248171ms)
+✔ QoE honesto: penalizaciones independientes y formato ClickHouse (1.08874ms)
+✔ Wazuh: JSON por línea, plano, severidad fija y rasgos numéricos (3.794334ms)
+✔ resumen: rechaza cifras inventadas, null y atribuciones cambiadas (0.246245ms)
+Evento → alerta local (ms) [ 0.4869340000000193 ]
+✔ flujo → alerta local y filas QoE: latencia medida (3.665299ms)
+﹣ QVAC local real: seis casos con cifras ancladas (0.08354ms) # SKIP
+✔ QoE conserva los valores y zonas que llegan del bus y marca solo los simulados (0.074633ms)
+✔ tubería local: el consumidor alerta mientras el productor sigue produciendo (4266.703131ms)
+✔ API local: autentica, agrupa en lotes, renueva el token vencido y no sale de loopback (3.556844ms)
+✔ sucursal por HTTP: consulta, expediente, acta verificable y los errores (33.185332ms)
+✔ sin modelo cargado, la consulta responde 503 y no rompe el resto (3.793723ms)
+✔ abstención documentada: acta registra falta de respaldo sin inventar actuaciones (5.873999ms)
+✔ guía sintética, longitud, secciones y búsqueda determinista (2.358838ms)
+✔ guardas: cita literal, monto respaldado y código existente (0.721639ms)
+✔ expediente: reinicio, estados, acta verificable, inmutabilidad y alteración (40.48437ms)
+﹣ modelo local: 20 casos, mínimo 16 aciertos y todas las abstenciones (0.086383ms) # SKIP
+✔ un código explícito recupera su procedimiento, no la sección que lo menciona (0.201207ms)
+ℹ tests 90
+ℹ suites 0
+ℹ pass 82
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 8
+ℹ todo 0
+ℹ duration_ms 4372.43411

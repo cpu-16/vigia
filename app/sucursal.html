@@ -170,6 +170,24 @@
     <span class="marca"><i class="punto"></i>CORE: caída declarada por el operador</span>
   </p>
 
+  <div class="filtros" style="margin:16px 0">
+    <button type="button" id="nuevaAtencion">Nueva atención</button>
+    <button type="button" id="limpiarSucursal">Limpiar pantalla y datos locales</button>
+  </div>
+  <p id="estadoSesion" class="nota" role="status" aria-live="polite"></p>
+  <dialog id="dialogoLimpiar" aria-labelledby="tituloLimpiar" style="max-width:420px;width:calc(100% - 48px);padding:24px;background:var(--papel);color:var(--tinta);border:1px solid var(--raya);border-radius:12px">
+    <h2 id="tituloLimpiar">Limpiar Sucursal</h2>
+    <p>Se quitarán la consulta y los campos sin guardar de esta pantalla. Los expedientes y actas guardados permanecen en el historial del servidor.</p>
+    <label><input type="checkbox" id="olvidarCredencial"> Borrar también mi nombre y sucursal de este navegador</label>
+    <div class="filtros" style="margin-top:20px"><button id="cancelarLimpiar">Cancelar</button><button id="confirmarLimpiar">Limpiar e iniciar otra atención</button></div>
+  </dialog>
+  <details id="historialSucursal">
+    <summary>Historial de atenciones</summary>
+    <p class="nota">Registros del nodo compartido. Horas de Panamá (UTC−5). Verificar comprueba la firma de un acta; no reemplaza este historial.</p>
+    <button class="menor" id="actualizarHistorial">Actualizar historial</button>
+    <div id="listaAtenciones" role="status" aria-live="polite"></div>
+  </details>
+
   <!-- 1 · preguntarle al agente -->
   <section id="p1">
     <div class="captura">
@@ -221,7 +239,9 @@ const limpiar = n => { while (n.firstChild) n.removeChild(n.firstChild); return 
 const ESTADOS = { abierto: 'Abierto', en_proceso: 'En proceso', cerrado: 'Cerrado' };
 const app = { texto: '', respuesta: null, consultaId: null, expediente: null, acta: null, modelo: '', vista: 'consulta' };
 
-async function api(metodo, ruta, cuerpo) {
+let operacionesSucursal = 0;
+async function api(...args) { operacionesSucursal++; try { return await apiInterna(...args); } finally { operacionesSucursal--; } }
+async function apiInterna(metodo, ruta, cuerpo) {
   const r = await fetch(ruta, { method: metodo,
     ...(cuerpo === undefined ? {} : { headers: { 'content-type': 'application/json' }, body: JSON.stringify(cuerpo) }) });
   let datos = null;
@@ -232,6 +252,52 @@ async function api(metodo, ruta, cuerpo) {
 // Sin `http` no hubo respuesta: el nodo no está, y eso NO es una abstención.
 const sinNodo = e => e.http === undefined;
 const progreso = (texto, mal = false) => { const p = $('#progreso'); p.textContent = texto; p.classList.toggle('mal', mal); };
+
+const fechaSucursal = v => v ? new Date(v).toLocaleString('es-PA', {timeZone:'America/Panama',dateStyle:'short',timeStyle:'medium',hour12:false}) + ' · Panamá (UTC−5)' : '—';
+function sesionDisponible() {
+  if (operacionesSucursal || rec?.state === 'recording') { $('#estadoSesion').textContent = 'Espera a que termine la operación o detén la grabación.'; return false; }
+  return true;
+}
+function iniciarAtencion(olvidar = false) {
+  if (!sesionDisponible()) return;
+  if (olvidar) { localStorage.removeItem('vigia.empleado'); localStorage.removeItem('vigia.sucursal'); }
+  sessionStorage.removeItem('vigia.acta'); sessionStorage.removeItem('acta');
+  location.assign('/sucursal');
+}
+$('#nuevaAtencion').onclick = () => {
+  if (!sesionDisponible()) return;
+  if (($('#consulta').value.trim() || app.expediente) && !confirm('¿Iniciar otra atención? Los campos sin guardar se descartarán. Los expedientes guardados siguen en el historial.')) return;
+  iniciarAtencion();
+};
+$('#limpiarSucursal').onclick = () => { if (sesionDisponible()) $('#dialogoLimpiar').showModal(); };
+$('#cancelarLimpiar').onclick = () => $('#dialogoLimpiar').close();
+$('#confirmarLimpiar').onclick = () => iniciarAtencion($('#olvidarCredencial').checked);
+async function cargarHistorial() {
+  const cont = $('#listaAtenciones'); cont.textContent = 'Consultando registros…';
+  try {
+    const { expedientes } = await api('GET', '/api/sucursal/expedientes'); limpiar(cont);
+    if (!expedientes.length) { cont.textContent = 'Todavía no hay atenciones guardadas en este nodo.'; return; }
+    for (const c of expedientes) {
+      const fila = el('article', {class:'act'}, el('div', {}, el('b', {text:`${c.sucursal} · ${ESTADOS[c.estado] ?? c.estado}`}), el('p', {text:c.motivo}), el('small', {text:`${c.empleado} · Apertura: ${fechaSucursal(c.apertura)}${c.cierre ? ' · Cierre: '+fechaSucursal(c.cierre) : ''}`})));
+      const abrir = el('button', {class:'chico',text:'Ver expediente'});
+      abrir.onclick = async () => {
+        if (!sesionDisponible()) return;
+        if (app.expediente && app.expediente.estado !== 'cerrado' && !confirm('¿Abrir este expediente? Los campos sin guardar de la atención actual se descartarán.')) return;
+        abrir.disabled = true;
+        try {
+          const r = await api('GET', `/api/sucursal/expedientes/${c.id}`);
+          app.respuesta = null; app.consultaId = null; app.acta = r.expediente.acta ?? null;
+          $('#p1').classList.add('oculto'); pintarExpediente(r.expediente);
+          $('#historialSucursal').open = false; $('#expediente').scrollIntoView({block:'start'});
+        } catch (e) { $('#estadoSesion').textContent = e.message; } finally { abrir.disabled = false; }
+      };
+      fila.append(abrir); cont.append(fila);
+    }
+  } catch (e) { cont.textContent = 'No se pudo cargar el historial: '+e.message; }
+}
+$('#historialSucursal').ontoggle = () => { if ($('#historialSucursal').open) cargarHistorial(); };
+$('#actualizarHistorial').onclick = cargarHistorial;
+if (location.hash === '#historialSucursal') $('#historialSucursal').open = true;
 
 // ── credencial ──
 $('#empleado').value = localStorage.getItem('vigia.empleado') ?? '';
@@ -457,6 +523,8 @@ const CAMPOS = [
 ];
 
 function pintarExpediente(exp) {
+  const sinGuardar = {};
+  if (app.expediente?.id === exp.id) for (const [campo] of CAMPOS) { const input = $(`#c-${campo}`); if (input && input.value !== String(app.expediente.datos?.[campo] ?? '')) sinGuardar[campo] = input.value; }
   app.expediente = exp;
   const caja = limpiar($('#expediente'));
   $('#p2').classList.add('oculto'); $('#p3').classList.remove('oculto');
@@ -467,7 +535,9 @@ function pintarExpediente(exp) {
   ficha.append(el('dd', {}, el('span', { class: `pill ${exp.estado}`, text: ESTADOS[exp.estado] ?? exp.estado })));
   ficha.append(el('dt', { text: 'Sección' })); ficha.append(el('dd', { text: app.respuesta?.codigo ?? '—' }));
   ficha.append(el('dt', { text: 'Expediente' })); ficha.append(el('dd', { class: 'id', text: exp.id }));
+  ficha.append(el('dt', {text:'Apertura'}), el('dd', {text:fechaSucursal(exp.apertura)}));
   caja.append(ficha);
+  if (!app.respuesta && exp.pasos?.length) for (const p of exp.pasos) caja.append(el('p', {text:'Registrado: '+p.paso}));
 
   // Actuaciones: el navegador manda el índice del paso, nunca su texto.
   const pasos = (app.respuesta?.pasos ?? []).filter(esPaso);
@@ -498,7 +568,7 @@ function pintarExpediente(exp) {
   caja.append(el('p', { class: 'rotulo', style: 'margin-top:16px', text: 'Datos del formulario' }));
   for (const [campo, etiqueta, ejemplo] of CAMPOS) {
     const valor = exp.datos?.[campo];
-    const entrada = el('input', { type: 'text', id: `c-${campo}`, placeholder: ejemplo, value: valor ?? '' });
+    const entrada = el('input', { type: 'text', id: `c-${campo}`, placeholder: ejemplo, value: sinGuardar[campo] ?? valor ?? '' });
     const b = el('button', { class: 'chico', text: valor ? 'Actualizar' : 'Guardar' });
     if (cerrado) { entrada.disabled = true; b.disabled = true; }
     b.addEventListener('click', async () => {
@@ -519,18 +589,19 @@ function pintarExpediente(exp) {
     const par = (k, v) => { dl.append(el('dt', { text: k })); dl.append(el('dd', { text: v })); };
     par('Huella', acta?.sello?.hash ?? '—');
     par('Firmante', acta?.sello?.firmante ?? '—');
-    par('Emitida', acta?.sello?.ts ?? '—');
+    par('Emitida', fechaSucursal(acta?.sello?.ts));
     bloque.append(dl);
     bloque.append(el('a', { class: 'boton', href: `/api/sucursal/expedientes/${exp.id}/acta`,
       download: `acta-${exp.id}.json`, text: 'Descargar acta JSON' }));
     bloque.append(el('a', { class: 'boton', href: '/sucursal', text: 'Iniciar otra atención' }));
     caja.append(bloque);
     barra('cerrado');
-  } else barra('expediente');
+  } else { barra('expediente'); $('#accion').disabled = exp.estado === 'abierto'; if (exp.estado === 'abierto') caja.append(el('p', {class:'nota', text:'Guarda una observación o actuación antes de cerrar.'})); }
 }
 
 async function cerrar() {
   const exp = app.expediente;
+  if (CAMPOS.some(([campo]) => $(`#c-${campo}`)?.value.trim() !== String(exp.datos?.[campo] ?? '').trim())) { alertaEnLinea('Guarda los campos editados antes de cerrar el expediente.', '#expediente'); return; }
   const b = $('#accion'); b.disabled = true; b.textContent = 'Cerrando…';
   try {
     const r = await api('POST', `/api/sucursal/expedientes/${exp.id}/cerrar`);

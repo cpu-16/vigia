@@ -30,6 +30,7 @@ export class Expediente {
       }
     }
   }
+  listar() { this.reconstruir(); return [...this.casos.values()].map(c => ({ id: c.id, sucursal: c.sucursal, empleado: c.empleado, motivo: c.motivo, estado: c.estado, apertura: c.apertura, cierre: c.acta?.cierre ?? c.acta?.sello?.ts ?? null })).sort((a,b) => b.apertura.localeCompare(a.apertura)); }
   obtener(id) { this.reconstruir(); const c = this.casos.get(id); if (!c) throw new Error('Expediente inexistente'); return structuredClone(c); }
   editable(id) { const c = this.obtener(id); if (c.estado === 'cerrado') throw new Error('El expediente está cerrado'); return c; }
   abrir({ sucursal, empleado, motivo }) {

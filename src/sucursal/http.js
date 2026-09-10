@@ -66,6 +66,8 @@ export async function manejarSucursal(req, res, url, ctx) {
       return json(res, ctx.estado ? ctx.estado() : { disponible: !!ctx.responder, guia: null, ejecucion: null, hardware: null });
     }
 
+    if (req.method === 'GET' && ruta === '/api/sucursal/expedientes') return json(res, { expedientes: ctx.expedientes.listar() });
+
     // Consultar la guía. Una abstención también es 200: no responder es una respuesta correcta.
     if (req.method === 'POST' && ruta === '/api/sucursal/consulta') {
       const { consulta } = await cuerpoJson(req);

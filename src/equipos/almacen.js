@@ -36,7 +36,7 @@ export class Base {
         return previos;
       }
     }
-    const fecha = meta.fecha ?? new Date().toISOString().slice(0, 10);
+    const fecha = meta.fecha ?? new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Panama', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
     return (borrador.equipment ?? []).map(g => this.ev.agregar('observacion', {
       customer: borrador.customer, ...g, captura_hash: firma, ...derivar(g, fecha, meta),
       observador: meta.observador ?? null, fecha, fuente: meta.fuente ?? 'texto',
@@ -80,6 +80,7 @@ export class Base {
         observadores: [o.observador].filter(Boolean), corroborado: false, observaciones: [o] });
     }
     return [...porSitio.values()].map(s => ({ ...s, equipos: s.equipos.map(({ clave, ...e }) => ({ ...e,
+      ultimo_registro: e.observaciones.map(o => o.ts).sort().at(-1),
       ultima_fecha: e.observaciones.map(o => o.fecha).sort().at(-1),
       edad: clasificarEdad(e.age_years_max ?? e.age_years_min) })) }));
   }

@@ -1,0 +1,12 @@
+{
+  "url": "https://fedora.taild88ec5.ts.net:8443",
+  "html": {
+    "/equipos": true,
+    "/sucursal": true,
+    "/tablero": true,
+    "/verificar": true,
+    "/sw.js": true
+  },
+  "historial_disponible": true,
+  "errores_js": []
+}

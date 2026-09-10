@@ -104,3 +104,14 @@ test('reintentar una captura conserva los eventos incluso después de reiniciar'
   assert.equal(reabierta.observaciones()[0].foto.campos.serial, 'DEMO-123');
   assert.throws(() => reabierta.guardar({ ...borrador, equipment: [grupo('MR', 9)] }, meta), /otros datos/);
 });
+
+test('guardado nocturno: fecha de Panamá y hora UTC del evento sin alterar fecha declarada', t => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date('2026-09-10T02:30:00.000Z') });
+  const base = nueva();
+  base.guardar({customer:pacific,equipment:[grupo('MR',1)]},{observador:'Prueba horaria'});
+  const observacion=base.observaciones()[0];
+  assert.equal(observacion.fecha,'2026-09-09');assert.equal(observacion.ts,'2026-09-10T02:30:00.000Z');
+  assert.equal(base.inventario()[0].equipos[0].ultimo_registro,observacion.ts);
+  base.guardar({customer:pacific,equipment:[grupo('CT',1)]},{fecha:'2026-08-20'});
+  assert.equal(base.observaciones()[1].fecha,'2026-08-20');assert.equal(base.ev.verificarCadena().valida,true);
+});
