@@ -46,3 +46,9 @@ El enlace Tailscale necesita conectividad para llegar a la laptop. Para ejecuci�
 `npm test`, pruebas de navegador de captura/foto/corrección, `scripts/probar-producto.py` y `scripts/auditar-tailscale.py`. El recorrido de producto crea un expediente sintético, verifica su firma, recarga sin red y vuelve a una atención limpia. Las consultas con modelos reales no son garantías de exactitud general.
 
 [Guion de 4:50](GUION-GRABACION.md). El repositorio permanece privado: subir cambios no concede acceso al jurado. Debe verificarse ese acceso y añadir el enlace final del video en Dojo. No se ha publicado una entrega de Dojo ni grabado el video por el usuario.
+
+## Referencia compartida: Leash
+
+El enlace del usuario corresponde a «Leash Demo Video», publicado por Daniel Asaboro, de 4:59. No se pudo reproducir completo ni obtener subtítulos en esta sesión: YouTube devolvió 403/429. Por eso este análisis se apoya en la [ficha oficial de QVAC](https://qvac.tether.io/showcase/leash) y el [repositorio de Leash](https://github.com/danielAsaboro/Leash), no en una supuesta observación del video. El importe del premio mencionado por el usuario no se verificó independientemente.
+
+La ficha destaca un flujo coherente entre contexto, razonamiento, memoria y pares, con privacidad antes de elegir el destino. La adaptación para Vigía es mostrar el recorrido completo y el destino de cada inferencia, junto con evidencia reproducible. El repositorio también [documenta límites y pruebas pendientes](https://github.com/danielAsaboro/Leash/blob/main/docs/hackathon/known-issues.mdx). Esta disciplina respalda mantener explícito qué funciona aislado, qué necesita par y qué no está activado. No se copió código ni se atribuyeron a Vigía sus capacidades de LoRA, memoria o agentes.

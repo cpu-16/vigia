@@ -76,3 +76,7 @@ La prueba aislada incluye extracción y consulta bancaria locales. No digas que 
 ## Antes de entregar
 
 Video ≤5 minutos, enlace visible sin credenciales. Repo cpu-16/vigia accesible al jurado durante toda la evaluación; que sea privado no lo descalifica, pero requiere acceso efectivo. Declaración de base preexistente en README. Confirma los cuatro tracks y el enlace del video en el proyecto correcto de Dojo. No uses «RAG híbrido activo» ni «voz generada» en la narración: no están activados en esta versión.
+
+## Referencia de presentación
+
+Leash, compartido por Gilberto, tiene una demo de 4:59 y una ficha oficial que conecta sus capacidades dentro de un producto. Para Vigía, conserva una historia principal visible: observación incompleta → foto confirmada → próxima verificación → registro íntegro. Muestra el hardware/destino de inferencia cuando aporta prueba; evita dedicar la grabación a enumerar modelos. Esta recomendación procede de su ficha y repositorio; el video completo no pudo reproducirse en el entorno de revisión.
