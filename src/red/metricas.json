@@ -1,5 +1,5 @@
 {
-  "fecha": "2026-09-09T21:45:14.919Z",
+  "fecha": "2026-09-10T01:24:53.805Z",
   "lista_blanca": [
     "in-addr.arpa",
     "google.com",
@@ -108,7 +108,7 @@
       "falsos_positivos_por_10000": 84
     },
     "latencia_evento_alerta_ms": [
-      0.6324540000000525
+      0.5739530000000741
     ]
   }
 }

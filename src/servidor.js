@@ -29,6 +29,10 @@ const idSolicitud = () => `V-${randomBytes(2).toString('hex').toUpperCase()}`;
 
 // Modelos: el LLM puede correr local o delegado a un par (P2P_PROVEEDOR = llave pública hex).
 const PROVEEDOR = process.env.P2P_PROVEEDOR || undefined;
+// Whisper va donde quepa: con el lenguaje delegado a un par la RTX está casi vacía y la
+// transcripción baja de 24.8 s a 0.94 s (control de 9.4 s, medido el 9-sep). Con el LLM local
+// se queda en CPU para no pelear VRAM con él y con el VLM. `VOZ=gpu|cpu` manda sobre esto.
+const VOZ_DEVICE = process.env.VOZ ?? (PROVEEDOR ? 'gpu' : 'cpu');
 const GGUF = process.env.GGUF_QWEN3_1_7B;
 const MODELO_SRC = process.env.MODELO_CHICO ? QWEN3_600M_INST_Q4 : QWEN3_1_7B_INST_Q4;
 const MODELO_ETIQUETA = process.env.MODELO_CHICO ? 'Qwen3-0.6B Q4_0' : 'Qwen3-1.7B Q4_0';
@@ -53,7 +57,11 @@ async function arrancar() {
     hardware: process.env.HARDWARE ?? 'laptop-rtx4060', device: process.env.CPU ? 'cpu' : 'gpu',
     ...(GGUF && existsSync(GGUF) ? { fallbackSrc: GGUF } : {}), proveedor: PROVEEDOR });
   console.log(`▸ LLM ${llm.etiqueta} · ${llm.delegado ? `DELEGADO a ${PROVEEDOR.slice(0, 12)}…` : 'local'} · ${llm.device}`);
-  try { voz = await cargarVoz({ modelSrc: WHISPER_LARGE_V3_TURBO, etiqueta: 'Whisper large-v3 turbo', hardware: 'laptop-cpu' }); vozLista = true; console.log('▸ Voz lista'); }
+  // La voz va en CPU por defecto para no pelear VRAM con el LLM y el VLM. Con el lenguaje
+  // delegado a un par, la tarjeta queda casi vacía: `VOZ=gpu` la mueve ahí.
+  try { voz = await cargarVoz({ modelSrc: WHISPER_LARGE_V3_TURBO, etiqueta: 'Whisper large-v3 turbo',
+          device: VOZ_DEVICE, hardware: VOZ_DEVICE === 'gpu' ? (process.env.HARDWARE ?? 'laptop-rtx4060') : 'laptop-cpu' });
+        vozLista = true; console.log(`▸ Voz lista · ${VOZ_DEVICE}`); }
   catch (e) { console.log(`▸ Voz no disponible: ${e.message}`); }
   // La vista se carga solo si se pide: son 460M más en la misma tarjeta.
   if (process.env.VISION) { try { vista = await cargarVista(); console.log('▸ VisionPsy listo'); } catch (e) { console.log(`▸ VisionPsy no disponible: ${e.message}`); } }

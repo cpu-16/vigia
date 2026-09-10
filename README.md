@@ -68,6 +68,7 @@ Un solo proyecto, un solo repositorio (rama `main`), un solo video. Cada jurado 
 | Qué | Resultado | Dónde se reproduce |
 |---|---|---|
 | Extracción de un reporte dictado | 1.9 s | `src/equipos/equipos.test.js` |
+| Dictado: 9.4 s de audio transcritos (Whisper large-v3 turbo) | 0.94 s en la RTX 4060 · 24.8 s en CPU, mismo texto | control fijo, 3 corridas por lado; `src/core/voz.js` |
 | Los 10 prompts oficiales de Philips, más español y portugués | 12 / 12 | idem |
 | Consulta en lenguaje natural traducida a filtros | 6 / 6, menos de 1 s | `src/equipos/consulta.test.js` |
 | Placa: número de serie sobre 20 placas sintéticas | 20 / 20 | `src/equipos/placa.test.js`; corrida entregable en `evidencia/registro-psy-placas-9sep.jsonl` |

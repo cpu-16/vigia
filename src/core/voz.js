@@ -8,8 +8,11 @@ import { registrar, ms } from './rendimiento.js';
 const SDK_VERSION = '0.18.2';
 let cargado = null;
 
-// cargarVoz(): Whisper en CPU. En la RTX compite por VRAM con el LLM y el VLM;
-// ponytail: en CPU tarda ~2 s y no pelea memoria. Si hace falta GPU, pasar device:'gpu'.
+// cargarVoz(): Whisper. En la RTX compite por VRAM con el LLM y el VLM, así que el defecto es CPU.
+// Medido el 9-sep con un control de 9.4 s (large-v3 turbo, 8 hilos): **24.1–25.0 s en CPU**, y casi
+// lo mismo con 0.8 s de audio (24.1 s) — whisper.cpp paga la ventana de 30 s entera, así que el
+// costo es fijo por llamada, no por segundo hablado. Con el lenguaje delegado a un par la tarjeta
+// queda libre: `device:'gpu'`.
 export async function cargarVoz({ modelSrc, etiqueta = 'Whisper', hardware = 'laptop-cpu', idioma = 'auto', hilos = 8, device = 'cpu' } = {}) {
   if (cargado) return cargado;
   const t0 = performance.now();
