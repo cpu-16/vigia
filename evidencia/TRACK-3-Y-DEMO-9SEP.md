@@ -54,7 +54,7 @@ No requiere móvil. El transporte probado es una tubería local, no un adaptador
 - Navegador de escritorio a 390 px: extracción y VisionPsy reales, foto durante revisión, sin errores JS ni desborde en las rutas de producto comprobadas.
 - HONOR X6s físico a 360 px: mismo enlace HTTPS, extracción y foto reales, revisión recuperada tras recargar, sin errores JS ni desborde. Caché `vigia-v4`.
 - El nodo independiente de Termux en 7312 se actualiza por separado. Es un cliente QVAC de texto/P2P y no tiene voz, visión ni sucursal integradas. Se indica la falta de estas capacidades; para el recorrido completo del teléfono se usa el enlace HTTPS.
-- Este informe documentó la auditoría previa al push. El cierre de producto y el guion posteriores están en `../docs/PRODUCTO-Y-LIMITES.md` y `../docs/GUION-GRABACION.md`. No se publica una entrega en Dojo desde esta auditoría.
+- Este informe documentó la auditoría previa al push. El estado de producto posterior está en `../docs/PRODUCTO-Y-LIMITES.md`. No se publica una entrega en Dojo desde esta auditoría.
 
 ## Fallos encontrados en la segunda revisión adversarial
 

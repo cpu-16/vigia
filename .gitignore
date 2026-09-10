@@ -17,3 +17,13 @@ src/red/resultado-modelo.json
 src/red/rendimiento-modelo.jsonl
 datos/
 evidencia/rendimiento-*.jsonl
+
+# Trabajo audiovisual privado: solo se versionan los assets finales de producto.
+docs/GUION-GRABACION.md
+scripts/grabar.sh
+video/
+edicion*/
+*.kdenlive
+*.mlt
+*.prproj
+web/media/

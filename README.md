@@ -1,223 +1,65 @@
-# Vigía — inteligencia local con evidencia
+<p align="center">
+  <img src="docs/media/vigia-banner.png" alt="Vigía — inteligencia local con evidencia. Equipos, Sucursal y Red." width="100%">
+</p>
 
-**Equipo HackPTY · Decentralized AI Hackathon 2026 (ISD Summit, Panamá) · 9–11 de septiembre de 2026**
+Vigía convierte **voz, fotos y observaciones de campo en información revisable**. Usa QVAC para inferir en equipos propios o delegar a pares autorizados; cada resultado indica dónde se ejecutó y qué evidencia lo respalda.
 
-Vigía convierte lo que una persona observa en campo —un hospital, una sucursal bancaria, una
-red— en datos revisables y verificables, **sin que el contenido salga de la infraestructura de
-quien lo produce**. Toda la inferencia corre en el dispositivo o se delega entre pares con el SDK
-de QVAC. Ninguna llamada a una API de inferencia en la nube.
+**[Instalación](docs/EJECUCION.md) · [Sucursal en el teléfono](docs/SUCURSAL-LOCAL-TERMUX.md) · [Mediciones](docs/MEDICIONES.md) · [Límites](docs/PRODUCTO-Y-LIMITES.md)**
 
-Tracks a los que se presenta este proyecto: **01 Philips** (base instalada) · **03 Desafío General** · **04 Ovnicom** (red) · **05 Caja de Ahorros** (banca). Un solo producto con
-tres espacios, **Equipos, Sucursal y Red**, que comparten runtime, registro, sellado y verificador.
-El repositorio de entrega es **https://github.com/cpu-16/vigia**. No presentamos el track 02 Psy;
-VisionPsy sigue siendo el lector local de placas del módulo Philips.
+<details>
+<summary><strong>Ver Vigía en movimiento · 18 segundos</strong></summary>
 
-La revisión más reciente, los arreglos y sus límites están en [la auditoría del 9-sep](evidencia/AUDITORIA-9SEP.md).
-Chequeo de lectura antes de grabar: `CLAVE=<clave-del-nodo> node scripts/preflight.mjs`.
+<img src="docs/media/vigia-recorrido.gif" alt="Recorrido real: presentación, transcripción, tablero, expediente de sucursal, Grafana y consulta local en modo avión." width="100%">
 
-La segunda auditoría verificó también el enlace Tailscale y el HONOR físico: foto durante la revisión, respuestas sin repetir inferencia y prueba nueva de Wazuh/ClickHouse/Grafana con QVAC. [Cumplimiento del track 3, resultados y límites](evidencia/TRACK-3-Y-DEMO-9SEP.md).
+Selección de pantallas reales; esperas abreviadas. Todos los datos de demostración son sintéticos.
 
-## Requisito técnico (artículo 10)
+</details>
 
-- SDK: `@qvac/sdk` **0.18.2**, fijado a propósito. La versión 0.19.0 (7-sep-2026) eliminó la
-  inferencia delegada por DHT (`startQVACProvider`, `delegate.providerPublicKey`). Este proyecto
-  demuestra esa delegación entre pares, así que se queda en la última versión que la incluye.
-- Modelos, cuantizaciones y hardware de ejecución: `THIRD_PARTY.md`.
-- Cada inferencia deja una fila en `evidencia/rendimiento.jsonl` (modelo, hardware, origen local o
-  delegado, carga, prompts, tokens, TTFT, throughput). Ese archivo operativo no se sube; la corrida
-  **reproducible** de lectura de placas está versionada en `evidencia/registro-psy-placas-9sep.jsonl`
-  (VisionPsy Nano sobre las 20 placas sintéticas, con carga, prompt, tokens, TTFT y throughput por
-  placa), y las tablas de las demás mediciones en `evidencia/sucursal-gpu-9sep.md`,
-  `evidencia/mac-par-9sep.md` y `evidencia/medicion-telefono-9sep.md`.
+## Tres espacios, un mismo motor
 
-## El canal entre pares: Hyperswarm sobre el DHT de Holepunch
-
-La delegación no pasa por ningún servidor nuestro ni por un puerto abierto. `@qvac/sdk` 0.18.2
-trae la pila de Holepunch —la misma de Pear— y es por ahí que un nodo encuentra a otro **por su
-llave pública**: `hyperswarm` 4.17.0 sobre `hyperdht` 6.34.0, con `corestore` 7.12.2 y
-`hyperdrive` 13.3.3 para el registro de modelos. `startQVACProvider` publica la llave del que
-presta cómputo (`src/puente/proveedor.js`) y `delegate.providerPublicKey` la consume
-(`src/core/runtime.js`). Medido entre casas distintas y entre el teléfono y la laptop:
-`evidencia/mac-par-9sep.md` y `evidencia/telefono-puente-9sep.md`.
-
-Tailscale aparece en las demostraciones, pero **en otra capa y nunca en la inferencia**: su Funnel
-publica una URL HTTPS para que la interfaz se abra desde un navegador cualquiera, protegida con la
-clave de equipo (`CLAVE`). Un navegador no habla el DHT; los nodos sí, y es entre nodos donde
-ocurre el cómputo. Apagar Tailscale no cambia dónde se infiere: solo deja de haber URL pública.
-
-## Lectura en voz opcional
-
-Philips y Sucursal incluyen «Escuchar» y «Detener», con Supertonic 2 Q8 en la RTX 4060 mediante QVAC. Se carga al primer uso; la lectura no usa la Mac ni una API de inferencia en la nube. [Comparación de modelos y pruebas](evidencia/voz-opcional/RESULTADOS.md).
-
-## Grabación y estado del producto
-
-[Guion de 4:50 listo para grabar](docs/GUION-GRABACION.md) · [Mejoras, investigación, RAG, voz y funcionamiento sin internet](docs/PRODUCTO-Y-LIMITES.md). La verificación final incluye cierre de Sucursal y comienzo de otra atención, exportación filtrada y acta verificada sin red.
-
-## Base preexistente declarada (artículo 11.c)
-
-Antes del inicio de la competencia, el equipo desarrolló una librería propia de experimentación
-con el SDK de QVAC (pruebas de recuperación con citas, extracción bajo gramática, sellado Ed25519 y
-delegación P2P). **Se utilizó únicamente como referencia; su código no se incorpora al producto
-entregado.** Declaramos este antecedente conforme al artículo 11.c. `evidencia/procedencia.md`
-identifica cada componente de este repositorio, su fecha de creación dentro de la ventana y su
-relación con dicha referencia.
-
-## Datos
-
-Todos los datos de las demostraciones son **sintéticos**: marcas, modelos, clientes, documentos y
-registros son ficticios. Se generan con los scripts de `fixtures/`.
-
-## Estructura
-
-```text
-src/core/        runtime QVAC, política de ejecución, registro de rendimiento, eventos, sellado
-src/equipos/     módulo Philips: captura, extracción, identidad de activos, inventario
-src/sucursal/    módulo banca: procedimiento citado, acta verificable
-src/red/         módulo red: consumidor del stream DNS, clasificación, salidas
-src/puente/      proveedor P2P (presta la GPU por llave pública), nodo del teléfono, respaldo cuando el par cae
-app/             interfaz web instalable (PWA): portada, app de campo, catálogo, tablero, sucursal y verificador
-fixtures/        datos sintéticos
-evidencia/       procedencia, rendimiento, pruebas de no salida de datos
-```
-
-## Dónde está cada track
-
-Un solo proyecto, un solo repositorio (rama `main`), un solo video. Cada jurado encuentra aquí su parte.
-
-| Track | Módulo | Carpeta | Minuto del video |
-|---|---|---|---|
-| 01 Philips · Base instalada | Equipos: captura por voz/texto/foto, extracción, identidad y duplicados, inventario, Customer 360, cola sin conexión | `src/equipos/`, `app/index.html`, `app/tablero.html`, `app/catalogo.html` | 0:12–1:28 |
-| 03 General · Sovereign Intelligence at the Edge | Todo lo anterior + delegación entre pares por llave pública (teléfono → laptop, teléfono → Mac y laptop → Mac en otra casa), el par que se apaga y la laptop que lo nota, actas verificables en el navegador, prueba de aislamiento | `src/core/`, `src/puente/`, `app/verificar.html`, `evidencia/` | 3:02–4:19, y la evidencia común 4:19–4:55 |
-| 05 Caja de Ahorros · Banca | Sucursal: procedimiento citado sin conexión, expediente, acta sellada y verificable; pantalla en `/sucursal` | `src/sucursal/`, `app/sucursal.html` | 1:28–2:22 |
-| 04 Ovnicom · Sentinel-DNS | Red: el registro DNS entregado por Ovnicom reproducido como flujo, detección por capas, alertas a Wazuh por su API local y score por zona en ClickHouse y Grafana | `src/red/`, `infra/red/` | 2:22–3:02, aislamiento 3:58–4:19 |
-
-## Lo medido, con su denominador
-
-| Qué | Resultado | Dónde se reproduce |
+| Espacio | Qué resuelve | Track |
 |---|---|---|
-| Extracción de un reporte dictado | 1.9 s | `src/equipos/equipos.test.js` |
-| Dictado: 9.4 s de audio transcritos (Whisper large-v3 turbo) | 0.94 s en la RTX 4060 · 24.8 s en CPU, mismo texto | control fijo, 3 corridas por lado; `src/core/voz.js` |
-| Los 10 prompts oficiales de Philips, más español y portugués | 12 / 12 | idem |
-| Consulta en lenguaje natural traducida a filtros | 6 / 6, menos de 1 s | `src/equipos/consulta.test.js` |
-| Placa: número de serie sobre 20 placas sintéticas | 20 / 20 | `src/equipos/placa.test.js`; corrida entregable en `evidencia/registro-psy-placas-9sep.jsonl` |
-| Placa: modelo · marca · modalidad | 18 / 20 · 16 / 20 · 18 / 20 | idem (corrida del 9-sep en la RTX 4060; las placas nítidas dan 38 / 40 campos) |
-| Placa: tiempo hasta el primer token · velocidad | mediana 1.0 s · 218 tok/s | idem |
-| Foto sin placa: el modelo describe y el filtro corta la marca inventada | 1.8 s leer + 2.3 s describir, 0 marcas falsas en 2 corridas | `src/equipos/placa.js` (`mirar`, `pistasDeEscena`), prueba en `placa.test.js` |
-| Sucursal: consultas correctas | 18 / 20 en la última auditoría | `src/sucursal/sucursal.test.js`; `evidencia/auditoria-banca-final-9sep.json` (corridas anteriores: 17–19 de 20) |
-| Sucursal: abstenciones cuando la guía no cubre | 5 / 5 | idem |
-| Sucursal: latencia por consulta | 375–923 ms en la RTX 4060 (4.5–17 s en CPU) | `evidencia/sucursal-gpu-9sep.md` |
-| Sucursal: flujo completo por HTTP hasta el acta verificable | 1 prueba determinista, sin modelo | `src/sucursal/http.test.js` |
-| Acta verificada en el navegador, sin servidor: válida, alterada, cadena rota | prueba determinista con WebCrypto | `src/core/verificar-web.test.js` |
-| Recuperación de preguntas parafraseadas: términos vs. híbrida | 1 / 4 → 3 / 4 | `src/core/semantica.test.js` |
-| Red: typosquatting · túnel · DGA · beaconing (precisión) | 100 % · 100 % · 85 % · 57 % | `src/red/red.test.js` |
-| Red: alertas del agente procesadas por Wazuh | 153 / 153 por el lector de archivo · 150 / 150 por la API local (`POST /events`, `location: API-Webhook`) | `infra/red/VERIFICADO-WAZUH.md` |
-| Red: evento → alerta en el JSONL · evento → HTTP 200 del SIEM | mediana 1,08 ms · 1 175 ms (n = 150; la agrupación de 2,5 s domina, el POST son 13 ms) | `infra/red/VERIFICADO-WAZUH.md`, `infra/red/stream-9sep.txt` |
-| Red: el consumidor alerta antes de que el productor termine | prueba determinista, dos procesos y una tubería local | `src/red/stream.test.js` |
-| El producto corriendo en el teléfono, delegando a la laptop | 2.6–2.8 s a 122–128 tok/s en la RTX 4060 (Qwen3-1.7B bajo gramática) | `evidencia/telefono-puente-9sep.md` |
-| El mismo teléfono delegando a la Mac de otra casa | 0.98–1.6 s a 250–271 tok/s en el M5 Max | idem |
-| El puente del producto probado dentro de android-arm64 | 3 / 3 pruebas (1 se salta) | idem |
-| Delegación de la laptop a una Mac en otra casa, por llave pública | 0.65–1.17 s a 255–280 tok/s en el M5 Max | `evidencia/mac-par-9sep.md` |
-| El par se apaga: la laptop lo nota, recalcula local y lo dice | 12.8 s la solicitud que lo encuentra, 2.3 s la siguiente | idem |
+| **Equipos** | Dictar una visita, fotografiar una placa, confirmar campos y consolidar el inventario. | Philips |
+| **Sucursal** | Consultar una guía con fuentes, documentar la atención y verificar el acta sin servidor. | Caja de Ahorros |
+| **Red** | Detectar señales DNS, pedir a QVAC una explicación y revisar alertas en Wazuh y métricas en Grafana. | Ovnicom |
 
-El beaconing va con su 57 % a la vista: el tráfico legítimo también es periódico y la
-periodicidad no prueba mando y control.
+El **Desafío General · Sovereign Intelligence at the Edge** reúne la inferencia local, la delegación por llave pública y la evidencia verificable. No presentamos el track QVAC Psy; VisionPsy se utiliza como lector de placas en Equipos.
 
-## Límites conocidos, dichos aquí y en el video
+![Cuatro pantallas reales de Vigía: revisión de equipos, tablero, procedimiento de sucursal y observabilidad de red](docs/media/vigia-capturas.jpg)
 
-- El teléfono captura y delega; hoy no infiere a bordo (el worker de Bare cae al cargar el modelo). Sin par a la vista, el nodo responde 503 diciendo que la captura queda pendiente; la app la deja en cola desde el navegador (`evidencia/telefono-puente-9sep.md`).
-- Cuando el par delegado se apaga, la laptop lo nota y recalcula local; cuando el par vuelve, no vuelve a delegar sola: hay que reiniciar el nodo.
-- La cola sin conexión guarda nota, dictado y foto, y las reenvía cuando vuelve el nodo, de una en una porque cada visita se confirma antes de guardarse. Lo que no hace es interpretar a bordo: sin nodo no hay respuesta, solo resguardo.
-- De una foto sin placa legible el modelo describe la escena, y de esa descripción solo se acepta la modalidad y una marca del catálogo. Medido el 9-sep: sobre la misma foto inventó «Soyo» y «SARK» en dos corridas; ninguna llegó al inventario (`src/equipos/placa.test.js`).
-- La latencia y los códigos de respuesta DNS son sintéticos, porque el registro entregado solo trae consultas; cada fila lo marca.
-- El beaconing tiene 57 % de precisión: la periodicidad no prueba mando y control. Las reglas detectan; el modelo explica y no decide bloqueos.
-- El endpoint `/events` de Wazuh admite 100 eventos por petición y 30 peticiones por minuto, fijo en el manager: el agente agrupa hasta 100 alertas o 2,5 s. El JSONL local se escribe siempre, antes de cualquier envío, y es el respaldo si la API no responde.
-- La prueba de aislamiento cubre el proceso del agente, no toda la laptop: corre en un namespace sin rutas y desde ahí `curl` a internet falla.
-- Una firma prueba que el contenido no cambió y que lo firmó esa llave; no acredita la identidad de quien la tiene.
+Ampliar: [Equipos](docs/media/equipos.png) · [Tablero](docs/media/tablero.png) · [Sucursal](docs/media/sucursal.png) · [Red](docs/media/red.png)
 
-## Cómo ejecutarlo
+## Qué hace QVAC
 
-Requisitos: **Node 22 o superior** y `ffmpeg` (solo para el dictado). Los modelos se descargan
-solos la primera vez desde el registro de QVAC; no hay que registrarse en ningún servicio.
+**Qwen3** extrae y responde; **Whisper** transcribe; **VisionPsy** lee placas; **Supertonic 2** lee las respuestas. El SDK `@qvac/sdk` está fijado en **0.18.2** para conservar la delegación P2P mediante Hyperswarm. Los nodos se encuentran por llave pública; el enlace HTTPS del navegador es otra capa.
+
+La persona confirma el inventario y revisa las fuentes. En Red, las reglas detectan y el modelo propone una explicación; **no hay bloqueos automáticos**. Las actas usan SHA-256 y Ed25519: prueban integridad y firma de una llave, no la identidad de su propietario.
+
+### También en modo avión
+
+El prototipo **Sucursal local** sirve su web desde Termux y ejecuta Qwen3-0.6B mediante QVAC Bare en la CPU del HONOR. Una consulta breve funcionó con Wi-Fi y datos apagados y sin puente al servidor: **6.7 s de carga + 19.3 s de inferencia**. [Resultado y controles](evidencia/sucursal-webapp-avion-10sep.md).
+
+Ya abre desde su icono como **Vigía local** en el HONOR. [Instalar la interfaz](docs/INSTALACION-CLIENTES.md) · [Captura instalada](evidencia/pwa/honor-instalada.png). Es una extensión de texto con modelos previamente instalados. **Instalar la PWA no instala QVAC ni los modelos.** No es una APK autónoma y todavía necesita el nodo Termux activo; no incluye voz, foto ni expedientes completos. En la app principal, sin acceso al nodo, se conservan capturas pendientes.
+
+## Empezar
+
+Node **22+**; `ffmpeg` para el dictado. La primera ejecución descarga los modelos.
 
 ```bash
-npm install                 # instala @qvac/sdk 0.18.2 (fijada)
-node --test                 # pruebas deterministas, sin modelos, ~3 s (8 más corren solo con PRUEBA_MODELO=1)
-
-# nodo completo (extracción, dictado y lectura de placa)
-GGML_VK_VISIBLE_DEVICES=1 VISION=1 node src/servidor.js
-#   portada en http://localhost:7320  ·  app de campo en /equipos  ·  catálogo en /catalogo.html
-#   tablero en /tablero  ·  sucursal en /sucursal  ·  verificador en /verificar
-
-# reto 04 (Ovnicom): el stream DNS en dos procesos, una tubería local
-node src/red/productor.js --velocidad 1 | node src/red/demo.js --stdin
-#   con el SIEM y ClickHouse levantados (bash infra/red/levantar.sh):
-#   export WAZUH_API_URL=https://127.0.0.1:55000 WAZUH_API_USER=wazuh-wui WAZUH_API_PASS=<API_PASSWORD>
-#   export CLICKHOUSE_LOCAL=1 VENTANA_QOE_MS=5000
-#   bash infra/red/aislado.sh        # el agente completo en un namespace sin rutas
+npm ci
+npm test
+VISION=1 npm start
 ```
 
-Variables útiles:
+Abre **http://localhost:7320**. Para elegir GPU, activar voz en GPU, desplegar el nodo o conectar un par: [guía de ejecución](docs/EJECUCION.md). Para el prototipo Android: [requisitos y paquete Termux](docs/SUCURSAL-LOCAL-TERMUX.md).
 
-| Variable | Para qué |
-|---|---|
-| `GGML_VK_VISIBLE_DEVICES` | Elige la GPU (Vulkan). Sin ella el SDK toma la primera que encuentre |
-| `ESCUCHAR` | Interfaz de escucha; por defecto `127.0.0.1`. Para acceso LAN declara la IP y configura `CLAVE` |
-| `VOZ=gpu` | Ejecuta Whisper en GPU; `CPU=1` fuerza todos los modelos a CPU |
-| `CPU=1` | Fuerza CPU, para reproducir en un equipo sin GPU |
-| `VISION=1` | Carga además VisionPsy (460 M) para leer placas |
-| `MODELO_CHICO=1` | Usa Qwen3-0.6B en vez de 1.7B, para hardware limitado |
-| `P2P_PROVEEDOR=<llave>` | Delega la inferencia a otro nodo por su llave pública |
-| `PUERTO`, `OBSERVACIONES`, `RENDIMIENTO` | Puerto y rutas de datos y de evidencia |
-| `REGISTRO_PROMPTS=0` | Deja de guardar el texto de los prompts y de las respuestas en el registro; conserva la huella, los tokens y los tiempos |
+## Evidencia y alcance
 
-> **Sobre el registro de rendimiento y la privacidad.** El track 02 pide que el registro incluya
-> los prompts; conservamos ese formato para reproducir las mediciones, aunque no competimos en Psy. Eso quiere decir que
-> `evidencia/rendimiento.jsonl` contiene lo que la persona dictó: se queda en el mismo nodo, no
-> se envía a ninguna parte y no se sube al repositorio. En este proyecto todo ese contenido es
-> **sintético**. En un despliegue real con datos de un cliente se apaga con `REGISTRO_PROMPTS=0`,
-> que conserva la huella y las métricas y descarta el texto.
+- [Mediciones con denominadores y hardware](docs/MEDICIONES.md), [modelos y componentes de terceros](THIRD_PARTY.md).
+- [Funcionamiento y límites](docs/PRODUCTO-Y-LIMITES.md): datos ficticios, revisión humana y comportamiento sin conexión.
+- Ovnicom usa un **replay finito** de registros sintéticos; latencia y rcode son simulados. No acredita monitoreo continuo de una red de producción.
+- Sucursal local puede equivocarse o abstenerse aunque la guía contenga el dato. No autoriza operaciones bancarias.
 
-### Reproducir las mediciones
+**Base preexistente declarada:** una librería propia de experimentación con QVAC sirvió como referencia de diseño y mediciones; su código no se incorporó al producto entregado. [Procedencia por componente](evidencia/procedencia.md), conforme al artículo 11.c.
 
-Cada corrida deja su evidencia en `evidencia/rendimiento.jsonl`, con los prompts completos, su
-huella, los tokens, el tiempo hasta el primer token y el rendimiento.
-
-```bash
-# los 10 prompts oficiales del reto de Philips, más español y portugués
-GGML_VK_VISIBLE_DEVICES=1 PRUEBA_MODELO=1 node --test src/equipos/equipos.test.js
-# VisionPsy sobre las 20 placas sintéticas
-GGML_VK_VISIBLE_DEVICES=1 PRUEBA_MODELO=1 node --test src/equipos/placa.test.js
-# las 20 consultas de la guía de sucursal
-GGML_VK_VISIBLE_DEVICES=1 PRUEBA_MODELO=1 node --test src/sucursal/sucursal.test.js
-# la consulta en lenguaje natural sobre la base instalada
-GGML_VK_VISIBLE_DEVICES=1 PRUEBA_MODELO=1 node --test src/equipos/consulta.test.js
-```
-
-**Dos procesos de QVAC a la vez** (por ejemplo el nodo y el proveedor) necesitan carpetas de
-caché distintas, o se pelean el bloqueo del almacén:
-
-```bash
-echo '{"cacheDirectory":"/ruta/aparte"}' > otro.json
-QVAC_CONFIG_PATH=$PWD/otro.json node src/puente/proveedor.js
-```
-
-### Delegación entre pares
-
-```bash
-# en el equipo que presta su cómputo
-GGML_VK_VISIBLE_DEVICES=1 node src/puente/proveedor.js      # imprime su llave pública
-
-# en el teléfono (Termux) o en cualquier otro nodo
-QVAC_WORKER_PATH=$HOME/qvac-app/node_modules/@qvac/sdk/dist/server/worker-min.js \
-LD_LIBRARY_PATH=$PREFIX/lib P2P_PROVEEDOR=<llave> node src/puente/nodo.js
-```
-
-### Hardware con el que se midió
-
-| Nodo | Equipo | Qué corrió ahí |
-|---|---|---|
-| Laptop | Fedora Linux, Intel + NVIDIA RTX 4060 8 GB (Vulkan), 31 GB RAM, Node 24.14.1 | Qwen3-1.7B, VisionPsy Nano, Whisper, y como proveedor P2P |
-| Teléfono | HONOR X6s, Android 14, 8× Cortex-A53, 3.7 GB RAM, Termux + Bare, Node 24.18.0 | `src/puente/nodo.js` entero: sirve la PWA en localhost y delega por llave pública a la laptop y a la Mac (el modelo a bordo hoy no carga: `evidencia/telefono-puente-9sep.md`) |
-| Nodo remoto | MacBook Pro, Apple M5 Max (18 núcleos, GPU de 40), 128 GB, macOS 26.4, Metal, Node 24.14.1, en otra casa | Proveedor P2P del producto (Qwen3-1.7B), llave `49fa9472…` |
-
-Los números publicados salieron de este hardware. En otro equipo pueden cambiar los tiempos y las respuestas del modelo; las pruebas deterministas no usan modelos y deben dar igual en cualquier parte.
+Equipo **HackPTY** · Decentralized AI Hackathon 2026 · Panamá · [MIT](LICENSE)
