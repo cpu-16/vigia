@@ -31,7 +31,7 @@ const PROVEEDOR = process.env.P2P_PROVEEDOR || undefined;
 const GGUF = process.env.GGUF_QWEN3_1_7B;
 const MODELO_SRC = process.env.MODELO_CHICO ? QWEN3_600M_INST_Q4 : QWEN3_1_7B_INST_Q4;
 const MODELO_ETIQUETA = process.env.MODELO_CHICO ? 'Qwen3-0.6B Q4_0' : 'Qwen3-1.7B Q4_0';
-let llm = null, vozLista = false, vista = null, parCaido = false, respaldo = null;
+let llm = null, voz = null, vozLista = false, vista = null, parCaido = false, respaldo = null;
 // El catálogo de productos permite que un código de placa identifique modelo y marca sin IA.
 const CATALOGO = existsSync('fixtures/placas/verdad.json')
   ? JSON.parse(await readFile('fixtures/placas/verdad.json', 'utf8')).map(v => ({ gtin: v.gtin, model: v.model, manufacturer: v.manufacturer, modality: v.modality }))
@@ -52,7 +52,7 @@ async function arrancar() {
     hardware: process.env.HARDWARE ?? 'laptop-rtx4060', device: process.env.CPU ? 'cpu' : 'gpu',
     ...(GGUF && existsSync(GGUF) ? { fallbackSrc: GGUF } : {}), proveedor: PROVEEDOR });
   console.log(`▸ LLM ${llm.etiqueta} · ${llm.delegado ? `DELEGADO a ${PROVEEDOR.slice(0, 12)}…` : 'local'} · ${llm.device}`);
-  try { await cargarVoz({ modelSrc: WHISPER_LARGE_V3_TURBO, etiqueta: 'Whisper large-v3 turbo', hardware: 'laptop-cpu' }); vozLista = true; console.log('▸ Voz lista'); }
+  try { voz = await cargarVoz({ modelSrc: WHISPER_LARGE_V3_TURBO, etiqueta: 'Whisper large-v3 turbo', hardware: 'laptop-cpu' }); vozLista = true; console.log('▸ Voz lista'); }
   catch (e) { console.log(`▸ Voz no disponible: ${e.message}`); }
   // La vista se carga solo si se pide: son 460M más en la misma tarjeta.
   if (process.env.VISION) { try { vista = await cargarVista(); console.log('▸ VisionPsy listo'); } catch (e) { console.log(`▸ VisionPsy no disponible: ${e.message}`); } }
@@ -168,10 +168,13 @@ const servidor = createServer(async (req, res) => {
     if (req.method === 'POST' && ruta === '/api/verificar') return json(res, verificar(await cuerpoJson(req)));
 
     // ── evidencia técnica: lo que el jurado revisa ──
+    // Un modelo por tarea, y cada uno con el hardware donde corrió DE VERDAD: la voz y la visión
+    // no salen de esta laptop, y el lenguaje puede estar corriendo en el par de otra casa. Es el
+    // punto entero del producto, así que se publica por tarea y no como un solo «modelo».
     if (req.method === 'GET' && ruta === '/api/evidencia') {
       const filas = existsSync(RUTA_RENDIMIENTO) ? (await readFile(RUTA_RENDIMIENTO, 'utf8')).trim().split('\n').filter(Boolean).map(l => JSON.parse(l)) : [];
       const inf = filas.filter(f => f.stage === 'completion' && f.status === 'ok');
-      return json(res, { run_id: RUN_ID, sdk: '@qvac/sdk 0.18.2 (fijada: 0.19.0 quitó la delegación P2P)',
+      return json(res, { run_id: RUN_ID, modelos: modelosPorTarea(), sdk: '@qvac/sdk 0.18.2 (fijada: 0.19.0 quitó la delegación P2P)',
         node: process.version, modelo: llm?.etiqueta, hardware: llm?.hardware,
         modo: parCaido ? 'local (par caído)' : (llm?.delegado ? `delegado a ${PROVEEDOR?.slice(0, 16)}…` : 'local'), voz: vozLista,
         llave_nodo: llave.publica.slice(0, 16) + '…', cadena: base.ev.verificarCadena(),
@@ -191,6 +194,21 @@ async function archivo(res, nombre) {
   if (!p.startsWith(APP) || !existsSync(p)) { res.writeHead(404); return res.end('no está'); }
   res.writeHead(200, { 'content-type': TIPOS[extname(p)] ?? 'application/octet-stream', 'cache-control': 'no-cache' });
   res.end(await readFile(p));
+}
+
+// modelosPorTarea(): dónde corre cada modelo en este momento. El lenguaje es el único que
+// puede estar en otro equipo; la voz y la visión son de este nodo y su hardware sale de la
+// carga real (Whisper va en CPU a propósito: en la RTX pelea VRAM con el LLM y el VLM).
+function modelosPorTarea() {
+  const modo = parCaido ? 'local (par caído)' : llm?.delegado ? 'delegado' : 'local';
+  return [
+    { tarea: 'voz', modelo: voz?.etiqueta ?? 'Whisper large-v3 turbo',
+      hardware: voz?.hardware ?? 'laptop-cpu', modo: vozLista ? 'local' : 'no cargado' },
+    { tarea: 'lenguaje', modelo: llm?.etiqueta ?? MODELO_ETIQUETA,
+      hardware: llm?.delegado ? `par ${PROVEEDOR.slice(0, 8)}… (otro equipo)` : (llm?.hardware ?? 'laptop-rtx4060'), modo },
+    { tarea: 'visión', modelo: vista?.etiqueta ?? 'VisionPsy Nano 460M Q8_0',
+      hardware: vista?.hardware ?? 'laptop-rtx4060', modo: vista ? 'local' : 'no cargado (arranca con VISION=1)' },
+  ];
 }
 
 const mediana = xs => { const v = xs.filter(x => typeof x === 'number').sort((a, b) => a - b); return v.length ? Math.round(v[Math.floor(v.length / 2)] * 10) / 10 : null; };

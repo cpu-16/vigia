@@ -174,8 +174,9 @@ async function pintar() {
   if (ev) $('#evidencia').textContent = [
     `SDK        ${ev.sdk}`,
     `Node       ${ev.node}`,
-    `Modelo     ${ev.modelo} · ${ev.hardware} · ejecución ${ev.modo}`,
-    `Voz        ${ev.voz ? 'Whisper cargado en este nodo' : 'no cargada'}`,
+    // Un renglón por tarea: se ve de un vistazo que la voz y la visión corren en esta laptop
+    // mientras el lenguaje puede estar ejecutándose en el par de otra casa.
+    ...(ev.modelos ?? []).map(m => `${(m.tarea[0].toUpperCase() + m.tarea.slice(1)).padEnd(10)} ${m.modelo} · ${m.hardware} · ${m.modo}`),
     `Llave nodo ${ev.llave_nodo}   (firma las actas; se verifica sin servidor)`,
     `Cadena     ${ev.cadena.valida ? `íntegra, ${ev.cadena.eventos} observaciones encadenadas` : `ROTA en el evento ${ev.cadena.en}: ${ev.cadena.motivo}`}`,
     `Inferencias ${ev.inferencias} · TTFT mediana ${ev.ttft_ms_mediana ?? '—'} ms · ${ev.tps_mediana ?? '—'} tok/s`,
