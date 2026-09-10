@@ -1,0 +1,10 @@
+{
+  "pruebas": [
+    "Nueva visita conserva texto sin interpretar y abre una captura vacía sin inferencia automática",
+    "Cancelar el borrado conserva la captura; recargar no restaura borradores automáticamente",
+    "No permite borrar durante inferencia; revisión y original permanecen hasta terminar",
+    "Otra pestaña se reinicia al borrar para impedir que restaure datos antiguos",
+    "Borrado confirmado persiste tras recarga y conserva el nombre; ningún guardado ni borrado al servidor"
+  ],
+  "errores_js": []
+}

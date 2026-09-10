@@ -180,6 +180,19 @@
     <button id="procesar">Interpretar</button>
   </div>
 
+  <div class="secundarias" style="margin:16px 0">
+    <button type="button" class="menor" id="nuevaVisita">Nueva visita</button>
+    <button type="button" class="menor" id="limpiarPendientes">Borrar pendientes</button>
+  </div>
+  <p id="estadoLimpieza" role="status" aria-live="polite"></p>
+  <dialog id="confirmarLimpieza" aria-labelledby="tituloLimpieza" style="max-width:420px;width:calc(100% - 48px);padding:24px;border:1px solid #817765;border-radius:12px;background:#f7f4ed;color:#292722">
+    <h2 id="tituloLimpieza">Borrar capturas pendientes</h2>
+    <p id="cantidadLimpieza"></p>
+    <p>Se borrarán las notas, audios, fotos y revisiones pendientes de este navegador, incluida la visita en pantalla. No se pueden recuperar.</p>
+    <p>Tu nombre y los registros ya guardados en el servidor se conservan. Otros dispositivos tienen sus propias capturas.</p>
+    <div class="secundarias"><button class="menor" id="cancelarLimpieza">Conservar capturas</button><button class="menor" id="confirmarBorrado">Sí, borrar pendientes</button></div>
+  </dialog>
+
   <!-- 1 · capturar -->
   <section id="p1">
     <div id="aviso"></div>
@@ -231,6 +244,13 @@
 import { revision, incorporarPlaca } from "/revision.js";
 const $ = s => document.querySelector(s);
 const estado = { texto: '', borrador: null, respuestas: {}, id: null, directo: null, ms: 0, fila: null, dups: [], fuente: 'texto', foto: null, capturaId: crypto.randomUUID() };
+let operaciones = 0, reiniciando = false, visitaGuardada = false;
+const generacion = localStorage.getItem('vigia-cola-generacion');
+addEventListener('storage', e => {
+  if (e.key === 'vigia-cola-generacion' && e.newValue !== generacion) {
+    reiniciando = true; location.replace('/equipos?limpio=1');
+  }
+});
 let procesandoCola = false, activoCola = null, guardando = false, fotoEnRevision = false, leyendoFoto = false, fotoPendienteRevision = null;
 
 // ── reloj y credencial ──
@@ -245,7 +265,6 @@ let hayNodo = false, degradado = false, avisoNodo = null;
 const pintarNodo = () => { $('#nodo').classList.toggle('si', hayNodo && !degradado);
                            $('#nodo').classList.toggle('aviso', hayNodo && degradado); };
 async function sondear() {
-  const habia = hayNodo;
   try { const r = await fetch('/api/evidencia', { cache: 'no-store' });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const e = await r.json();
@@ -272,9 +291,7 @@ async function sondear() {
     $('#nodoTexto').textContent = 'sin nodo · se guarda aquí'; }
   pintarNodo();
   await pintarPendientes();
-  // Apareció un nodo y hay capturas esperando: se interpretan solas, que es lo que la persona
-  // espera al salir del sótano. Solo si está en la pantalla de captura y no a medio revisar otra.
-  if (hayNodo && !habia && !$('#p1').classList.contains('oculto') && !estado.borrador) procesarUno();
+  // Retomar es explícito: abrir o recargar nunca sustituye una visita nueva por un borrador antiguo.
 }
 sondear(); setInterval(sondear, 5000);
 
@@ -282,8 +299,11 @@ sondear(); setInterval(sondear, 5000);
 const db = () => new Promise((ok, err) => { const r = indexedDB.open('vigia', 1);
   r.onupgradeneeded = () => r.result.createObjectStore('cola', { keyPath: 'id', autoIncrement: true });
   r.onsuccess = () => ok(r.result); r.onerror = () => err(r.error); });
-async function transaccion(modo, operar) {
+async function transaccion(modo, operar, limpieza = false) {
   const d = await db();
+  if (modo === 'readwrite' && !limpieza && generacion !== localStorage.getItem('vigia-cola-generacion')) {
+    d.close(); throw new Error('Se limpiaron las capturas desde otra pestaña. Recarga antes de continuar.');
+  }
   return new Promise((ok, err) => {
     const t = d.transaction('cola', modo);
     const r = operar(t.objectStore('cola'));
@@ -297,7 +317,12 @@ async function encolar(item) {
 }
 const cola = () => transaccion('readonly', c => c.getAll());
 const vaciar = id => transaccion('readwrite', c => c.delete(id));
-async function conservarRevision() {
+async function conservarRevision(...args) {
+  if (reiniciando) return;
+  operaciones++;
+  try { return await conservarRevisionInterno(...args); } finally { operaciones--; }
+}
+async function conservarRevisionInterno() {
   if (activoCola == null) return;
   const item = (await cola()).find(i => i.id === activoCola);
   if (item) await transaccion('readwrite', c => c.put({ ...item, revision: structuredClone(estado) }));
@@ -312,7 +337,7 @@ function pintarPasos(pendientes) {
     : hayNodo
     ? (pendientes ? `Hay nodo: <b>se pueden interpretar las ${pendientes} que quedaron guardadas</b>.`
                   : 'Hay nodo a la vista: <b>lo que captures se interpreta en el nodo indicado arriba</b>, con QVAC.')
-    : (pendientes ? `Sin nodo. <b>${pendientes} captura(s) esperando</b>: se interpretan solas en cuanto aparezca uno.`
+    : (pendientes ? `Sin nodo. <b>${pendientes} captura(s) esperando</b>: puedes retomarlas cuando aparezca uno.`
                   : 'Sin nodo a la vista. <b>Captura igual</b>: se guarda aquí y se interpreta cuando vuelva.');
 }
 const HORA = ts => new Date(ts ?? Date.now()).toLocaleString('es-PA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -338,7 +363,7 @@ async function pintarPendientes() {
 
 // Un solo procesamiento por pantalla; no se elimina nada hasta recibir el acta.
 async function procesarUno() {
-  if (procesandoCola || !hayNodo || estado.borrador) return;
+  if (reiniciando || procesandoCola || !hayNodo || estado.borrador) return;
   procesandoCola = true;
   try {
     const items = await cola();
@@ -363,6 +388,49 @@ async function procesarUno() {
   } finally { procesandoCola = false; await pintarPendientes(); }
 }
 $('#procesar').onclick = procesarUno;
+const ocupado = () => operaciones > 0 || procesandoCola || rec?.state === 'recording';
+function puedeReiniciar() {
+  if (ocupado()) { $('#estadoLimpieza').textContent = 'Termina la grabación o espera a que finalice la operación antes de reiniciar.'; return false; }
+  return true;
+}
+$('#nuevaVisita').onclick = async () => {
+  if (!puedeReiniciar() || reiniciando) return;
+  reiniciando = true;
+  try {
+    const texto = $('#texto').value.trim();
+    // La revisión ya se conserva al responder; una nota todavía sin interpretar también se conserva.
+    if (!visitaGuardada && texto && (activoCola == null || texto !== estado.texto)) {
+      const items = await cola();
+      if (!items.some(i => i.tipo === 'texto' && i.texto === texto && !i.revision)) await encolar({ tipo: 'texto', texto });
+    }
+    location.assign('/equipos');
+  } catch (e) { reiniciando = false; $('#estadoLimpieza').textContent = e.message; }
+};
+$('#limpiarPendientes').onclick = async () => {
+  if (!puedeReiniciar() || reiniciando) return;
+  const items = await cola();
+  if (!puedeReiniciar()) return;
+  $('#cantidadLimpieza').textContent = `${items.length} captura(s) guardada(s) aquí. También se limpiará el texto sin guardar de esta pantalla.`;
+  $('#confirmarLimpieza').showModal();
+};
+$('#cancelarLimpieza').onclick = () => $('#confirmarLimpieza').close();
+$('#confirmarBorrado').onclick = async () => {
+  if (!puedeReiniciar() || reiniciando) return;
+  reiniciando = true; $('#confirmarBorrado').disabled = true;
+  try {
+    // Invalida escritores de otras pestañas antes de vaciar: una respuesta tardía no resucita borradores.
+    localStorage.setItem('vigia-cola-generacion', crypto.randomUUID());
+    await transaccion('readwrite', c => c.clear(), true);
+    location.assign('/equipos?limpio=1');
+  } catch (e) { reiniciando = false; $('#confirmarBorrado').disabled = false; $('#cantidadLimpieza').textContent = `No se pudo completar el borrado: ${e.message}. Recarga para reintentar.`; }
+};
+if (new URLSearchParams(location.search).has('limpio')) $('#estadoLimpieza').textContent = 'Capturas pendientes borradas de este navegador. Puedes iniciar una visita nueva.';
+// Solo el botón «Seguir con la siguiente» pide recuperación automática.
+if (new URLSearchParams(location.search).has('retomar')) {
+  history.replaceState(null, '', '/equipos');
+  const retomar = setInterval(() => { if (hayNodo) { clearInterval(retomar); procesarUno(); } }, 500);
+}
+
 
 // ── voz ──
 let rec = null, trozos = [], audioCtx = null;
@@ -385,7 +453,12 @@ $('#anillo').onclick = async () => {
 };
 // dictarBlob(): lo transcribe el nodo. Si el nodo no está o falla, el audio vuelve a la cola;
 // antes una nota de voz pendiente quedaba guardada y nadie la volvía a mirar nunca.
-async function dictarBlob(blob) {
+async function dictarBlob(...args) {
+  if (reiniciando) return;
+  operaciones++;
+  try { return await dictarBlobInterno(...args); } finally { operaciones--; }
+}
+async function dictarBlobInterno(blob) {
   estado.fuente = 'voz';
   if (!hayNodo) { await encolar({ tipo: 'audio', blob });
     $('#anilloTexto').innerHTML = 'Guardado aquí<em>sin nodo a la vista</em>'; return pintarPendientes(); }
@@ -456,7 +529,12 @@ async function pendiente(texto, aviso) {
   await pintarPendientes();
 }
 
-async function revisar() {
+async function revisar(...args) {
+  if (reiniciando) return;
+  operaciones++;
+  try { return await revisarInterno(...args); } finally { operaciones--; }
+}
+async function revisarInterno() {
   if (estado.textoInterpretado && estado.textoInterpretado !== estado.texto) {
     // Los índices de grupo pueden cambiar al reextraer: nunca reutilizar respuestas por índice.
     estado.revisionAnterior = { texto: estado.textoInterpretado, borrador: estado.borrador,
@@ -589,7 +667,12 @@ function pintar(r) {
 const aB64url = s => { let bin = ''; for (const b of new TextEncoder().encode(s)) bin += String.fromCharCode(b);
   return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
 
-async function guardar() {
+async function guardar(...args) {
+  if (reiniciando) return;
+  operaciones++;
+  try { return await guardarInterno(...args); } finally { operaciones--; }
+}
+async function guardarInterno() {
   $('#accion').disabled = true; $('#accion').textContent = 'Guardando…';
   if (guardando) return;
   guardando = true;
@@ -607,6 +690,7 @@ async function guardar() {
     $('#accion').textContent = 'Reintentar guardar'; $('#accion').disabled = false;
     return;
   } finally { guardando = false; }
+  visitaGuardada = true;
   $('#p2').innerHTML = `<div class="dicho"><b>Visita guardada.</b><br>${r.eventos} observación(es) selladas.
     <div class="tec">acta ${r.acta.sello.hash.slice(0, 24)}…\nfirmada por ${esc(r.acta.sello.firmante)}</div></div>
     <div class="losas" style="grid-template-columns:1fr">
@@ -615,7 +699,7 @@ async function guardar() {
   // Si quedaron capturas esperando, el botón lleva a la siguiente en vez de dejarlas ahí.
   const quedan = (await cola()).length;
   $('#accion').textContent = quedan ? `Seguir con la siguiente (${quedan})` : 'Nueva visita';
-  $('#accion').disabled = false; $('#accion').onclick = () => location.reload();
+  $('#accion').disabled = false; $('#accion').onclick = () => quedan ? location.assign('/equipos?retomar=1') : location.assign('/equipos');
   $('#volver').classList.add('oculto');
 }
 
@@ -631,7 +715,12 @@ $('#guardarParcial').onclick = async () => {
 };
 $('#archivoFoto').onchange = e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) fotoEnRevision ? leerFotoRevision(f) : verFoto(f); };
 
-async function leerFotoRevision(blob) {
+async function leerFotoRevision(...args) {
+  if (reiniciando) return;
+  operaciones++;
+  try { return await leerFotoRevisionInterno(...args); } finally { operaciones--; }
+}
+async function leerFotoRevisionInterno(blob) {
   const cont = $('#fotoRevision');
   fotoPendienteRevision = blob; leyendoFoto = true; pintar(estado.ultimaRevision);
   const item = (await cola()).find(i => i.id === activoCola);
@@ -680,11 +769,16 @@ const sumarAlTexto = frase => {
   estado.texto = $('#texto').value; conservarRevision();
 };
 
-async function verFoto(blob) {
+async function verFoto(...args) {
+  if (reiniciando) return;
+  operaciones++;
+  try { return await verFotoInterno(...args); } finally { operaciones--; }
+}
+async function verFotoInterno(blob) {
   estado.fuente = 'foto';
   if (!hayNodo) {
     await encolar({ tipo: 'foto', blob });
-    $('#placa').innerHTML = '<div class="aviso"><b>Foto guardada en el teléfono</b>No hay nodo a la vista. Se interpreta sola en cuanto aparezca uno.</div>';
+    $('#placa').innerHTML = '<div class="aviso"><b>Foto guardada en el teléfono</b>No hay nodo a la vista. Puedes retomarla cuando aparezca uno.</div>';
     return pintarPendientes();
   }
   if (activoCola == null) activoCola = await encolar({ tipo: 'foto', blob });

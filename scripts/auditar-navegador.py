@@ -38,10 +38,10 @@ with sync_playwright() as p:
  page.locator('#texto').fill('Un tomógrafo en Hospital DemoCare Horizon');page.locator('#accion').click();page.wait_for_timeout(100)
  assert len(queue())==2,queue();results.append('Dos capturas sin nodo conservadas por separado')
  state['online']=True
- page.reload(); page.wait_for_selector('#p2:not(.oculto)');page.wait_for_timeout(100)
+ page.reload(); page.locator('#procesar').click(); page.wait_for_selector('#p2:not(.oculto)');page.wait_for_timeout(100)
  assert len(queue())==2,queue();assert state['extracts']==1,state
- results.append('Una captura procesada al reconectar; original permanece durante revisión')
- page.reload();page.wait_for_selector('#p2:not(.oculto)');assert state['extracts']==1,state
+ results.append('Una captura retomada explícitamente tras reconectar; original permanece durante revisión')
+ page.reload();page.locator('#procesar').click();page.wait_for_selector('#p2:not(.oculto)');assert state['extracts']==1,state
  results.append('Revisión recuperada tras recargar sin repetir inferencia')
  page.locator('#accion').click();page.wait_for_timeout(100)
  assert page.locator('#accion').inner_text()=='Reintentar guardar';assert len(queue())==2
