@@ -4,7 +4,7 @@
 
 Vigía convierte **voz, fotos y observaciones de campo en información revisable**. Usa QVAC para inferir en equipos propios o delegar a pares autorizados; cada resultado indica dónde se ejecutó y qué evidencia lo respalda.
 
-**[Ver demostración](https://vigia.ciberpty.com/#demo) · [Abrir Vigía](https://fedora.taild88ec5.ts.net:8443/) · [Instalación](docs/EJECUCION.md)**
+**[Ver demostración](https://vigia.ciberpty.com/#demo) · [Abrir Vigía](https://vigia.ciberpty.com/inicio) · [Instalación](docs/EJECUCION.md)**
 
 <details>
 <summary><strong>Ver Vigía en movimiento · 18 segundos</strong></summary>
@@ -55,7 +55,7 @@ Abre **http://localhost:7320**. Para elegir GPU, activar voz en GPU, desplegar e
 
 ## Para evaluar
 
-[Guía por track](docs/GUIA-EVALUACION.md) · [Qué diferencia a Sucursal de lo existente](docs/DIFERENCIACION-CAJA.md).
+[Acceso del jurado](docs/EVALUACION-EN-LINEA.md) · [Guía por track](docs/GUIA-EVALUACION.md) · [Qué diferencia a Sucursal de lo existente](docs/DIFERENCIACION-CAJA.md).
 
 ## Evidencia y alcance
 

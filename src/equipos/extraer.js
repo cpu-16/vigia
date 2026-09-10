@@ -36,11 +36,16 @@ export function validar(crudo, texto) {
     for (const k of [...CITAS, 'model', 'manufacturer', 'notes', 'age_qualitative']) g[k] = limpio(g[k]);
     g.modality = normalizarModalidad(g.modality) ?? normalizarModalidad(g.modality_quote);
     if (!g.modality) { descartar(i, 'modality', g0.modality, 'sin modalidad reconocible'); continue; }
-    // cantidad: la cita debe estar en el reporte y contener ese número; si no, el número debe estar en el reporte
+    // Un número de edad, modelo u otra modalidad no demuestra cuántos equipos hay.
+    // La cantidad debe estar asociada al tipo de equipo en una mención literal.
     if (g.quantity != null) {
-      if (enTexto(g.quantity_quote, texto) && numerosEn(g.quantity_quote).includes(g.quantity)) g.verificado.quantity = 'cita';
-      else if (numerosEn(texto).includes(g.quantity)) g.verificado.quantity = 'texto';
-      else { descartar(i, 'quantity', g.quantity, 'el reporte no dice ese número'); g.quantity = null; }
+      const respalda = m => m.modality === g.modality && m.quantity === g.quantity;
+      const cita = enTexto(g.quantity_quote, texto) && menciones(g.quantity_quote).some(respalda);
+      const unico = (crudo.equipment ?? []).filter(x => normalizarModalidad(x.modality) === g.modality).length === 1;
+      const mencion = unico && menciones(texto).find(respalda);
+      if (cita) g.verificado.quantity = 'cita';
+      else if (mencion) { g.verificado.quantity = 'texto'; g.quantity_quote = mencion.frase; }
+      else { descartar(i, 'quantity', g.quantity, 'sin una cantidad asociada a esta modalidad'); g.quantity = null; g.quantity_quote = null; }
     }
     if (g.manufacturer) {
       if (MARCAS.includes(g.manufacturer) && enTexto(g.manufacturer, texto)) g.verificado.manufacturer = 'texto';
@@ -76,7 +81,7 @@ export function validar(crudo, texto) {
     if (!g && m.quantity != null) equipment.push({ modality_quote: m.frase, quantity_quote: m.frase, manufacturer_quote: null, model_quote: null, age_quote: null,
       modality: m.modality, quantity: m.quantity, manufacturer: null, model: null, age_years_min: null, age_years_max: null, age_qualitative: null, notes: null,
       verificado: { quantity: 'texto', origen: 'menciones' } });
-    else if (g && g.quantity == null && m.quantity != null) { g.quantity = m.quantity; g.quantity_quote = m.frase; g.verificado.quantity = 'texto'; }
+    else if (g && equipment.filter(x => x.modality === m.modality).length === 1 && g.quantity == null && m.quantity != null) { g.quantity = m.quantity; g.quantity_quote = m.frase; g.verificado.quantity = 'texto'; }
   }
   return { borrador: { customer: c, equipment }, descartes };
 }

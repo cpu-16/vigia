@@ -1,0 +1,127 @@
+{
+ "que": "Fotos ilustrativas del catálogo de equipos (app/catalogo.html). Los equipos son ficticios; la foto solo ilustra la modalidad.",
+ "origen": "Wikimedia Commons. Reencuadradas a 4:3 y recomprimidas a menos de 200 KB para servirlas desde el nodo sin conexión.",
+ "fotos": [
+  {
+   "archivo": "catalogo-ct.jpg",
+   "tipo": "CT",
+   "titulo": "File:Moderní výpočetní tomografie s přímo digitální detekcí rentgenového záření.jpg",
+   "autor": "Tomáš Vendiš",
+   "licencia": "CC BY-SA 4.0",
+   "url": "https://commons.wikimedia.org/wiki/File:Modern%C3%AD_v%C3%BDpo%C4%8Detn%C3%AD_tomografie_s_p%C5%99%C3%ADmo_digit%C3%A1ln%C3%AD_detekc%C3%AD_rentgenov%C3%A9ho_z%C3%A1%C5%99en%C3%AD.jpg"
+  },
+  {
+   "archivo": "catalogo-mr.jpg",
+   "tipo": "MR",
+   "titulo": "File:HITACHI, Magnetic Resonance Imaging System, ECHELON OVAL,.jpg",
+   "autor": "Mj-bird",
+   "licencia": "CC BY-SA 3.0",
+   "url": "https://commons.wikimedia.org/wiki/File:HITACHI,_Magnetic_Resonance_Imaging_System,_ECHELON_OVAL,.jpg"
+  },
+  {
+   "archivo": "catalogo-ultrasound.jpg",
+   "tipo": "Ultrasound",
+   "titulo": "File:Sonography Machine Donation from Raleigh Radiology-20.jpg",
+   "autor": "waketechcc",
+   "licencia": "CC0",
+   "url": "https://commons.wikimedia.org/wiki/File:Sonography_Machine_Donation_from_Raleigh_Radiology-20.jpg"
+  },
+  {
+   "archivo": "catalogo-patient-monitoring.jpg",
+   "tipo": "Patient Monitoring",
+   "titulo": "File:Vital signs monitor display.jpg",
+   "autor": "Petty Officer 1st Class James Stenberg",
+   "licencia": "Public domain",
+   "url": "https://commons.wikimedia.org/wiki/File:Vital_signs_monitor_display.jpg"
+  },
+  {
+   "archivo": "catalogo-x-ray.jpg",
+   "tipo": "X-Ray",
+   "titulo": "File:XRay machine for the captives, Guantanamo -a.JPG",
+   "autor": "Joseph Scozzari",
+   "licencia": "Public domain",
+   "url": "https://commons.wikimedia.org/wiki/File:XRay_machine_for_the_captives,_Guantanamo_-a.JPG"
+  },
+  {
+   "archivo": "catalogo-ah-ct5-18-0077.jpg",
+   "tipo": "CT",
+   "equipo": "ah-ct5-18-0077",
+   "titulo": "File:Ct-scan.jpg",
+   "autor": "NithinRao",
+   "licencia": "Public domain",
+   "url": "https://commons.wikimedia.org/wiki/File:Ct-scan.jpg"
+  },
+  {
+   "archivo": "catalogo-bp-mr5-17-0910.jpg",
+   "tipo": "MR",
+   "equipo": "bp-mr5-17-0910",
+   "titulo": "File:3TMRI.jpg",
+   "autor": "Tomáš Vendiš",
+   "licencia": "CC BY-SA 3.0",
+   "url": "https://commons.wikimedia.org/wiki/File:3TMRI.jpg"
+  },
+  {
+   "archivo": "catalogo-bp-ct6-13-0005.jpg",
+   "tipo": "CT",
+   "equipo": "bp-ct6-13-0005",
+   "titulo": "File:Installation of a CT Scan.jpg",
+   "autor": "Obynel",
+   "licencia": "CC BY-SA 4.0",
+   "url": "https://commons.wikimedia.org/wiki/File:Installation_of_a_CT_Scan.jpg"
+  },
+  {
+   "archivo": "catalogo-oi-ct4-15-0223.jpg",
+   "tipo": "CT",
+   "equipo": "oi-ct4-15-0223",
+   "titulo": "File:Tratamiento en Clínica González.jpg",
+   "autor": "Clinicagonzales",
+   "licencia": "CC BY-SA 4.0",
+   "url": "https://commons.wikimedia.org/wiki/File:Tratamiento_en_Cl%C3%ADnica_Gonz%C3%A1lez.jpg"
+  },
+  {
+   "archivo": "catalogo-oi-mr6-21-0410.jpg",
+   "tipo": "MR",
+   "equipo": "oi-mr6-21-0410",
+   "titulo": "File:MRI accident on a 1.5 Tesla MR system.jpg",
+   "autor": "Xksev",
+   "licencia": "CC BY-SA 4.0",
+   "url": "https://commons.wikimedia.org/wiki/File:MRI_accident_on_a_1.5_Tesla_MR_system.jpg"
+  },
+  {
+   "archivo": "catalogo-hc-us4-22-2031.jpg",
+   "tipo": "Ultrasound",
+   "equipo": "hc-us4-22-2031",
+   "titulo": "File:Scanning machine.jpg",
+   "autor": "Salaha mahmood",
+   "licencia": "CC0",
+   "url": "https://commons.wikimedia.org/wiki/File:Scanning_machine.jpg"
+  },
+  {
+   "archivo": "catalogo-hc-mr3-16-0068.jpg",
+   "tipo": "MR",
+   "equipo": "hc-mr3-16-0068",
+   "titulo": "File:Eingriff am offenen MRT Magdeburg.JPG",
+   "autor": "Klinik für diagnostische Radiologie Magdeburg",
+   "licencia": "CC BY-SA 2.0",
+   "url": "https://commons.wikimedia.org/wiki/File:Eingriff_am_offenen_MRT_Magdeburg.JPG"
+  },
+  {
+   "archivo": "catalogo-zm-mr8-20-0150.jpg",
+   "tipo": "MR",
+   "equipo": "zm-mr8-20-0150",
+   "titulo": "File:Freiburg im Breisgau- Kernspintomograph im Universitätsklinikum - LABW - Staatsarchiv Freiburg W 140 Nr. 10612.jpeg",
+   "autor": "Marlis Decker",
+   "licencia": "CC BY 4.0",
+   "url": "https://commons.wikimedia.org/wiki/File:Freiburg_im_Breisgau-_Kernspintomograph_im_Universit%C3%A4tsklinikum_-_LABW_-_Staatsarchiv_Freiburg_W_140_Nr._10612.jpeg"
+  },
+  {
+   "archivo": "catalogo-zm-ct4-19-0333.jpg",
+   "tipo": "CT",
+   "equipo": "zm-ct4-19-0333",
+   "titulo": "File:Pacific Partnership 2024-1- Ministry of Health Tour (8137169).jpg",
+   "autor": "U.S. Navy photo by Petty Officer 2nd Class Celia Martin",
+   "licencia": "Public domain",
+   "url": "https://commons.wikimedia.org/wiki/File:Pacific_Partnership_2024-1-_Ministry_of_Health_Tour_(8137169).jpg"
+  }
+ ]
+}

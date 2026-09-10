@@ -205,3 +205,16 @@ test('las respuestas de edad conservan intervalos y límites abiertos', async ()
   assert.deepEqual(interpretarEdad('Más de 10 años'), [11, null]);
   assert.deepEqual(interpretarEdad('Nuevo (< 3 años)'), [0, 3]);
 });
+
+
+test('una edad o la cantidad de otra modalidad no respalda el conteo del modelo', () => {
+  const crudo = { customer: {name:'Hospital Demo'}, equipment: [{modality:'MR',quantity:2,quantity_quote:'dos resonadores',age_quote:'dos años',age_years_min:2,age_years_max:2}] };
+  const r = validar(crudo, 'Hospital Demo: un resonador NovaMed NM-MR 700 de dos años.');
+  assert.equal(r.borrador.equipment[0].quantity, 1);
+  assert.equal(r.borrador.equipment[0].age_years_min, 2);
+  assert.ok(r.descartes.some(d => d.campo === 'quantity' && d.valor === 2));
+  const otro = validar(crudo, 'Hospital Demo: un resonador y dos tomógrafos.');
+  assert.equal(otro.borrador.equipment.find(g=>g.modality==='MR').quantity,1);
+  const sin = validar(crudo, 'Hospital Demo: resonadores de dos años.');
+  assert.equal(sin.borrador.equipment[0].quantity,null);
+});

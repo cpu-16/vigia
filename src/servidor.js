@@ -86,6 +86,7 @@ const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
 // Sin excepción para `localhost` a propósito: una excepción por origen es justo lo que se cuela
 // por el túnel, porque al nodo la petición del Funnel le llega igual de local.
 const CLAVE = process.env.CLAVE || null;
+const INICIO_APP = ['/','/inicio','/equipos'].includes(process.env.INICIO_APP) ? process.env.INICIO_APP : '/';
 const GALLETA = CLAVE ? `vigia=${encodeURIComponent(CLAVE)}` : null;
 const conClave = req => (req.headers.cookie ?? '').split(';').some(c => c.trim() === GALLETA);
 
@@ -116,7 +117,7 @@ const paginaEntrar = (res, { aviso = null, code = 200 } = {}) => {
 </style>
 <form method="post" action="/entrar">
   <h1>Vigía</h1>
-  <p>Clave del equipo para entrar a este nodo.</p>
+  <p>${process.env.MODO_EVALUACION === '1' ? 'Acceso para evaluadores · ciberpty. Prueba con datos ficticios; la inferencia se ejecuta en la GPU de Fedora.' : 'Clave del equipo para entrar a este nodo.'}</p>
   <label for="clave">Clave</label>
   <input id="clave" name="clave" type="password" autocomplete="current-password" autofocus required>
   <button type="submit">Entrar</button>
@@ -134,20 +135,20 @@ const servidor = createServer(async (req, res) => {
       if (req.method === 'POST' && ruta === '/entrar') {
         const enviada = new URLSearchParams((await cuerpo(req, 4096)).toString('utf8')).get('clave');
         if (enviada !== CLAVE) return paginaEntrar(res, { aviso: 'Esa no es la clave del equipo.', code: 401 });
-        res.writeHead(303, { location: '/', 'set-cookie': `${GALLETA}; Path=/; Max-Age=${30 * 24 * 3600}; HttpOnly; SameSite=Lax` });
+        res.writeHead(303, { location: INICIO_APP, 'set-cookie': `${GALLETA}; Path=/; Max-Age=${30 * 24 * 3600}; HttpOnly; SameSite=Lax${process.env.COOKIE_SEGURA === '1' ? '; Secure' : ''}` });
         return res.end();
       }
       // La app pide en JSON y las páginas se navegan: cada una recibe lo que sabe leer.
       if (ruta.startsWith('/api/')) return json(res, { error: 'hace falta la clave del equipo' }, 401);
       res.writeHead(303, { location: '/entrar' }); return res.end();
     }
-    if (CLAVE && ruta === '/entrar') { res.writeHead(303, { location: '/' }); return res.end(); }
+    if (CLAVE && ruta === '/entrar') { res.writeHead(303, { location: INICIO_APP }); return res.end(); }
 
     // ── app ──
     // `/` es la portada del producto (los tres espacios); la app de campo vive en `/equipos`.
     // `/app` se conserva porque es lo que quedó instalado en el teléfono.
     if (req.method === 'GET' && ['/revision.js', '/reglas.js', '/esquema.js'].includes(ruta)) return archivoDe(res, resolve('src/equipos'), ruta.slice(1));
-    if (req.method === 'GET' && ruta === '/') return archivo(res, 'inicio.html');
+    if (req.method === 'GET' && ['/', '/inicio'].includes(ruta)) return archivo(res, 'inicio.html');
     if (req.method === 'GET' && (ruta === '/equipos' || ruta === '/app')) return archivo(res, 'index.html');
     if (req.method === 'GET' && ruta === '/tablero') return archivo(res, 'tablero.html');
     if (req.method === 'GET' && ruta === '/verificar') return archivo(res, 'verificar.html');

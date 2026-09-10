@@ -17,3 +17,9 @@ Copiar la demostración final a `web/media/vigia-demo.mp4` y sus subtítulos Web
 El servidor debe enviar `video/mp4` y `text/vtt`, admitir solicitudes Range para avanzar en el video y servir `index.html` sin caché permanente. `infra/web/nginx.conf` contiene una configuración estática sin datos privados. Un túnel HTTPS puede publicar este servidor; no modifica dónde ocurre la inferencia.
 
 El enlace al nodo de demostración requiere la clave del equipo. El repositorio enlazado puede necesitar acceso autorizado si permanece privado.
+
+## Herramientas públicas
+
+`node scripts/preparar-web.mjs` exporta el catálogo y el verificador desde la aplicación a `web/catalogo/` y `web/verificar/`. Ambos funcionan sin API ni clave. El catálogo conserva créditos, licencias, placas sintéticas, filtros y modo pared. El verificador usa el mismo módulo WebCrypto del producto y no envía actas al servidor. Capturar visitas, abrir el inventario o consultar Sucursal lleva al nodo protegido.
+
+La sección Ovnicom muestra capturas de Wazuh y Grafana, enlaces al código y un acceso al capítulo de la demo. No publica los paneles administrativos ni presenta las capturas como monitoreo en vivo. Los medios versionados (`media/vigia-demo-v5-262s.mp4` y `.vtt`) evitan que la caché entregue el máster anterior.
