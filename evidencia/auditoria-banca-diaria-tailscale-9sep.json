@@ -1,0 +1,116 @@
+[
+  {
+    "tipo": "uso diario",
+    "consulta": "¿Qué documentos necesita una persona natural adulta panameña para abrir una cuenta?",
+    "esperado": "DOC-NAT-01",
+    "respuesta": {
+      "cubierto": true,
+      "pasos": [
+        "## DOC-NAT-01 — Documentos de persona natural adulta panameña",
+        "| Documento | Requisito |",
+        "| --- | --- |",
+        "| Identidad | Cédula ficticia vigente. |",
+        "| Domicilio | Constancia ficticia de domicilio. |",
+        "| Ingresos | Declaración ficticia de origen de fondos. |",
+        "1. Revisar vigencia y legibilidad de los documentos ficticios.",
+        "2. Registrar únicamente la verificación documental necesaria.",
+        "3. Si falta un documento obligatorio, aplicar EX-DOC-01.",
+        "No sustituir la cédula por una foto de redes sociales.",
+        "Ejemplo sintético de identificador: FICTICIO-CED-A001."
+      ],
+      "citas": [
+        {
+          "seccion": "DOC-NAT-01 — Documentos de persona natural adulta panameña",
+          "texto": "## DOC-NAT-01 — Documentos de persona natural adulta panameña\n\n| Documento | Requisito |\n| --- | --- |\n| Identidad | Cédula ficticia vigente. |\n| Domicilio | Constancia ficticia de domicilio. |\n| Ingresos | Declaración ficticia de origen de fondos. |\n\n1. Revisar vigencia y legibilidad de los documentos ficticios.\n2. Registrar únicamente la verificación documental necesaria.\n3. Si falta un documento obligatorio, aplicar EX-DOC-01.\nNo sustituir la cédula por una foto de redes sociales.\nEjemplo sintético de identificador: FICTICIO-CED-A001.\n"
+        },
+        {
+          "seccion": "DOC-NAT-01 — Documentos de persona natural adulta panameña",
+          "texto": "Cédula ficticia vigente."
+        }
+      ],
+      "limite": "Cédula ficticia vigente.",
+      "codigo": "DOC-NAT-01",
+      "abstencion": null,
+      "ms": 600.2,
+      "id": "V-ZYGD",
+      "limite_origen": "cita del modelo, verificada",
+      "modo": "delegado",
+      "modelo": "Qwen3-1.7B Q4_0",
+      "degradado": false,
+      "aviso": null,
+      "consulta": "¿Qué documentos necesita una persona natural adulta panameña para abrir una cuenta?",
+      "consultaId": "9ca66bf4-2e84-49b3-9468-6906073ef08e"
+    },
+    "correcto": true
+  },
+  {
+    "tipo": "uso diario",
+    "consulta": "¿Cuál es el procedimiento de arqueo de caja al cierre?",
+    "esperado": "CAJ-ARQ-01",
+    "respuesta": {
+      "cubierto": true,
+      "pasos": [
+        "## CAJ-ARQ-01 — Arqueo de caja",
+        "| Elemento | Acción |",
+        "| --- | --- |",
+        "| Efectivo | Contar por denominación con un segundo colaborador. |",
+        "| Comparación | Comparar el efectivo contado con el saldo del registro local. |",
+        "| Diferencia | Toda diferencia se documenta con INC-CAJA. |",
+        "1. Suspender temporalmente la atención en la caja que se está contando.",
+        "2. Contar billetes y monedas por denominación.",
+        "3. Comparar el total contado con el saldo del registro local.",
+        "4. Registrar fecha, hora y responsables del arqueo.",
+        "5. Obtener firma del cajero y del supervisor.",
+        "No compensar diferencias con dinero personal.",
+        "No borrar registros para hacer coincidir el saldo."
+      ],
+      "citas": [
+        {
+          "seccion": "CAJ-ARQ-01 — Arqueo de caja",
+          "texto": "## CAJ-ARQ-01 — Arqueo de caja\n\n| Elemento | Acción |\n| --- | --- |\n| Efectivo | Contar por denominación con un segundo colaborador. |\n| Comparación | Comparar el efectivo contado con el saldo del registro local. |\n| Diferencia | Toda diferencia se documenta con INC-CAJA. |\n\n1. Suspender temporalmente la atención en la caja que se está contando.\n2. Contar billetes y monedas por denominación.\n3. Comparar el total contado con el saldo del registro local.\n4. Registrar fecha, hora y responsables del arqueo.\n5. Obtener firma del cajero y del supervisor.\nNo compensar diferencias con dinero personal.\nNo borrar registros para hacer coincidir el saldo.\n"
+        },
+        {
+          "seccion": "CAJ-ARQ-01 — Arqueo de caja",
+          "texto": "5. Obtener firma del cajero y del supervisor."
+        }
+      ],
+      "limite": "Obtener firma del cajero y del supervisor.",
+      "codigo": "CAJ-ARQ-01",
+      "abstencion": null,
+      "ms": 487.7,
+      "id": "V-PPB8",
+      "limite_origen": "cita del modelo, verificada",
+      "modo": "delegado",
+      "modelo": "Qwen3-1.7B Q4_0",
+      "degradado": false,
+      "aviso": null,
+      "consulta": "¿Cuál es el procedimiento de arqueo de caja al cierre?",
+      "consultaId": "1204d698-8ffa-4d02-9cd3-bc40295f5906"
+    },
+    "correcto": true
+  },
+  {
+    "tipo": "fuera de guía",
+    "consulta": "¿A qué hora cierra la sucursal los sábados?",
+    "esperado": null,
+    "respuesta": {
+      "cubierto": false,
+      "pasos": [],
+      "citas": [],
+      "limite": null,
+      "codigo": null,
+      "abstencion": {
+        "motivo": "sin respaldo en la guía"
+      },
+      "ms": 459,
+      "id": "V-SX64",
+      "modo": "delegado",
+      "modelo": "Qwen3-1.7B Q4_0",
+      "degradado": false,
+      "aviso": null,
+      "consulta": "¿A qué hora cierra la sucursal los sábados?",
+      "consultaId": "179d2f89-9b4a-456c-a850-08a4cfcd9831"
+    },
+    "correcto": true
+  }
+]

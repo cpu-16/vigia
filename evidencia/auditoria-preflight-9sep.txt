@@ -1,0 +1,9 @@
+OK /
+OK /equipos
+OK /sucursal
+OK /tablero
+OK /verificar
+OK /api/sucursal/estado
+Modelos: voz: local · lenguaje: delegado · visión: local
+OK /api/evidencia
+Nodo disponible. Falta ensayar cámara, dictado y guardar/verificar con el dispositivo de la grabación.

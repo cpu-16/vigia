@@ -9,7 +9,9 @@ export const zonaDe=ip=>ip.startsWith('190.14.')?'canal':ip.startsWith('200.12.'
 export function simular(e,{semilla=1,perfil=distribuciones[zonaDe(e.cliente)]}={}) {
   const r=aleatorio(`${semilla}|${e.ts}|${e.cliente}|${e.dominio}|${e.tipo}`);
   // Latencia uniforme [base, base+dispersión]; NXDOMAIN Bernoulli por zona.
-  return {...e,zona:zonaDe(e.cliente),sitio:e.resolutor,latency_ms:perfil.latencia_base_ms+r()*perfil.dispersion_ms,rcode:r()<perfil.prob_nxdomain?'NXDOMAIN':'NOERROR',synthetic_fields:['latency_ms','rcode']};
+  const latency_ms=perfil.latencia_base_ms+r()*perfil.dispersion_ms,rcode=r()<perfil.prob_nxdomain?'NXDOMAIN':'NOERROR';
+  return {...e,zona:e.zona??zonaDe(e.cliente),sitio:e.sitio??e.resolutor,latency_ms:e.latency_ms??latency_ms,rcode:e.rcode??rcode,
+    synthetic_fields:[...new Set([...(e.synthetic_fields??[]),...(e.latency_ms==null?['latency_ms']:[]),...(e.rcode==null?['rcode']:[])])]};
 }
 const limitar=x=>Math.max(0,Math.min(1,x));
 export function calcular(eventos,{duracionMs=60000,capacidadQps,pesos=[45,35,20]}={}) {

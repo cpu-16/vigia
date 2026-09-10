@@ -16,7 +16,7 @@ export const RUTA = process.env.RENDIMIENTO ?? 'evidencia/rendimiento.jsonl';
 // En este proyecto todo el contenido es sintético: hospitales, marcas, guía bancaria y placas
 // son ficticios.
 export const GUARDAR_PROMPTS = process.env.REGISTRO_PROMPTS !== '0';
-const CAMPOS_CON_CONTENIDO = ['prompt_messages', 'output_text'];
+const CAMPOS_CON_CONTENIDO = ['prompt_messages', 'output_text', 'prompt', 'input_asset'];
 
 // ponytail: appendFileSync; si el volumen sube, un stream con cola.
 export function registrar(fila) {
@@ -30,3 +30,11 @@ export function registrar(fila) {
 }
 
 export const ms = t0 => Math.round((performance.now() - t0) * 10) / 10;
+
+// El panel HTTP informa métricas; los prompts completos permanecen solo en el registro local.
+export function sinContenido(fila) {
+  const copia = { ...fila };
+  for (const k of CAMPOS_CON_CONTENIDO) delete copia[k];
+  delete copia.error;
+  return copia;
+}

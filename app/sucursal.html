@@ -135,6 +135,21 @@
   .barra button[disabled]{background:var(--raya);color:var(--tinta-suave);box-shadow:none;cursor:not-allowed}
   .barra button.otro{background:transparent;color:var(--tinta);border:1px solid var(--tinta);box-shadow:none;flex:0 0 auto;font-size:15px}
   .oculto{display:none !important}
+  .nodo{max-width:65%;min-width:0;overflow-wrap:anywhere;white-space:normal}
+  #nodoTexto{min-width:0}
+
+  :focus-visible{outline:3px solid var(--accion);outline-offset:3px}
+  button:not(:disabled),summary,a{touch-action:manipulation}
+  button:disabled{cursor:default}
+  .ayuda{font-size:14px;color:var(--tinta-suave);max-width:68ch}
+  @media(hover:hover){.menor:hover,.filtros button:hover,.filtros a:hover,.continuar a:hover{border-color:var(--accion);color:var(--accion)}}
+  @media(prefers-reduced-motion:no-preference){
+    .hoja{animation:entrada-vigia 180ms ease-out both}
+    .menor,.filtros button,.filtros a,.continuar a{transition:background-color 140ms,color 140ms,border-color 140ms}
+    @keyframes entrada-vigia{from{opacity:.6}to{opacity:1}}
+  }
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
 </style>
 
 <div class="hoja">
@@ -168,7 +183,7 @@
       <button type="button" class="losa" id="btnEjemplo"><span>◈</span>Ver un ejemplo</button>
     </div>
     <textarea id="consulta" class="oculto" placeholder="Sin enlace al CORE, ¿cómo documento un retiro y cuál es el tope?"></textarea>
-    <p class="estado" id="progreso" role="status" aria-live="polite">La consulta y la respuesta no salen de la sucursal</p>
+    <p class="estado" id="progreso" role="status" aria-live="polite">La consulta se procesa con QVAC en el nodo indicado arriba</p>
   </section>
 
   <!-- 2 · lo que responde el agente -->
@@ -235,7 +250,7 @@ let hayNodo = false;
     if (e.guia) $('#tiraGuia').textContent = `${e.guia.nombre}${e.guia.version ? ` · versión ${e.guia.version}` : ''}`;
     $('#nodo').classList.toggle('si', hayNodo);
     $('#nodoTexto').textContent = hayNodo
-      ? `nodo ${e.ejecucion ?? 'local'}${e.hardware ? ` · ${e.hardware}` : ''}` : 'sin modelo a bordo';
+      ? `nodo ${e.ejecucion ?? 'local'}${e.hardware ? ` · ${e.hardware.startsWith('par:') ? e.hardware.slice(0,16)+'…' : e.hardware}` : ''}` : 'sin modelo a bordo';
   } catch { $('#nodoTexto').textContent = 'sin nodo a la vista'; }
   try { app.modelo = (await api('GET', '/api/evidencia')).modelo ?? ''; } catch {}
 })();
@@ -315,7 +330,7 @@ $('#volver').onclick = () => reformular();
 function reformular() {
   $('#p1').classList.remove('oculto'); $('#p2').classList.add('oculto'); $('#p3').classList.add('oculto');
   $('#consulta').classList.remove('oculto'); $('#consulta').focus();
-  progreso('La consulta y la respuesta no salen de la sucursal');
+  progreso('La consulta se procesa con QVAC en el nodo indicado arriba');
   barra('consulta');
 }
 
@@ -335,7 +350,8 @@ async function consultar(consulta) {
     const r = await api('POST', '/api/sucursal/consulta', { consulta });
     app.respuesta = r; app.consultaId = r.consultaId;
     pintarRespuesta(r);
-    progreso('');
+    if (r.modo) $('#nodoTexto').textContent = `nodo ${r.modo} · ${r.modelo ?? app.modelo}`;
+    progreso(r.degradado ? r.aviso : '');
   } catch (e) {
     barra('consulta');
     progreso(sinNodo(e) ? 'No se pudo consultar el nodo. Tu texto sigue aquí' : e.message, true);
@@ -357,16 +373,18 @@ function pintarRespuesta(r) {
   if (!r.cubierto) {
     caja.append(el('div', { class: 'abstencion' },
       el('b', { text: 'Sin respaldo en la guía: no invento' }),
-      el('p', { text: 'La guía de la sucursal no trae un procedimiento para eso, así que el agente no responde ni documenta nada.' }),
+      el('p', { text: 'La guía de la sucursal no trae un procedimiento para eso, así que el agente no emite instrucciones. Puedes dejar constancia para revisión humana.' }),
       el('p', { class: 'motivo', text: `Motivo: ${r.abstencion?.motivo ?? 'sin respaldo en la guía'}` }),
       el('p', { text: 'Reformula con las palabras de la guía o escala con tu supervisor.' }),
       el('p', { class: 'pie', text: pieTecnico(r) })));
+    const documentar = el('button', { class: 'boton', text: 'Documentar consulta sin respuesta' });
+    documentar.onclick = abrirExpediente; caja.append(documentar);
     barra('abstencion');
     return;
   }
 
   const tarjeta = el('article', { class: 'respuesta' });
-  tarjeta.append(el('p', { class: 'quien-responde' }, el('i', { class: 'punto' }), document.createTextNode('El agente responde · en este equipo')));
+  tarjeta.append(el('p', { class: 'quien-responde' }, el('i', { class: 'punto' }), document.createTextNode(`El agente responde · ${lugarEjecucion(r)}`)));
   tarjeta.append(el('p', { class: 'dicho', text: `«${app.texto}»` }));
 
   const seccion = r.citas?.[0]?.seccion ?? '';
@@ -409,7 +427,8 @@ function pintarRespuesta(r) {
   caja.append(tarjeta);
   barra('respuesta');
 }
-const pieTecnico = r => [app.modelo, `${Math.round(r.ms)} ms`, 'en este equipo', r.id].filter(Boolean).join(' · ');
+const lugarEjecucion = r => r.modo === 'delegado' ? 'en el par QVAC' : r.modo === 'local' ? 'en este nodo' : 'ejecución no informada';
+const pieTecnico = r => [app.modelo, `${Math.round(r.ms)} ms`, lugarEjecucion(r), r.id].filter(Boolean).join(' · ');
 
 // ── 2 · abrir el expediente con esa respuesta ──
 async function abrirExpediente() {
@@ -431,6 +450,7 @@ async function abrirExpediente() {
 }
 
 const CAMPOS = [
+  ['observacion', 'Observación para seguimiento', 'Qué se revisó y qué queda pendiente de confirmar'],
   ['folio', 'Folio del formulario', 'ISLA-20260909-FICTICIA-001'],
   ['monto', 'Monto documental', 'B/. 80.00'],
   ['supervisor_declarado', 'Supervisor declarado', 'Supervisor Ficticio B'],
@@ -503,6 +523,7 @@ function pintarExpediente(exp) {
     bloque.append(dl);
     bloque.append(el('a', { class: 'boton', href: `/api/sucursal/expedientes/${exp.id}/acta`,
       download: `acta-${exp.id}.json`, text: 'Descargar acta JSON' }));
+    bloque.append(el('a', { class: 'boton', href: '/sucursal', text: 'Iniciar otra atención' }));
     caja.append(bloque);
     barra('cerrado');
   } else barra('expediente');
@@ -541,7 +562,7 @@ function verificar(acta) {
   const json = JSON.stringify(acta);
   try { sessionStorage.setItem('vigia.acta', json); sessionStorage.setItem('acta', json); } catch {}
   const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(json))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  location.href = `/verificar#acta=${b64}`;
+  location.href = `/verificar?desde=sucursal#acta=${b64}`;
 }
 </script>
 </html>

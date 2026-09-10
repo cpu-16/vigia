@@ -1,0 +1,33 @@
+{
+  "dispositivo": "HONOR X6s físico, Brave (Chromium) por CDP",
+  "origen": "https://fedora.taild88ec5.ts.net:8443/equipos",
+  "rutas": [
+    {
+      "ruta": "/equipos",
+      "status": 200,
+      "overflow": false,
+      "ancho": 360
+    },
+    {
+      "ruta": "/sucursal",
+      "status": 200,
+      "overflow": false,
+      "ancho": 360
+    },
+    {
+      "ruta": "/tablero",
+      "status": 200,
+      "overflow": false,
+      "ancho": 360
+    }
+  ],
+  "inferencia_real": true,
+  "foto_durante_revision": true,
+  "vision_qvac_real": true,
+  "revision_con_foto_recuperada_tras_recargar": true,
+  "cache": [
+    "vigia-v4"
+  ],
+  "errores_js": [],
+  "visita_guardada": false
+}

@@ -1,0 +1,65 @@
+{
+  "nodo": {
+    "nodo": "honor-x6s",
+    "modo": "delegado",
+    "modelo": "Qwen3-1.7B Q4_0 (par)",
+    "par": "c475277259aba2b2…",
+    "respaldo": false,
+    "capacidades": {
+      "foto": false,
+      "voz": false,
+      "sucursal": false
+    },
+    "sdk": "@qvac/sdk 0.18.2",
+    "node": "v24.18.0"
+  },
+  "consulta": {
+    "id": "V-C5C1",
+    "modo": "delegado",
+    "ms": 1370.7,
+    "borrador": {
+      "customer": {
+        "name": "Hospital DemoCare Pacific",
+        "city": "David",
+        "country": "Panama"
+      },
+      "equipment": [
+        {
+          "modality_quote": "resonadores NovaMed",
+          "quantity_quote": "dos resonadores NovaMed",
+          "manufacturer_quote": "de siete años",
+          "model_quote": null,
+          "age_quote": "de siete años",
+          "modality": "MR",
+          "quantity": 2,
+          "manufacturer": "NovaMed",
+          "model": null,
+          "age_years_min": 7,
+          "age_years_max": 7,
+          "age_qualitative": null,
+          "notes": null,
+          "verificado": {
+            "quantity": "cita",
+            "manufacturer": "texto",
+            "age": "cita"
+          }
+        }
+      ]
+    }
+  },
+  "revision_js_status": 200,
+  "estado_tras_reinicio_final": {
+    "nodo": "honor-x6s",
+    "modo": "delegado",
+    "modelo": "Qwen3-1.7B Q4_0 (par)",
+    "par": "c475277259aba2b2…",
+    "respaldo": false,
+    "capacidades": {
+      "foto": false,
+      "voz": false,
+      "sucursal": false
+    },
+    "sdk": "@qvac/sdk 0.18.2",
+    "node": "v24.18.0"
+  }
+}

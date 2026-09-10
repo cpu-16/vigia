@@ -1,0 +1,54 @@
+{
+  "origen": "https://fedora.taild88ec5.ts.net:8443",
+  "rutas": [
+    {
+      "ruta": "/",
+      "status": 200,
+      "overflow": false
+    },
+    {
+      "ruta": "/equipos",
+      "status": 200,
+      "overflow": false
+    },
+    {
+      "ruta": "/sucursal",
+      "status": 200,
+      "overflow": false
+    },
+    {
+      "ruta": "/tablero",
+      "status": 200,
+      "overflow": false
+    },
+    {
+      "ruta": "/verificar",
+      "status": 200,
+      "overflow": false
+    },
+    {
+      "ruta": "/revision.js",
+      "status": 200,
+      "overflow": false
+    },
+    {
+      "ruta": "/reglas.js",
+      "status": 200,
+      "overflow": false
+    },
+    {
+      "ruta": "/esquema.js",
+      "status": 200,
+      "overflow": false
+    }
+  ],
+  "html_igual_repo": true,
+  "inferencia_real": true,
+  "foto_durante_revision": true,
+  "vision_qvac_real": true,
+  "cache": [
+    "vigia-v5"
+  ],
+  "errores_js": [],
+  "visita_guardada": false
+}

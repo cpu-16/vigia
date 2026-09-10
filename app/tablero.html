@@ -52,6 +52,30 @@
   .vacio{color:var(--tinta-suave);font-style:italic;padding:14px 0}
   a{color:var(--accion)}
   .vivo a{margin-right:6px;padding-right:13px;border-right:1px solid var(--raya)}
+  .rejilla{grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr))}
+  .rejilla>section{min-width:0}
+  .vivo{flex-wrap:wrap}
+  .tec{overflow-wrap:anywhere}
+  #clientes table{display:block;max-width:100%;overflow-x:auto}
+  @media(max-width:480px){.hoja{padding-left:16px;padding-right:16px}h2{flex-wrap:wrap}.corr{white-space:normal}}
+  .filtros{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:20px 0}
+  .filtros input,.filtros button,.filtros a{min-height:44px;padding:10px 14px;font:inherit;border:1px solid var(--raya);border-radius:9px;background:var(--papel-alto);color:var(--tinta)}
+  .filtros input{min-width:0;flex:1}.filtros a{text-decoration:none}
+  .prioridad{padding:14px 0;border-bottom:1px solid var(--raya)}.prioridad p{margin:4px 0;color:var(--tinta-suave)}
+  details{margin-top:28px}summary{cursor:pointer}#clientes table{margin-bottom:24px}
+
+  :focus-visible{outline:3px solid var(--accion);outline-offset:3px}
+  button:not(:disabled),summary,a{touch-action:manipulation}
+  button:disabled{cursor:default}
+  .ayuda{font-size:14px;color:var(--tinta-suave);max-width:68ch}
+  @media(hover:hover){.menor:hover,.filtros button:hover,.filtros a:hover,.continuar a:hover{border-color:var(--accion);color:var(--accion)}}
+  @media(prefers-reduced-motion:no-preference){
+    .hoja{animation:entrada-vigia 180ms ease-out both}
+    .menor,.filtros button,.filtros a,.continuar a{transition:background-color 140ms,color 140ms,border-color 140ms}
+    @keyframes entrada-vigia{from{opacity:.6}to{opacity:1}}
+  }
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
 </style>
 
 <div class="hoja">
@@ -60,7 +84,10 @@
     <span class="vivo" id="conexion"><a href="/catalogo.html">Catálogo de equipos</a> · <a href="/verificar">Verificar un acta</a><i class="punto"></i><span id="vivo" aria-live="polite">Sin datos</span></span>
   </header>
 
-  <div class="kpis" id="kpis"></div>
+  <p>Planifica la próxima visita con lo que está confirmado y lo que falta comprobar.</p>
+  <nav class="filtros" aria-label="Acciones del tablero"><a href="/equipos">Registrar visita</a><label for="buscarCliente">Buscar cliente o ubicación</label><input id="buscarCliente" type="search" placeholder="Hospital, ciudad o país"><button id="exportar">Exportar inventario CSV</button></nav>
+  <p class="ayuda">Los indicadores resumen toda la base. La búsqueda filtra clientes, verificaciones y exportación.</p><div class="kpis" id="kpis"></div>
+  <section aria-labelledby="tituloPrioridades"><h2 id="tituloPrioridades">Próximas verificaciones <span>prioridad explicada</span></h2><div id="prioridades"></div></section>
 
   <div class="rejilla">
     <section>
@@ -70,18 +97,17 @@
       <table id="modalidades"></table>
     </section>
     <section>
-      <h2>Oportunidades de renovación <span>regla COCIR</span></h2>
+      <h2>Evaluación de renovación <span>regla COCIR</span></h2>
       <table id="renovaciones"></table>
       <h2>Información incompleta <span>próxima visita</span></h2>
       <table id="incompletos"></table>
     </section>
   </div>
 
-  <h2>Clientes <span>Customer 360</span></h2>
+  <h2>Clientes <span>Vista por cliente</span></h2>
   <div id="clientes"></div>
 
-  <h2>Evidencia técnica <span>lo que el jurado revisa</span></h2>
-  <div class="tec" id="evidencia">cargando…</div>
+  <details><summary>Evidencia técnica de ejecución</summary><div class="tec" id="evidencia">cargando…</div></details>
 </div>
 
 <script type="module">
@@ -97,6 +123,7 @@ const ESTADO = { Confirmed: 'Confirmado', Reported: 'Reportado', Estimated: 'Est
 // Un solo estado de conexión, derivado de las respuestas reales. Cuando el sondeo falla NO se borra
 // ni se pone en cero lo que hay en pantalla: se conserva y se dice desde cuándo no hay respuesta.
 const hora = d => d.toLocaleTimeString('es-PA', { hour12: false });
+let inventarioActual = [];
 let ultimoDato = null, sinRespuestaDesde = null, sondeando = false;
 function conexion() {
   const c = $('#conexion');
@@ -127,20 +154,22 @@ async function pintar() {
     traer('/api/inventario'), traer('/api/agregado?por=country'), traer('/api/agregado?por=modality'),
     traer('/api/renovaciones'), traer('/api/incompletos'), traer('/api/evidencia')]);
 
+  inventarioActual = inv;
+  pintarClientes(); pintarPrioridades();
   const equipos = inv.flatMap(s => s.equipos);
   const unidades = equipos.reduce((n, e) => n + (e.quantity ?? 0), 0);
   const corroborados = equipos.filter(e => e.corroborado).length;
   $('#kpis').innerHTML = [
     [inv.length, 'clientes'], [unidades, 'unidades de equipo'],
-    [corroborados, 'equipos reportados por más de un observador'],
-    [(ren ?? []).filter(r => r.clase === 'reemplazar').length, 'equipos que superan los 10 años'],
+    [corroborados, 'grupos corroborados por varios observadores'],
+    [(ren ?? []).filter(r => r.clase === 'reemplazar').reduce((n,r)=>n+(r.unidades ?? 0),0), 'unidades de más de 10 años por evaluar'],
   ].map(([n, t]) => `<div class="kpi"><b>${n}</b><small>${t}</small></div>`).join('');
 
   const max = Math.max(1, ...(paises ?? []).map(p => p.unidades));
   tabla($('#paises'), ['País', 'Unidades', '', 'Clientes'], paises, p =>
     `<tr><td>${esc(p.clave)}</td><td class="n">${p.unidades}</td>
      <td style="width:44%"><div class="barrita ${p.reemplazar ? 'vieja' : ''}" style="width:${p.unidades / max * 100}%"></div>
-     ${p.reemplazar ? `<small style="color:var(--alerta)">${p.reemplazar} para reemplazar</small>` : ''}</td>
+     ${p.reemplazar ? `<small style="color:var(--alerta)">${p.reemplazar} por evaluar</small>` : ''}</td>
      <td>${p.clientes}</td></tr>`);
 
   const maxM = Math.max(1, ...(modalidades ?? []).map(m => m.unidades));
@@ -151,26 +180,12 @@ async function pintar() {
   tabla($('#renovaciones'), ['Cliente', 'Equipo', 'Edad', 'Motivo'], ren, r =>
     `<tr><td>${esc(r.customer)}<br><small style="color:var(--tinta-suave)">${esc(r.country ?? '')}</small></td>
      <td>${r.unidades ?? '?'}× ${esc(r.modality)}<br><small style="color:var(--tinta-suave)">${esc(r.manufacturer ?? 'marca desconocida')}</small></td>
-     <td class="edad-${r.clase}">${r.edad} años</td><td><small>${esc(r.motivo)}</small></td></tr>`);
+     <td class="edad-${r.clase}">${r.edad_minima ? 'Al menos ' : ''}${r.edad} años</td><td><small>${esc(r.motivo)}</small></td></tr>`);
 
   tabla($('#incompletos'), ['Cliente', 'Equipo', 'Falta'], inc, i =>
-    `<tr><td>${esc(i.customer)}</td><td>${esc(i.modality)}</td><td><small>${esc(i.faltan.join(', '))}</small></td></tr>`);
+    `<tr><td>${esc(i.customer)}</td><td>${esc(i.modality)}</td><td><small>${esc(i.faltan.map(k=>({manufacturer:'marca',model:'modelo',edad:'antigüedad'})[k]??k).join(', '))}</small></td></tr>`);
 
-  $('#clientes').innerHTML = inv.length ? inv.map(s => `
-    <h2 style="margin-top:26px">${esc(s.customer?.name ?? 'sin nombre')}
-      <span>${esc([s.customer?.city, s.customer?.country].filter(Boolean).join(', '))}</span></h2>
-    <table><tr><th>Cant.</th><th>Modalidad</th><th>Marca / modelo</th><th>Edad</th><th>Estado</th><th>Observadores</th></tr>
-    ${s.equipos.map(e => `<tr>
-      <td class="n">${e.quantity ?? '?'}</td>
-      <td>${esc(e.modality)}</td>
-      <td>${esc(e.manufacturer ?? '—')}${e.model ? '<br><small style="color:var(--tinta-suave)">' + esc(e.model) + '</small>' : ''}</td>
-      <td class="edad-${e.edad === 'reemplazar' ? 'reemplazar' : e.edad === 'planificar' ? 'planificar' : ''}">
-        ${e.age_years_max != null ? e.age_years_max + ' años' : '—'}
-        ${e.install_year_max ? `<br><small style="color:var(--tinta-suave)">inst. ~${e.install_year_max}</small>` : ''}</td>
-      <td><span class="sello ${e.status}">${esc(ESTADO[e.status] ?? e.status)}</span></td>
-      <td>${esc(e.observadores.join(', ') || '—')}
-        ${e.corroborado ? `<br><span class="corr">✓ ${e.observadores.length} observadores distintos</span>` : ''}</td>
-    </tr>`).join('')}</table>`).join('') : '<p class="vacio">Todavía no hay visitas guardadas.</p>';
+
 
   if (ev) $('#evidencia').textContent = [
     `SDK        ${ev.sdk}`,
@@ -186,6 +201,45 @@ async function pintar() {
     ...(ev.ultimas ?? []).map(f => `  ${f.timestamp_utc?.slice(11, 19)} ${f.stage.padEnd(13)} ${String(f.model ?? '').padEnd(22)} ${f.execution_mode ?? ''} ${f.end_to_end_ms ? Math.round(f.end_to_end_ms) + ' ms' : (f.load_ms ? 'carga ' + Math.round(f.load_ms) + ' ms' : '')} ${f.throughput_tps ? Math.round(f.throughput_tps) + ' tok/s' : ''}`),
   ].join('\n');
 }
+
+const normalizar = t => String(t ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+function seleccionados() { const q=normalizar($('#buscarCliente').value);return inventarioActual.filter(s=>normalizar([s.customer?.name,s.customer?.city,s.customer?.country].join(' ')).includes(q)); }
+function pintarClientes() {
+  const seleccion = seleccionados();
+  $('#clientes').innerHTML = seleccion.length ? seleccion.map(s => `
+    <h2 style="margin-top:26px">${esc(s.customer?.name ?? 'sin nombre')}
+      <span>${esc([s.customer?.city, s.customer?.country].filter(Boolean).join(', '))}</span></h2>
+    <table><tr><th>Cant.</th><th>Modalidad</th><th>Marca / modelo</th><th>Edad</th><th>Estado</th><th>Observadores</th></tr>
+    ${s.equipos.map(e => `<tr>
+      <td class="n">${e.quantity ?? '?'}</td>
+      <td>${esc(e.modality)}</td>
+      <td>${esc(e.manufacturer ?? '—')}${e.serial ? '<br><small>Serie: '+esc(e.serial)+'</small>' : ''}${e.model ? '<br><small style="color:var(--tinta-suave)">' + esc(e.model) + '</small>' : ''}</td>
+      <td class="edad-${e.edad === 'reemplazar' ? 'reemplazar' : e.edad === 'planificar' ? 'planificar' : ''}">
+        ${e.age_years_max != null ? (e.age_years_min !== e.age_years_max ? e.age_years_min + '–' : '') + e.age_years_max + ' años' : e.age_years_min != null ? 'Al menos '+e.age_years_min+' años' : 'Sin dato'}
+        ${e.install_year_max ? `<br><small style="color:var(--tinta-suave)">inst. ~${e.install_year_max}</small>` : ''}</td>
+      <td><span class="sello ${e.status}">${esc(ESTADO[e.status] ?? e.status)}</span></td>
+      <td>${esc(e.observadores.join(', ') || '—')}
+        ${e.corroborado ? `<br><span class="corr">✓ ${e.observadores.length} observadores distintos</span>` : ''}</td>
+    </tr>`).join('')}</table>`).join('') : '<p class="vacio">No hay visitas para esta búsqueda.</p>';
+}
+function pintarPrioridades() {
+ const pendientes=[];
+ for(const s of seleccionados()) for(const e of s.equipos) {
+  const faltan=[!e.manufacturer?'marca':null,!e.model?'modelo':null,e.quantity==null?'cantidad':null,e.age_years_min==null&&e.age_years_max==null?'antigüedad':null].filter(Boolean);
+  const antiguedad=(e.age_years_max??e.age_years_min??0)>10;
+  if(faltan.length||antiguedad) pendientes.push({s,e,faltan,antiguedad,peso:(e.quantity==null?4:0)+(antiguedad?3:0)+faltan.length});
+ }
+ pendientes.sort((a,b)=>b.peso-a.peso);
+ $('#prioridades').innerHTML=pendientes.length?pendientes.slice(0,8).map(({s,e,faltan,antiguedad})=>`<article class="prioridad"><b>${esc(s.customer?.name)} · ${esc(e.modality)} · ${e.quantity??'?'} unidad(es)</b><p>${faltan.length?'Completar '+esc(faltan.join(', '))+'. ':''}${antiguedad?'Evaluar antigüedad junto con condición, uso y mantenimiento. La edad por sí sola no determina el reemplazo.':''}</p><small>Última observación: ${esc(e.ultima_fecha??'sin fecha')}</small></article>`).join(''):'<p class="vacio">Sin pendientes de completitud o antigüedad para esta selección.</p>';
+}
+$('#buscarCliente').oninput=()=>{pintarClientes();pintarPrioridades();};
+$('#exportar').onclick=()=>{
+ const seguro=v=>{let t=String(v??'');if(/^[=+@-]/.test(t))t="'"+t;return '"'+t.replace(/"/g,'""')+'"';};
+ const filas=[['Cliente','Ciudad','País','Modalidad','Cantidad','Marca','Modelo','Serie','Edad mínima','Edad máxima','Estado','Última observación']];
+ for(const s of seleccionados())for(const e of s.equipos)filas.push([s.customer?.name,s.customer?.city,s.customer?.country,e.modality,e.quantity,e.manufacturer,e.model,e.serial,e.age_years_min,e.age_years_max,ESTADO[e.status]??e.status,e.ultima_fecha]);
+ const u=URL.createObjectURL(new Blob(['\ufeff'+filas.map(r=>r.map(seguro).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download='vigia-inventario.csv';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);
+};
+
 conexion(); refrescar(); setInterval(refrescar, 4000);
 </script>
 </html>

@@ -1,0 +1,174 @@
+{
+  "fuente": "https://www.trydojo.io/hackathons/decentralized-ai-hackathon",
+  "consultado": "2026-09-09 America/Panama",
+  "allow_multi_track": true,
+  "fin": "2026-09-11T13:00:00+00:00",
+  "tracks": [
+    {
+      "id": "ae8284f5-e589-4afa-a35b-3ad6d439cabc",
+      "hackathon_id": "a9166428-01b8-436e-aff3-31681a55d0cf",
+      "name": "Reto corporativo: Inteligencia de Base Instalada de Clientes Presentado por Philips",
+      "description": "**Construye un prototipo que convierta lo que un colaborador de campo observa en un hospital en datos estructurados y confiables sobre los equipos instalados**, con captura tan simple como una conversación y con la inferencia corriendo en el dispositivo.\n\n**El problema**\nIngenieros de servicio, vendedores y especialistas visitan hospitales y clínicas todos los días. Ven cuántos resonadores, tomógrafos o ecógrafos tiene cada cliente, de qué marca y qué tan antiguos parecen. Hoy ese conocimiento se queda en notas personales, conversaciones o memoria: capturarlo a mano toma tiempo, las descripciones son inconsistentes, varias personas reportan el mismo equipo y las observaciones suelen ser parciales. El resultado es una organización con poca visibilidad del panorama tecnológico real de sus clientes.\n\n**Por qué en el dispositivo**\nEl colaborador está dentro de un hospital, con frecuencia sin conectividad estable, y lo que ve es información sensible del cliente. La captura y la extracción deben funcionar sin internet y sin enviar el contenido a un servicio externo. Eso es exactamente lo que QVAC permite.\n\n**Tu misión**\nDespués de una visita, el colaborador abre la aplicación y dice o escribe algo como:\n> \"Estoy en Hospital DemoCare Pacific, en Panamy un tomógrafo. Uno de los resonadores parece de\n\n  Metas adicionales\n  Dictado por voz al terminar la visita. Detecciórvaciones. Puntaje de confianza según\n  completitud, antigüedad y confirmaciones indepemación no verificada recientemente. Preguntas de seguimiento automáticas por el dato faltante más valioso. Consultas en lenguaje natural sobre el dataset (\"clientes en Brasil con resonadores de más de siete años\"). Identificación de oportunidades de renovación. Captura asistida por foto\n  de etiquetas o placas, sujeta a las capacidadesonible.\n\n  Requisito técnico obligatorio\n  La solución debe usar QVAC con inferencia en eler-to-peer. Las soluciones que envíen lainferencia a una API en la nube no califican para este reto ni para el ranking general, sin importar la calidad del\n  resultado. ISD verifica este requisito antes deips. La interfaz (app móvil, escritorio,chatbot, asistente de voz) es libre.\n\n**Construye un prototipo que convierta lo que un colaborador de campo observa en un hospital en datos estructurados y confiables sobre los equipos instalados**, con captura tan simple como una conversación y con la inferencia corriendo en el dispositivo.\n\n**El problema**\nIngenieros de servicio, vendedores y especialislínicas todos los días. Ven cuántos resonadores,tomógrafos o ecógrafos tiene cada cliente, de qué marca y qué tan antiguos parecen. Hoy ese conocimiento se queda en notas\npersonales, conversaciones o memoria: capturarldescripciones son inconsistentes, variaspersonas reportan el mismo equipo y las observaciones suelen ser parciales. El resultado es una organización con poca\nvisibilidad del panorama tecnológico real de su\n\n**Por qué en el dispositivo**\nEl colaborador está dentro de un hospital, con d estable, y lo que ve es información sensibledel cliente. La captura y la extracción deben funcionar sin internet y sin enviar el contenido a un servicio externo. Eso\nes exactamente lo que QVAC permite.\n\n**Tu misión**\nDespués de una visita, el colaborador abre la aplicación y dice o escribe algo como:\n> \"Estoy en Hospital DemoCare Pacific, en Panamy un tomógrafo. Uno de los resonadores parece deunos ocho años.\"\n\nEl prototipo debe interpretar el mensaje, extraer *cliente, ciudad, país, modalidad, cantidad, marca, modelo y antigüedad*\ncuando se conozcan, preguntar por lo que falta,dos y guardar la observación en un repositorio\nestructurado. Con el tiempo, esas observacionesna vista viva de la base instalada por cliente ypor geografía.\n\n**Prototipo mínimo**\n- Captura en lenguaje natural de una observació\n- Extracción con IA de la información estructurada del equipo, tolerando datos incompletos.\n- Almacenamiento en un dataset estructurado, con estado por observación: `Confirmado`, `Reportado`, `Estimado` o `Desconocido`.\n- Vista de base instalada a nivel de cliente.\n- Agregación o visualización básica entre varios clientes.\n\n**Metas adicionales**\n- Dictado por voz al terminar la visita.\n- Detección de duplicados entre observaciones.\n- Puntaje de confianza según completitud, antigüedad y confirmaciones independientes.\n- Alertas de información no verificada recientemente.\n- Preguntas de seguimiento automáticas por el d\n- Consultas en lenguaje natural sobre el dataset (\"clientes en Brasil con resonadores de más de siete años\").\n- Identificación de oportunidades de renovación.\n- Captura asistida por foto de etiquetas o placas, sujeta a las capacidades del modelo de visión disponible.\n\n**Requisito técnico obligatorio**\nLa solución **debe usar QVAC con inferencia en el dispositivo o delegada peer-to-peer**. Las soluciones que envíen la\ninferencia a una API en la nube **no califican*l ranking general, sin importar la calidad delresultado. ISD verifica este requisito antes de pasar las entregas a Philips. La interfaz (app móvil, escritorio, chatbot,\nasistente de voz) es libre.\n\nTres decisiones, todas por cómo renderiza el componente:\n- Secciones en **negrita**, no en ##. TrackDeta estilos para h1–h3, así que el preflight deTailwind los deja del tamaño del texto normal: un heading se vería idéntico a un párrafo. La negrita sí está estilada\n  ([&_strong]:font-bold).\n- \"En una frase\" desaparece como etiqueta y la frase se vuelve el primer párrafo con la parte accionable en negrita. TrackCard corta a 5 líneas (line-clamp-5), así que lo primero es lo único que se ve en la card — gastar esa línea en un rótulo la desperdicia.\n- El ejemplo va como > blockquote — estilado enel dialog ni en la card, donde caerá al defaultdel navegador (margen + sin borde). Si lo prefieres consistente, cámbialo a cursiva; lo dejé como cita porque separa mejor la voz del usuario.\n\nLos Confirmado/Reportado en backticks solo se ven como código en el dialog si hay estilo de code — ahí tampoco lo hay, así que se verán como texto plano. Quítalos si te molesta la inconsistencia.",
+      "prize_amount": 1500.0,
+      "prize_currency": "USD",
+      "max_winners": 1,
+      "display_order": 1,
+      "created_at": "2026-09-08T17:03:38.316622+00:00",
+      "updated_at": "2026-09-08T17:03:38.316622+00:00",
+      "judging_criteria": null,
+      "prize_description": null,
+      "document_url": "https://ukwovawzehnebuoowcec.supabase.co/storage/v1/object/public/hackathon-assets/a9166428-01b8-436e-aff3-31681a55d0cf/tracks/doc-1788886999143-c967da0a.docx",
+      "document_name": "Customer_Installed_Base_Intelligence_Hackathon_Challenge_v2 (1).docx"
+    },
+    {
+      "id": "9d219c10-d06e-4872-a2d1-7a588378eb55",
+      "hackathon_id": "a9166428-01b8-436e-aff3-31681a55d0cf",
+      "name": "Desafío General: Sovereign Intelligence at the Edge",
+      "description": "Construye una solución de inteligencia artificial que funcione donde la nube no llega, no debería llegar o cuesta demasiado.\n\nQué buscamos\nUna aplicación que resuelva un problema real, con inferencia ejecutada en el dispositivo o delegada entre pares. El tema es libre. Como orientación, los espacios donde QVAC marca la diferencia son la conectividad intermitente, los datos sensibles que no pueden salir del dispositivo, el trabajo en campo, la accesibilidad y los agentes locales que ejecutan acciones. Ninguno es obligatorio y ninguno tiene premio propio.\n\nRequisito técnico\nLa solución debe construirse con el SDK de QVAC (qvac.tether.io), preferentemente con los modelos que QVAC pone a disposición. Enrutar la inferencia a una API en la nube descalifica la entrega de forma directa, sin importar la calidad del resto del trabajo. Usar la nube para funciones ajenas a la inferencia, como alojar una interfaz, no infringe esta regla.\nSe valora de forma adicional el uso de Pears para la comunicación o la delegación de inferencia entre pares. No es obligatorio: una solución que corre íntegramente en el dispositivo compite en igualdad de condiciones.\n\nEntregables\nAntes del 11 de septiembre a las 8:00, hora de Panamá:\nRepositorio accesible para el jurado durante todo el periodo de evaluación. No se exige licencia abierta.\nVideo demostrativo de máximo cinco minutos, con enlace accesible sin credenciales. Es lo primero que revisa el jurado.\n\nToda base preexistente debe declararse en el README. Omitirla descalifica.\n\nEvaluación\nTechnical 35%, Innovation 25%, Impact 20%, Design 10%, Completion 10%. Hay un único ranking general. En caso de empate decide el mayor puntaje en Technical, luego en Impact, y por último el voto del presidente del jurado.\n\nPremios\nPrimer lugar: 3,000 USDT\nSegundo lugar: 2,000 USDT\nTercer lugar: 1,000 USDT",
+      "prize_amount": 6000.0,
+      "prize_currency": "USD",
+      "max_winners": 3,
+      "display_order": 3,
+      "created_at": "2026-09-09T02:40:02.525574+00:00",
+      "updated_at": "2026-09-09T02:40:02.525574+00:00",
+      "judging_criteria": null,
+      "prize_description": null,
+      "document_url": null,
+      "document_name": null
+    },
+    {
+      "id": "0c9edf5c-71a4-45f4-9831-ed7139687159",
+      "hackathon_id": "a9166428-01b8-436e-aff3-31681a55d0cf",
+      "name": "Reto Tether: QVAC Psy",
+      "description": "Objetivo\nCrear aplicaciones útiles y fiables basadas en los modelos especializados Psy de QVAC, demostrando al mismo tiempo que es posible ejecutar inteligencia de dominio de alta calidad de forma privada en hardware *edge* (dispositivos locales).\nEsta categoría no es excluyente respecto a la principal y abarca proyectos que aprovechan los modelos oficiales Psy de QVAC disponibles antes de la fecha límite de presentación. Las familias actuales incluyen MedPsy, VisionPsy y TranslatePsy.\n\nCriterios de participación\nAl menos un modelo Psy debe desempeñar una función central en el flujo de usuario principal.\nLos modelos QVAC son deliberadamente pequeños y están diseñados para hardware de bajas prestaciones (p. ej., teléfonos móviles). El proyecto debe demostrar algo más que una simple sustitución estética del modelo; debe centrarse en hardware que se beneficie de modelos de este tamaño reducido.\nLos proyectos médicos deben comunicar claramente sus limitaciones, evitar afirmaciones clínicas no respaldadas e incluir medidas de seguridad adecuadas.\n\nAdemás, cada propuesta debe:\nUtilizar `@qvac/sdk` para todas las operaciones principales de inferencia de IA y RAG.\n\nEjecutar la experiencia principal localmente en hardware de consumo declarado:\nLos servicios remotos pueden dar soporte a funciones no relacionadas con la IA (como la sincronización opcional), pero la aplicación debe seguir siendo útil sin ellos.\nEvitar la inferencia en la nube o remota para las funcionalidades sujetas a evaluación.\nDivulgar todas las API remotas y los componentes de terceros utilizados.\nSer de código abierto bajo una licencia permisiva aprobada.\nIncluir instrucciones de configuración y especificaciones de hardware que permitan la reproducibilidad.\nUtilizar nombres de modelo honestos e identificar claramente los modelos, las cuantizaciones y el hardware de ejecución.\nIncluir un vídeo de demostración.\n\nSe debe aportar:\nun vídeo de demostración -de hasta 5 minutos de duración- y un registro de rendimiento estructurado que incluya la carga del modelo, los *prompts*, el recuento de *tokens*, el TTFT y el rendimiento (*throughput*).\nRepositorio con el código.\nDemostrar un flujo de trabajo de usuario completo, no solo una llamada al SDK o una prueba de rendimiento (*benchmark*).\n\nQué define el éxito\nResolver un problema concreto del dominio que se beneficie del uso de modelos muy pequeños.\nDemostrar una calidad de dominio medible, no solo una interfaz pulida.\nMostrar por qué el modelo Psy seleccionado es adecuado para la tarea.\nEjecutarse con fluidez y buena respuesta en hardware *edge* realista.\nGestionar de forma responsable los riesgos específicos del dominio, los casos de fallo y la incertidumbre.\nGenerar evidencias que otro evaluador pueda reproducir.",
+      "prize_amount": 1500.0,
+      "prize_currency": "USD",
+      "max_winners": 1,
+      "display_order": 2,
+      "created_at": "2026-09-09T02:40:02.558759+00:00",
+      "updated_at": "2026-09-09T02:40:02.558759+00:00",
+      "judging_criteria": null,
+      "prize_description": null,
+      "document_url": null,
+      "document_name": null
+    },
+    {
+      "id": "208ae000-f999-4bde-9109-dbd9973f28b0",
+      "hackathon_id": "a9166428-01b8-436e-aff3-31681a55d0cf",
+      "name": "Reto corporativo: IA Descentralizada aplicada a Infraestructura. Presentado por Ovnicom",
+      "description": "Sentinel-DNS: inteligencia local sobre telemetría DNS\nContexto\nOvnicom opera infraestructura de red y datacenter para clientes de banca, gobierno y salud en Panamá, Colombia, Guatemala y El Salvador. Parte de esa operación es un pipeline de telemetría DNS que captura consultas en tiempo real (BIND9 con dnstap), las normaliza y distribuye (Vector y Kafka), las almacena (ClickHouse) y las visualiza (Grafana), con Wazuh como SIEM. Hoy el análisis de ese tráfico se hace de forma centralizada y sin un componente de IA.\n\nEl problema es que el tráfico DNS revela hábitos de navegación de personas y empresas. Para los clientes regulados de Ovnicom, ni una consulta ni un dato derivado de ella puede salir del datacenter, tampoco hacia un proveedor de IA en la nube. Eso descarta las soluciones habituales y abre la puerta a una ejecución local.\n\nQué construir\nUn agente sobre QVAC que se conecte como consumidor adicional del stream de telemetría DNS y produzca, desde el mismo flujo de datos, dos salidas:\nSeguridad. Clasificación en tiempo real de dominios sospechosos (algoritmos de generación de dominios o DGA, typosquatting, tunneling DNS, beaconing hacia servidores de comando y control) y envío de la alerta a Wazuh por webhook o API local.\nExperiencia de cliente. Un score de calidad de experiencia por zona o punto de presencia, calculado a partir de latencia de resolución, tasa de NXDOMAIN y señales de saturación, escrito en ClickHouse y visualizado en un dashboard Grafana por sitio y por zona de cliente.\n\nCondiciones\nLa inferencia corre íntegramente en el dispositivo o en el servidor local mediante QVAC. Ninguna consulta DNS ni ningún dato derivado se envía a un endpoint de inferencia en la nube. Esta es la regla general del hackathon y aquí aplica sin matices.\nEl agente lee del bus de eventos sin modificar el pipeline de producción.\nSe admite combinar reglas con un modelo ligero. No se exige entrenar un modelo desde cero.\nLos datos de entrada son sintéticos. El equipo genera o utiliza un dataset que imite patrones reales, con dominios DGA de listas públicas, tráfico normal simulado y variaciones de latencia por zonas ficticias. No se entregan datos reales de clientes.\n\nEntregables\nLos generales del hackathon: repositorio accesible para el jurado y video de demostración de máximo cinco minutos, ambos antes del 11 de septiembre a las 8:00.\n\nQué mirará el jurado de Ovnicom\nEsta orientación no altera la rúbrica general, que es la misma para todas las entregas. Sirve para que el equipo sepa dónde poner el énfasis.\nQue la clasificación de amenazas funcione sobre el stream y no sobre un archivo estático.\nQue las alertas lleguen a Wazuh en un formato que el SIEM pueda procesar.\nQue el score de experiencia sea interpretable por un operador de red, no solo por quien lo programó.\nQue el diseño deje claro, de forma verificable, que ningún dato sale de la infraestructura.\n\nEnlace a datos sintéticos: https://ovnicom0-my.sharepoint.com/:u:/g/personal/mcarles_ovni_com/IQDdTM7xe379T52HpDH_g8F4Ad60RWtKBd_q7fhNuSAxbq0?e=EHcdzi\n\n",
+      "prize_amount": 1500.0,
+      "prize_currency": "USD",
+      "max_winners": 1,
+      "display_order": 4,
+      "created_at": "2026-09-09T14:08:26.435533+00:00",
+      "updated_at": "2026-09-09T14:08:26.435533+00:00",
+      "judging_criteria": null,
+      "prize_description": null,
+      "document_url": null,
+      "document_name": null
+    },
+    {
+      "id": "e4932663-799a-4d93-8e23-cadc9b6d2d00",
+      "hackathon_id": "a9166428-01b8-436e-aff3-31681a55d0cf",
+      "name": "Reto corporativo: Soluciones de AI Descentralizada para la Banca. Presentado por Caja de Ahorros",
+      "description": "Desafío Caja de Ahorros: Inteligencia local para la banca\n\nPresentado por Caja de Ahorros. Premio de 1,500 USDT, decidido por el jurado de Caja de Ahorros.\n\nQué buscamos\nUna solución de inteligencia artificial aplicable a la banca, construida sobre QVAC, con inferencia ejecutada en el dispositivo o delegada entre pares. El desafío es abierto: no hay un problema único que resolver. \nCaja de Ahorros busca apoyar e impulsar el desarrollo tecnológico y ver qué  es posible cuando la inteligencia corre localmente y los datos del cliente no salen del dispositivo ni de la infraestructura del banco.\n\nComo orientación, y sin que ninguna sea obligatoria, algunas direcciones donde la ejecución local puede aportar valor en banca:\n- Atención al cliente. Asistentes que operan en el celular o en la sucursal, con conectividad limitada, sin exponer datos personales a terceros.\n- Inclusión financiera. Educación, orientación y acceso a productos para poblaciones con conectividad intermitente o con barreras de idioma y accesibilidad.\n- Documentos y trámites. Lectura, clasificación y extracción de información de documentos de clientes procesada en el dispositivo.\n- Operación interna. Agentes locales que asisten al personal del banco en tareas repetitivas, consultas sobre procedimientos o análisis de información sensible.\n- Prevención de fraude y seguridad. Detección de patrones sobre datos que por su naturaleza no pueden salir de la infraestructura del banco.\n\nCualquier otra aplicación bancaria es admisible siempre que cumpla el requisito técnico.\n\nRequisito técnico\nLa solución debe construirse con el SDK de QVAC (qvac.tether.io), preferentemente con los modelos que QVAC pone a disposición. Enrutar la inferencia a una API en la nube descalifica la entrega de forma directa, sin importar la calidad del resto del trabajo. Usar la nube para funciones ajenas a la inferencia, como alojar una interfaz o autenticar usuarios, no infringe esta regla.\nSe valora el uso de Pears para la comunicación o la delegación de inferencia entre pares. No es obligatorio.\n\nDatos\nNo se entrega un dataset. Los equipos deben trabajar con datos sintéticos o públicos. No se admite el uso de datos reales de clientes de ninguna entidad financiera.\n\nEntregables\nAntes del 11 de septiembre a las 8:00, hora de Panamá:\nRepositorio accesible para el jurado durante todo el periodo de evaluación. No se exige licencia abierta.\nVideo demostrativo de máximo cinco minutos, con enlace accesible sin credenciales.\nToda base preexistente debe declararse en el README. Omitirla descalifica.\n\nEvaluación\nEl jurado de Caja de Ahorros elige al ganador con sus propios criterios, aplicados sobre las entregas que cumplan el requisito técnico, verificado previamente por ISD. Como referencia, el jurado pondera la aplicabilidad real de la solución en la operación del banco, el aprovechamiento de la ejecución local como ventaja y no como restricción, y la calidad de la demostración.\n\nPremio\n1,500 USDT para el equipo ganador. Es acumulable con el ranking general y con los demás desafíos corporativos. No requiere inscripción previa: cualquier equipo puede presentarse a este desafío. Se paga en USDT a una sola billetera por equipo, dentro de los treinta días siguientes a la premiación.\nLa propiedad intelectual permanece en el equipo. Caja de Ahorros no adquiere titularidad ni licencia automática sobre la solución. Cualquier acuerdo posterior se negocia directamente entre el banco y el equipo.\nRigen los Términos y Condiciones de Participación.",
+      "prize_amount": 1500.0,
+      "prize_currency": "USD",
+      "max_winners": 1,
+      "display_order": 5,
+      "created_at": "2026-09-09T14:23:29.35918+00:00",
+      "updated_at": "2026-09-09T14:23:29.35918+00:00",
+      "judging_criteria": null,
+      "prize_description": null,
+      "document_url": null,
+      "document_name": null
+    }
+  ],
+  "proyectos_publicamente_visibles": [
+    {
+      "title": "DevCors",
+      "slug": "devcors",
+      "description": "Admisión de expedientes de cliente en sucursal, con toda la IA corriendo en el propio equipo del banco. Se dicta o se fotografía el documento; el modelo propone los campos y nueve guardias deterministas deciden cuáles entran: lo que no está literalmente en la fuente se marca desconocido, no se inventa. Verifica el dígito de la cédula, detecta recibos vencidos y señala las contradicciones entre documentos. Funciona sin internet, y que no hay llamadas remotas se comprueba con un comando.",
+      "track_name": "Reto corporativo: Soluciones de AI Descentralizada para la Banca. Presentado por Caja de Ahorros",
+      "is_draft": false
+    },
+    {
+      "title": "Zarpe",
+      "slug": "zarpe",
+      "description": "Zarpe calcula el costo real de importar por la Zona Libre de Colón, sin señal. Todo corre en el equipo.\n\nQVAC solo clasifica; la tasa sale del Arancel Nacional de la ANA y el cálculo es determinista. Zarpe no inventa impuestos: si duda, no responde.\n\nReexportar o nacionalizar cambia todo.",
+      "track_name": "Desafío General: Sovereign Intelligence at the Edge",
+      "is_draft": true
+    },
+    {
+      "title": "Mosaic",
+      "slug": "mosaic",
+      "description": "Mosaic es una plataforma web que transforma las observaciones realizadas por colaboradores durante sus visitas a hospitales en información estructurada sobre la base instalada. Mediante texto o voz, permite registrar equipos, cantidades, modalidad, marca, modelo y antigüedad. Además, identifica datos faltantes y posibles duplicados, conectando observaciones dispersas para ofrecer una visión completa y confiable de los equipos por cliente y geografía.",
+      "track_name": "Reto corporativo: Inteligencia de Base Instalada de Clientes Presentado por Philips",
+      "is_draft": true
+    },
+    {
+      "title": "PULSO",
+      "slug": "pulso-2",
+      "description": "PULSO es un copiloto de IA local para urgencias que escucha y organiza la información de una atención clínica en tiempo real, ayudando al personal médico a documentar eventos, generar solicitudes mediante comandos de voz y dar seguimiento a cada orden. Su objetivo es reducir la carga administrativa y las interrupciones, permitiendo que los profesionales mantengan su atención en el paciente mientras conservan un registro organizado, trazable y bajo control humano.",
+      "track_name": "Reto Tether: QVAC Psy",
+      "is_draft": false
+    },
+    {
+      "title": "MangoApp",
+      "slug": "mangoapp",
+      "description": "Mango App es una plataforma B2B que democratiza la cadena de suministro en Panamá conectando directamente a productores, comercios y transportistas. Para este hackathon, desarrollaremos una capa de IA Descentralizada sobre la infraestructura QVAC de Tether, diseñada para erradicar la brecha digital de nuestros usuarios menos tecnificados del sector primario y logístico.",
+      "track_name": "Desafío General: Sovereign Intelligence at the Edge",
+      "is_draft": false
+    },
+    {
+      "title": "ProofAI",
+      "slug": "proofai",
+      "description": "**ProofAI Edge** convierte observaciones de campo en datos estructurados, confiables y trazables mediante IA ejecutada localmente con QVAC. Interpreta lenguaje natural, maneja información incompleta, identifica datos estimados o reportados, genera preguntas de seguimiento y construye un dataset consultable sin enviar información sensible a la nube.\n",
+      "track_name": null,
+      "is_draft": true
+    },
+    {
+      "title": "TBD-Panama",
+      "slug": "tbd-panama",
+      "description": "Por definir. Asistente de IA local con QVAC (inferencia on-device / P2P) para el Decentralized AI Hackathon del ISD Summit 2026. Descripción y alcance se actualizan al arrancar el hackathon.",
+      "track_name": "Reto corporativo: Inteligencia de Base Instalada de Clientes Presentado por Philips",
+      "is_draft": true
+    },
+    {
+      "title": "ATLAS",
+      "slug": "pulso",
+      "description": "ATLAS transforma observaciones hospitalarias por voz, texto o fotografía en un inventario estructurado y verificable. QVAC extrae localmente cliente, ubicación, modalidad, cantidad, marca, modelo y antigüedad; solicita datos faltantes, detecta duplicados y clasifica cada registro como confirmado, reportado, estimado o desconocido. Funciona offline y ofrece confianza, vigencia, vistas por cliente y geografía, consultas naturales y oportunidades de renovación.",
+      "track_name": "Reto corporativo: Inteligencia de Base Instalada de Clientes Presentado por Philips",
+      "is_draft": false
+    },
+    {
+      "title": "Onby",
+      "slug": "biociclo",
+      "description": "Proceso de onboarding para personal interno",
+      "track_name": null,
+      "is_draft": true
+    },
+    {
+      "title": "the project",
+      "slug": "the-project",
+      "description": "the project description",
+      "track_name": null,
+      "is_draft": true
+    },
+    {
+      "title": "Salus",
+      "slug": "salus",
+      "description": "En Latinoamérica, la historia médica de una familia vive entre papeles, PDFs, chats y distintas instituciones. Mi Salud convierte esos fragmentos en una memoria médica privada que responde preguntas personales antes de la consulta. La app se conecta, pero el perfil cifrado y la inteligencia que lo consulta permanecen en el teléfono.",
+      "track_name": "Desafío General: Sovereign Intelligence at the Edge",
+      "is_draft": false
+    },
+    {
+      "title": "Perseus AI",
+      "slug": "perseus-ai",
+      "description": "Perseus AI es una red P2P offline-first para respuesta ante desastres. Cuando la red celular colapsa, los afectados graban voz + foto; la IA local (Whisper, visión, LLM vía QVAC SDK) asigna al instante una prioridad de triage médico y la envía por Bluetooth/WiFi Direct a rescatistas cercanos, sin internet. Al recuperar señal, un agente Tether WDK paga en USDt a los rescatistas desde un fondo pre-financiado.",
+      "track_name": null,
+      "is_draft": true
+    }
+  ]
+}

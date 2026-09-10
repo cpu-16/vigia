@@ -63,6 +63,11 @@ export function validar(crudo, texto) {
       if (nums.length) { g.age_years_min = Math.min(...nums); g.age_years_max = Math.max(...nums); g.verificado.age = 'texto'; }
     }
     if (g.age_qualitative && !/(new|nuev|nov[oa]|recen|old|viej|antig|velh)/.test(t)) { descartar(i, 'age_qualitative', g.age_qualitative, 'sin palabra que lo sustente'); g.age_qualitative = null; }
+    if (g.quantity > 1 && /\b(?:uno|una|one|um|uma)\s+(?:de|of|dos|das)\b/i.test(g.age_quote ?? '')) {
+      descartar(i, 'age', g.age_quote, 'la edad describe una unidad, no todo el grupo');
+      g.notes = [g.notes, g.age_quote].filter(Boolean).join(' · ');
+      g.age_years_min = g.age_years_max = null; g.age_quote = null; delete g.verificado.age;
+    }
     equipment.push(g);
   }
   // lo que el modelo omitió y el reporte sí dice: «one MR and two CTs» → el CT que faltaba

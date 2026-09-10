@@ -17,7 +17,10 @@ export function cargarGuia(ruta = new URL('../../fixtures/sucursal/guia-bpl.md',
 // los códigos exactos. Se combina con la semántica (src/core/semantica.js) en buscarHibrido().
 export function buscar(guia, consulta, n = 3) {
   const palabras = [...new Set(terminos(consulta).filter(t => !comunes.has(t)))];
-  return guia.secciones.map((s, indice) => {
+  // Un código solicitado identifica su sección; las referencias cruzadas no la sustituyen.
+  const referidas = guia.secciones.filter(s => palabras.some(t => t.includes('-') && normalizar(s.titulo).startsWith(t + ' — ')));
+  const candidatas = referidas.length ? referidas : guia.secciones;
+  return candidatas.map((s, indice) => {
     const tokens = new Set(terminos(s.texto));
     const titulo = new Set(terminos(s.titulo));
     const puntaje = palabras.reduce((p, t) => p + (tokens.has(t) ? (t.includes('-') ? 30 : 1) + (titulo.has(t) ? 4 : 0) : 0), 0);
@@ -30,7 +33,11 @@ export function buscar(guia, consulta, n = 3) {
 // funcionando en un equipo donde no quepa el modelo de embeddings.
 export async function buscarHibrido(guia, consulta, { emb = null, indice = null, n = 3 } = {}) {
   const exacta = buscar(guia, consulta, n + 2);
-  if (!emb || !indice) return exacta.slice(0, n);
+  if (!emb || !indice) {
+    const mejor = exacta[0]?.puntaje ?? 0;
+    // No rellenar el contexto con referencias débiles cuando hay un título claramente pertinente.
+    return exacta.filter(s => mejor < 5 || s.puntaje >= mejor * 0.7).slice(0, n);
+  }
   const { buscarSemantico, combinar } = await import('../core/semantica.js');
   const semantica = await buscarSemantico(emb, indice, consulta, n + 2);
   return combinar([exacta, semantica], { n, clave: f => f.titulo });

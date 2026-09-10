@@ -152,3 +152,20 @@ test('sin modelo cargado, la consulta responde 503 y no rompe el resto', async (
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('abstención documentada: acta registra falta de respaldo sin inventar actuaciones', async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'vigia-abstencion-'));
+ const ctx={expedientes:new Expediente(join(dir,'exp.jsonl')),llave:llaveNodo(join(dir,'llave.pem')),responder:abstenida};
+ const {servidor,puerto}=await levantar(ctx);
+ try{
+  const consulta=await pedir(puerto,'POST','/api/sucursal/consulta',{consulta:'Fuera de guía'});
+  const abierto=await pedir(puerto,'POST','/api/sucursal/expedientes',{consultaId:consulta.datos.consultaId,sucursal:'Sintética',empleado:'Auditoría'});
+  const id=abierto.datos.expediente.id;
+  assert.equal(abierto.datos.expediente.datos.resultado_asistente.instrucciones_emitidas,false);
+  assert.equal((await pedir(puerto,'POST',`/api/sucursal/expedientes/${id}/pasos`,{consultaId:consulta.datos.consultaId,indicePaso:0})).code,400);
+  const cerrado=await pedir(puerto,'POST',`/api/sucursal/expedientes/${id}/cerrar`);
+  assert.equal(cerrado.code,200);assert.equal(verificar(cerrado.datos.acta).valido,true);
+  assert.equal(cerrado.datos.acta.datos.resultado_asistente.estado,'sin_respaldo');
+  assert.equal(cerrado.datos.acta.pasos.length,0);
+ }finally{servidor.close();rmSync(dir,{recursive:true,force:true});}
+});

@@ -88,6 +88,21 @@
                 font:600 17px system-ui;cursor:pointer;box-shadow:0 2px 0 var(--accion-hondo)}
   .barra button[disabled]{background:var(--raya);color:var(--tinta-suave);box-shadow:none}
   .barra button.otro{background:transparent;color:var(--tinta);border:1px solid var(--tinta);box-shadow:none}
+  .continuar{display:flex;flex-wrap:wrap;gap:12px;margin:18px 0}
+  .continuar a{padding:12px 16px;border:1px solid var(--tinta);border-radius:10px;color:var(--tinta);text-decoration:none;font:600 15px system-ui}
+
+  :focus-visible{outline:3px solid var(--accion);outline-offset:3px}
+  button:not(:disabled),summary,a{touch-action:manipulation}
+  button:disabled{cursor:default}
+  .ayuda{font-size:14px;color:var(--tinta-suave);max-width:68ch}
+  @media(hover:hover){.menor:hover,.filtros button:hover,.filtros a:hover,.continuar a:hover{border-color:var(--accion);color:var(--accion)}}
+  @media(prefers-reduced-motion:no-preference){
+    .hoja{animation:entrada-vigia 180ms ease-out both}
+    .menor,.filtros button,.filtros a,.continuar a{transition:background-color 140ms,color 140ms,border-color 140ms}
+    @keyframes entrada-vigia{from{opacity:.6}to{opacity:1}}
+  }
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
 </style>
 
 <div class="hoja">
@@ -216,7 +231,9 @@ async function verificar(cambio = null) {
   $('#btnAlterar').disabled = !texto.trim();
   if (!texto.trim()) { $('#salida').innerHTML = ''; return; }
   const r = await verificarEntrada(texto);
-  $('#salida').innerHTML = (cambio ? pintarCambio(cambio) : '') + pintarVeredicto(r) + pintarDetalle(r);
+  const desde = new URLSearchParams(location.search).get('desde');
+  const siguiente = `<nav class="continuar" aria-label="Siguiente acción"><a href="${desde === 'sucursal' ? '/sucursal' : '/equipos'}">${desde === 'sucursal' ? 'Iniciar otra atención' : 'Registrar otra visita'}</a><a href="/tablero">Ver tablero</a><a href="/">Inicio</a></nav>`;
+  $('#salida').innerHTML = siguiente + (cambio ? pintarCambio(cambio) : '') + pintarVeredicto(r) + pintarDetalle(r);
   $('#salida').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 

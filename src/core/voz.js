@@ -44,9 +44,19 @@ export function normalizar(bytes) {
 }
 
 // picoDb(wav): pico en dBFS de un WAV PCM 16 bits. Sirve para no llamar al modelo con silencio.
+export function datosPCM(wav) {
+  if (wav.toString('ascii', 0, 4) !== 'RIFF' || wav.toString('ascii', 8, 12) !== 'WAVE') throw new Error('Audio WAV inválido');
+  // ffmpeg inserta LIST/INFO antes de data; esos bytes no son muestras de audio.
+  for (let i = 12; i + 8 <= wav.length;) {
+    const n = wav.readUInt32LE(i + 4), inicio = i + 8;
+    if (wav.toString('ascii', i, i + 4) === 'data') return wav.subarray(inicio, Math.min(wav.length, inicio + n));
+    i = inicio + n + (n % 2);
+  }
+  throw new Error('El WAV no contiene muestras');
+}
 export function picoDb(wav) {
-  let pico = 0;
-  for (let i = 44; i + 1 < wav.length; i += 2) { const v = Math.abs(wav.readInt16LE(i)); if (v > pico) pico = v; }
+  const pcm = datosPCM(wav); let pico = 0;
+  for (let i = 0; i + 1 < pcm.length; i += 2) pico = Math.max(pico, Math.abs(pcm.readInt16LE(i)));
   return pico === 0 ? -Infinity : 20 * Math.log10(pico / 32768);
 }
 
@@ -56,7 +66,7 @@ export async function dictar(bytes, { requestId, umbralDb = -30 } = {}) {
   if (!voz) throw new Error('el modelo de voz no está cargado');
   const t0 = performance.now();
   const wav = await normalizar(bytes);
-  const pico = picoDb(wav), segundos = Math.max(0, (wav.length - 44) / 2 / 16000);
+  const pico = picoDb(wav), segundos = Math.max(0, datosPCM(wav).length / 2 / 16000);
   const base = { stage: 'transcription', request_id: requestId ?? null, sdk_version: SDK_VERSION, model: voz.etiqueta,
     hardware_id: voz.hardware, execution_mode: 'local', prompt_messages: [{ role: 'audio', content: `${voz.idioma} · ${bytes.length} bytes` }],
     audio_bytes: bytes.length, audio_seconds: Math.round(segundos * 10) / 10, peak_dbfs: Math.round(pico * 10) / 10 };

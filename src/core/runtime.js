@@ -16,7 +16,7 @@ const SDK_VERSION = '0.18.2'; // fijada en package.json; 0.19.0 quitó la delega
 //   proveedor    llave pública hex del par que ejecuta; sin ella, local
 export async function cargar({ modelSrc, etiqueta, hardware, device = 'gpu', fallbackSrc, proveedor, ctx = 4096 }) {
   const t0 = performance.now();
-  const base = { stage: 'load', sdk_version: SDK_VERSION, model: etiqueta, hardware_id: hardware,
+  const base = { stage: 'load', sdk_version: SDK_VERSION, model: etiqueta, hardware_id: proveedor ? `par:${proveedor}` : hardware, requester_hardware_id: hardware,
     execution_mode: proveedor ? 'delegated' : 'local', provider: proveedor?.slice(0, 12) ?? null };
   try {
     const modelId = await loadModel({ modelSrc, ...(fallbackSrc ? { fallbackSrc } : {}),
@@ -25,9 +25,10 @@ export async function cargar({ modelSrc, etiqueta, hardware, device = 'gpu', fal
     const info = await getLoadedModelInfo({ modelId });
     const delegado = info?.isDelegated === true;
     registrar({ ...base, status: 'ok', load_ms: ms(t0),
+      hardware_id: delegado ? `par:${proveedor}` : hardware,
       execution_mode: delegado ? 'delegated' : 'local',          // lo que pasó, no lo que se pidió
       fallback_a_local: !!proveedor && !delegado });
-    return { modelId, etiqueta, hardware, device, delegado };
+    return { modelId, etiqueta, hardware: delegado ? `par:${proveedor}` : hardware, requesterHardware: hardware, device, delegado };
   } catch (e) {
     registrar({ ...base, status: 'error', error: String(e?.message ?? e), load_ms: ms(t0) });
     throw e;
@@ -58,6 +59,7 @@ export async function completar(modelo, { history, responseFormat, requestId, ma
       if (ev.type === 'contentDelta' && ev.text) { if (tPrimero === null) tPrimero = performance.now(); texto += ev.text; }
       else if (ev.type === 'completionStats') stats = ev.stats;
     }
+    if (!texto.trim()) { const e = new Error('El modelo no produjo una respuesta; no es un resultado válido'); e.code = 'QVAC_SIN_RESPUESTA'; throw e; }
     const total = ms(t0);
     const fila = registrar({ ...base, status: 'ok',
       ttft_ms: tPrimero === null ? null : Math.round((tPrimero - t0) * 10) / 10,   // medido aquí: invocación → primer texto

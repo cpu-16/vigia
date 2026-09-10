@@ -22,13 +22,13 @@ const memoria = ctx => { let m = porContexto.get(ctx); if (!m) porContexto.set(c
 
 // contextoSucursal(): lo que el servidor inyecta. `llm` es un getter porque el modelo se carga
 // después de construir esto; mientras no haya modelo, responder() devuelve null y la ruta da 503.
-export function contextoSucursal({ llm, llave, ruta = process.env.EXPEDIENTES ?? 'datos/sucursal.jsonl' } = {}) {
+export function contextoSucursal({ llm, llave, ejecutar, ruta = process.env.EXPEDIENTES ?? 'datos/sucursal.jsonl' } = {}) {
   const guia = cargarGuia();
   const version = guia.texto.match(/Versión de demostración:\s*([0-9-]+)/)?.[1] ?? null;
   return {
     expedientes: new Expediente(ruta),
     llave,
-    responder: consulta => { const m = llm?.(); return m ? responderConModelo(m, guia, consulta) : null; },
+    responder: consulta => { const m = llm?.(); return m ? (ejecutar ? ejecutar(actual => responderConModelo(actual, guia, consulta)) : responderConModelo(m, guia, consulta)) : null; },
     // Lo que este proceso sabe de verdad. Del CORE no se dice nada: su caída la declara la
     // persona en la pantalla, no la diagnostica el nodo.
     estado: () => { const m = llm?.(); return { disponible: !!m, guia: { nombre: 'Guía BPL — demostración sintética', version },
@@ -51,6 +51,7 @@ const texto = (v, max = 500) => typeof v === 'string' && v.trim() && v.length <=
 
 // El expediente lanza Error con mensaje en español; aquí se traduce a código HTTP.
 const TRADUCCION = [
+  [/modelo no produjo|no.*modelo|par no|connection|timeout/i, 503, 'modelo_no_disponible'],
   [/inexistente/i, 404, 'no_existe'],
   [/cerrado|antes de cerrar|transición/i, 409, 'transicion_incompatible'],
   [/obligatorio|serializable|reservado|muy grande|JSON/i, 400, 'entrada_invalida'],
@@ -85,6 +86,7 @@ export async function manejarSucursal(req, res, url, ctx) {
       if (!guardada) return falla(res, 400, 'consulta_desconocida', 'Consulta la guía antes de abrir el expediente');
       // El motivo sale de la consulta conservada, no de lo que mande el navegador.
       const id = ctx.expedientes.abrir({ sucursal, empleado, motivo: guardada.consulta });
+      if (!guardada.respuesta.cubierto) ctx.expedientes.registrarDato(id, 'resultado_asistente', { estado: 'sin_respaldo', motivo: guardada.respuesta.abstencion?.motivo ?? 'sin respaldo documental', instrucciones_emitidas: false });
       return json(res, { expediente: ctx.expedientes.obtener(id) }, 201);
     }
 

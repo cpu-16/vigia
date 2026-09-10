@@ -1,0 +1,72 @@
+[
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card — the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "/home/gar16/datos/HACKATHON-ISD-2026/hackpty/app/index.html",
+    "line": 78,
+    "snippet": "border-left:3px solid var(--tinta)"
+  },
+  {
+    "antipattern": "layout-transition",
+    "name": "Layout property animation",
+    "description": "Animating width, height, padding, or margin causes layout thrash and janky performance. Use transform and opacity instead, or grid-template-rows for height animations.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "/home/gar16/datos/HACKATHON-ISD-2026/hackpty/app/index.html",
+    "line": 53,
+    "snippet": "transition: height"
+  },
+  {
+    "antipattern": "flat-type-hierarchy",
+    "name": "Flat type hierarchy",
+    "description": "Font sizes are too close together — no clear visual hierarchy. Use fewer sizes with more contrast (aim for at least a 1.25 ratio between steps).",
+    "severity": "warning",
+    "category": "slop",
+    "file": "/home/gar16/datos/HACKATHON-ISD-2026/hackpty/app/tablero.html",
+    "line": 22,
+    "snippet": "Sizes: 12px, 12.5px, 13px, 14px, 14.5px (ratio 1.2:1)"
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card — the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "/home/gar16/datos/HACKATHON-ISD-2026/hackpty/app/sucursal.html",
+    "line": 74,
+    "snippet": "border-left:3px solid var(--raya)"
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card — the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "/home/gar16/datos/HACKATHON-ISD-2026/hackpty/app/sucursal.html",
+    "line": 77,
+    "snippet": "border-left:3px solid var(--tinta)"
+  },
+  {
+    "antipattern": "layout-transition",
+    "name": "Layout property animation",
+    "description": "Animating width, height, padding, or margin causes layout thrash and janky performance. Use transform and opacity instead, or grid-template-rows for height animations.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "/home/gar16/datos/HACKATHON-ISD-2026/hackpty/app/sucursal.html",
+    "line": 55,
+    "snippet": "transition: height"
+  },
+  {
+    "antipattern": "flat-type-hierarchy",
+    "name": "Flat type hierarchy",
+    "description": "Font sizes are too close together — no clear visual hierarchy. Use fewer sizes with more contrast (aim for at least a 1.25 ratio between steps).",
+    "severity": "warning",
+    "category": "slop",
+    "file": "/home/gar16/datos/HACKATHON-ISD-2026/hackpty/app/verificar.html",
+    "line": 24,
+    "snippet": "Sizes: 12px, 13px, 14px, 14.5px, 15px, 15.5px, 22px (ratio 1.8:1)"
+  }
+]

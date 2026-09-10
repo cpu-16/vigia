@@ -100,3 +100,8 @@ test('la descripción de una escena solo aporta modalidad y marcas del catálogo
     { modality: 'CT', manufacturer: 'Orion Imaging' });    // marca del catálogo, sí
   assert.deepEqual(pistasDeEscena('a corridor with a door'), { modality: null, manufacturer: null });
 });
+
+test('una pantalla de oficina no se convierte en monitor de pacientes', () => {
+  assert.equal(pistasDeEscena('A monitor on the wall in an office').modality, null);
+  assert.equal(pistasDeEscena('A bedside patient monitor showing vital signs').modality, 'Patient Monitoring');
+});

@@ -104,3 +104,9 @@ test('modelo local: 20 casos, mínimo 16 aciertos y todas las abstenciones', { s
     assert.ok(aciertos >= 16, `${aciertos}/20 aciertos`);
   } finally { await descargar(modelo); }
 });
+
+test('un código explícito recupera su procedimiento, no la sección que lo menciona', () => {
+  const r = buscar(guia, 'Me salió un faltante, ¿cómo abro el incidente INC-CAJA?');
+  assert.ok(r.length);
+  assert.ok(r.every(s => s.titulo.startsWith('INC-CAJA — ')));
+});

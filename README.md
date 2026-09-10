@@ -7,9 +7,15 @@ red— en datos revisables y verificables, **sin que el contenido salga de la in
 quien lo produce**. Toda la inferencia corre en el dispositivo o se delega entre pares con el SDK
 de QVAC. Ninguna llamada a una API de inferencia en la nube.
 
-Tracks a los que se presenta este proyecto: **01 Philips** (base instalada) · **02 Tether QVAC Psy**
-· **03 Desafío General** · **04 Ovnicom** (red) · **05 Caja de Ahorros** (banca). Un solo producto con
+Tracks a los que se presenta este proyecto: **01 Philips** (base instalada) · **03 Desafío General** · **04 Ovnicom** (red) · **05 Caja de Ahorros** (banca). Un solo producto con
 tres espacios, **Equipos, Sucursal y Red**, que comparten runtime, registro, sellado y verificador.
+El repositorio de entrega es **https://github.com/cpu-16/vigia**. No presentamos el track 02 Psy;
+VisionPsy sigue siendo el lector local de placas del módulo Philips.
+
+La revisión más reciente, los arreglos y sus límites están en [la auditoría del 9-sep](evidencia/AUDITORIA-9SEP.md).
+Chequeo de lectura antes de grabar: `CLAVE=<clave-del-nodo> node scripts/preflight.mjs`.
+
+La segunda auditoría verificó también el enlace Tailscale y el HONOR físico: foto durante la revisión, respuestas sin repetir inferencia y prueba nueva de Wazuh/ClickHouse/Grafana con QVAC. [Cumplimiento del track 3, resultados y límites](evidencia/TRACK-3-Y-DEMO-9SEP.md).
 
 ## Requisito técnico (artículo 10)
 
@@ -19,7 +25,7 @@ tres espacios, **Equipos, Sucursal y Red**, que comparten runtime, registro, sel
 - Modelos, cuantizaciones y hardware de ejecución: `THIRD_PARTY.md`.
 - Cada inferencia deja una fila en `evidencia/rendimiento.jsonl` (modelo, hardware, origen local o
   delegado, carga, prompts, tokens, TTFT, throughput). Ese archivo operativo no se sube; la corrida
-  **entregable** del track 02 está versionada en `evidencia/registro-psy-placas-9sep.jsonl`
+  **reproducible** de lectura de placas está versionada en `evidencia/registro-psy-placas-9sep.jsonl`
   (VisionPsy Nano sobre las 20 placas sintéticas, con carga, prompt, tokens, TTFT y throughput por
   placa), y las tablas de las demás mediciones en `evidencia/sucursal-gpu-9sep.md`,
   `evidencia/mac-par-9sep.md` y `evidencia/medicion-telefono-9sep.md`.
@@ -38,6 +44,10 @@ Tailscale aparece en las demostraciones, pero **en otra capa y nunca en la infer
 publica una URL HTTPS para que la interfaz se abra desde un navegador cualquiera, protegida con la
 clave de equipo (`CLAVE`). Un navegador no habla el DHT; los nodos sí, y es entre nodos donde
 ocurre el cómputo. Apagar Tailscale no cambia dónde se infiere: solo deja de haber URL pública.
+
+## Grabación y estado del producto
+
+[Guion de 4:50 listo para grabar](docs/GUION-GRABACION.md) · [Mejoras, investigación, RAG, voz y funcionamiento sin internet](docs/PRODUCTO-Y-LIMITES.md). La verificación final incluye cierre de Sucursal y comienzo de otra atención, exportación filtrada y acta verificada sin red.
 
 ## Base preexistente declarada (artículo 11.c)
 
@@ -73,7 +83,6 @@ Un solo proyecto, un solo repositorio (rama `main`), un solo video. Cada jurado 
 | Track | Módulo | Carpeta | Minuto del video |
 |---|---|---|---|
 | 01 Philips · Base instalada | Equipos: captura por voz/texto/foto, extracción, identidad y duplicados, inventario, Customer 360, cola sin conexión | `src/equipos/`, `app/index.html`, `app/tablero.html`, `app/catalogo.html` | 0:12–1:28 |
-| 02 Tether · QVAC Psy | VisionPsy Nano lee la placa en la laptop; reglas deterministas sacan marca, modelo y serie; registro de rendimiento entregable | `src/equipos/placa.js`, `evidencia/registro-psy-placas-9sep.jsonl` | 0:42–1:09 |
 | 03 General · Sovereign Intelligence at the Edge | Todo lo anterior + delegación entre pares por llave pública (teléfono → laptop, teléfono → Mac y laptop → Mac en otra casa), el par que se apaga y la laptop que lo nota, actas verificables en el navegador, prueba de aislamiento | `src/core/`, `src/puente/`, `app/verificar.html`, `evidencia/` | 3:02–4:19, y la evidencia común 4:19–4:55 |
 | 05 Caja de Ahorros · Banca | Sucursal: procedimiento citado sin conexión, expediente, acta sellada y verificable; pantalla en `/sucursal` | `src/sucursal/`, `app/sucursal.html` | 1:28–2:22 |
 | 04 Ovnicom · Sentinel-DNS | Red: el registro DNS entregado por Ovnicom reproducido como flujo, detección por capas, alertas a Wazuh por su API local y score por zona en ClickHouse y Grafana | `src/red/`, `infra/red/` | 2:22–3:02, aislamiento 3:58–4:19 |
@@ -90,7 +99,7 @@ Un solo proyecto, un solo repositorio (rama `main`), un solo video. Cada jurado 
 | Placa: modelo · marca · modalidad | 18 / 20 · 16 / 20 · 18 / 20 | idem (corrida del 9-sep en la RTX 4060; las placas nítidas dan 38 / 40 campos) |
 | Placa: tiempo hasta el primer token · velocidad | mediana 1.0 s · 218 tok/s | idem |
 | Foto sin placa: el modelo describe y el filtro corta la marca inventada | 1.8 s leer + 2.3 s describir, 0 marcas falsas en 2 corridas | `src/equipos/placa.js` (`mirar`, `pistasDeEscena`), prueba en `placa.test.js` |
-| Sucursal: consultas correctas | 19 / 20 | `src/sucursal/sucursal.test.js`; `evidencia/sucursal-gpu-9sep.md` (tres corridas: 17, 18 y 19 de 20) |
+| Sucursal: consultas correctas | 18 / 20 en la última auditoría | `src/sucursal/sucursal.test.js`; `evidencia/auditoria-banca-final-9sep.json` (corridas anteriores: 17–19 de 20) |
 | Sucursal: abstenciones cuando la guía no cubre | 5 / 5 | idem |
 | Sucursal: latencia por consulta | 375–923 ms en la RTX 4060 (4.5–17 s en CPU) | `evidencia/sucursal-gpu-9sep.md` |
 | Sucursal: flujo completo por HTTP hasta el acta verificable | 1 prueba determinista, sin modelo | `src/sucursal/http.test.js` |
@@ -128,7 +137,7 @@ solos la primera vez desde el registro de QVAC; no hay que registrarse en ningú
 
 ```bash
 npm install                 # instala @qvac/sdk 0.18.2 (fijada)
-node --test                 # 59 pruebas deterministas, sin modelos, ~3 s (8 más corren solo con PRUEBA_MODELO=1)
+node --test                 # pruebas deterministas, sin modelos, ~3 s (8 más corren solo con PRUEBA_MODELO=1)
 
 # nodo completo (extracción, dictado y lectura de placa)
 GGML_VK_VISIBLE_DEVICES=1 VISION=1 node src/servidor.js
@@ -148,6 +157,8 @@ Variables útiles:
 | Variable | Para qué |
 |---|---|
 | `GGML_VK_VISIBLE_DEVICES` | Elige la GPU (Vulkan). Sin ella el SDK toma la primera que encuentre |
+| `ESCUCHAR` | Interfaz de escucha; por defecto `127.0.0.1`. Para acceso LAN declara la IP y configura `CLAVE` |
+| `VOZ=gpu` | Ejecuta Whisper en GPU; `CPU=1` fuerza todos los modelos a CPU |
 | `CPU=1` | Fuerza CPU, para reproducir en un equipo sin GPU |
 | `VISION=1` | Carga además VisionPsy (460 M) para leer placas |
 | `MODELO_CHICO=1` | Usa Qwen3-0.6B en vez de 1.7B, para hardware limitado |
@@ -156,7 +167,7 @@ Variables útiles:
 | `REGISTRO_PROMPTS=0` | Deja de guardar el texto de los prompts y de las respuestas en el registro; conserva la huella, los tokens y los tiempos |
 
 > **Sobre el registro de rendimiento y la privacidad.** El track 02 pide que el registro incluya
-> los prompts, así que por omisión se guardan completos. Eso quiere decir que
+> los prompts; conservamos ese formato para reproducir las mediciones, aunque no competimos en Psy. Eso quiere decir que
 > `evidencia/rendimiento.jsonl` contiene lo que la persona dictó: se queda en el mismo nodo, no
 > se envía a ninguna parte y no se sube al repositorio. En este proyecto todo ese contenido es
 > **sintético**. En un despliegue real con datos de un cliente se apaga con `REGISTRO_PROMPTS=0`,
@@ -205,5 +216,4 @@ LD_LIBRARY_PATH=$PREFIX/lib P2P_PROVEEDOR=<llave> node src/puente/nodo.js
 | Teléfono | HONOR X6s, Android 14, 8× Cortex-A53, 3.7 GB RAM, Termux + Bare, Node 24.18.0 | `src/puente/nodo.js` entero: sirve la PWA en localhost y delega por llave pública a la laptop y a la Mac (el modelo a bordo hoy no carga: `evidencia/telefono-puente-9sep.md`) |
 | Nodo remoto | MacBook Pro, Apple M5 Max (18 núcleos, GPU de 40), 128 GB, macOS 26.4, Metal, Node 24.14.1, en otra casa | Proveedor P2P del producto (Qwen3-1.7B), llave `49fa9472…` |
 
-Los números publicados salieron de este hardware. En otro equipo cambian los tiempos, no los
-resultados: las pruebas deterministas (59) no usan modelos y deben dar igual en cualquier parte.
+Los números publicados salieron de este hardware. En otro equipo pueden cambiar los tiempos y las respuestas del modelo; las pruebas deterministas no usan modelos y deben dar igual en cualquier parte.

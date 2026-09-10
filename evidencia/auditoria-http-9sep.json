@@ -1,0 +1,366 @@
+[
+  {
+    "ruta": "/api/extraer",
+    "segundos": 1.459,
+    "respuesta": {
+      "id": "V-CA29",
+      "borrador": {
+        "customer": {
+          "name": "Hospital DemoCare Pacific",
+          "city": "Panamá",
+          "country": "Panama"
+        },
+        "equipment": [
+          {
+            "modality_quote": "resonadores",
+            "quantity_quote": "dos resonadores",
+            "manufacturer_quote": "de unos ocho años",
+            "model_quote": null,
+            "age_quote": null,
+            "modality": "MR",
+            "quantity": 2,
+            "manufacturer": null,
+            "model": null,
+            "age_years_min": null,
+            "age_years_max": null,
+            "age_qualitative": null,
+            "notes": "uno de los resonadores parece de unos ocho años",
+            "verificado": {
+              "quantity": "cita"
+            }
+          },
+          {
+            "modality_quote": "tomógrafo",
+            "quantity_quote": "un tomógrafo",
+            "manufacturer_quote": null,
+            "model_quote": null,
+            "age_quote": null,
+            "modality": "CT",
+            "quantity": 1,
+            "manufacturer": null,
+            "model": null,
+            "age_years_min": null,
+            "age_years_max": null,
+            "age_qualitative": null,
+            "notes": null,
+            "verificado": {
+              "quantity": "cita"
+            }
+          }
+        ]
+      },
+      "descartes": [
+        {
+          "grupo": 0,
+          "campo": "manufacturer",
+          "valor": "Orion Imaging",
+          "motivo": "marca no está en el reporte"
+        },
+        {
+          "grupo": 0,
+          "campo": "age_qualitative",
+          "valor": "old",
+          "motivo": "sin palabra que lo sustente"
+        },
+        {
+          "grupo": 0,
+          "campo": "age",
+          "valor": "uno de los resonadores parece de unos ocho años",
+          "motivo": "la edad describe una unidad, no todo el grupo"
+        }
+      ],
+      "ms": 1436.2,
+      "modo": "delegado",
+      "modelo": "Qwen3-1.7B Q4_0",
+      "degradado": false,
+      "aviso": null,
+      "preguntas": [
+        {
+          "campo": "manufacturer",
+          "grupo": 0,
+          "texto": "¿Sabes la marca? (MR, equipo 1)",
+          "opciones": [
+            "NovaMed",
+            "Aurelia Health",
+            "BluePeak Medical",
+            "Orion Imaging",
+            "HelixCare",
+            "Zenith MedTech",
+            "No sé"
+          ],
+          "opcional": true,
+          "clave": "manufacturer:0"
+        },
+        {
+          "campo": "age",
+          "grupo": 0,
+          "texto": "¿Qué edad aproximada tienen? (MR, equipo 1)",
+          "opciones": [
+            "Nuevo (< 3 años)",
+            "3 a 7 años",
+            "7 a 10 años",
+            "Más de 10 años",
+            "No sé"
+          ],
+          "opcional": true,
+          "clave": "age:0"
+        },
+        {
+          "campo": "manufacturer",
+          "grupo": 1,
+          "texto": "¿Sabes la marca? (CT, equipo 2)",
+          "opciones": [
+            "NovaMed",
+            "Aurelia Health",
+            "BluePeak Medical",
+            "Orion Imaging",
+            "HelixCare",
+            "Zenith MedTech",
+            "No sé"
+          ],
+          "opcional": true,
+          "clave": "manufacturer:1"
+        },
+        {
+          "campo": "age",
+          "grupo": 1,
+          "texto": "¿Qué edad aproximada tienen? (CT, equipo 2)",
+          "opciones": [
+            "Nuevo (< 3 años)",
+            "3 a 7 años",
+            "7 a 10 años",
+            "Más de 10 años",
+            "No sé"
+          ],
+          "opcional": true,
+          "clave": "age:1"
+        }
+      ],
+      "duplicados": [
+        {
+          "grupo": 0,
+          "p": 0.952,
+          "veredicto": "mismo",
+          "contra": "2×MR en Hospital DemoCare Pacific",
+          "detalle": [
+            {
+              "campo": "site",
+              "acuerdo": true,
+              "bits": 4.25
+            },
+            {
+              "campo": "modality",
+              "acuerdo": true,
+              "bits": 1.97
+            },
+            {
+              "campo": "manufacturer",
+              "acuerdo": null,
+              "bits": 0
+            },
+            {
+              "campo": "model",
+              "acuerdo": null,
+              "bits": 0
+            },
+            {
+              "campo": "serial",
+              "acuerdo": null,
+              "bits": 0
+            },
+            {
+              "campo": "quantity",
+              "acuerdo": true,
+              "bits": 1.42
+            },
+            {
+              "campo": "age",
+              "acuerdo": null,
+              "bits": 0
+            }
+          ]
+        },
+        {
+          "grupo": 1,
+          "p": 0.952,
+          "veredicto": "mismo",
+          "contra": "1×CT en Hospital DemoCare Pacific",
+          "detalle": [
+            {
+              "campo": "site",
+              "acuerdo": true,
+              "bits": 4.25
+            },
+            {
+              "campo": "modality",
+              "acuerdo": true,
+              "bits": 1.97
+            },
+            {
+              "campo": "manufacturer",
+              "acuerdo": null,
+              "bits": 0
+            },
+            {
+              "campo": "model",
+              "acuerdo": null,
+              "bits": 0
+            },
+            {
+              "campo": "serial",
+              "acuerdo": null,
+              "bits": 0
+            },
+            {
+              "campo": "quantity",
+              "acuerdo": true,
+              "bits": 1.42
+            },
+            {
+              "campo": "age",
+              "acuerdo": null,
+              "bits": 0
+            }
+          ]
+        }
+      ],
+      "fila": {
+        "schema_version": 1,
+        "run_id": "2026-09-10-4d8ab9",
+        "timestamp_utc": "2026-09-10T02:29:13.610Z",
+        "host": "fedora",
+        "contenido_registrado": true,
+        "stage": "completion",
+        "request_id": "V-CA29",
+        "sdk_version": "0.18.2",
+        "model": "Qwen3-1.7B Q4_0",
+        "hardware_id": "par:49fa947201f36de0e6caf4020ac68b250d1f58d44e0292e217ada9aa0c135dbf",
+        "execution_mode": "delegated",
+        "prompt_sha256": "1b7e9d7dd99cb899",
+        "prompt_chars": 1737,
+        "response_format": "json_schema",
+        "schema_name": "observacion",
+        "max_tokens": null,
+        "temperature": null,
+        "status": "ok",
+        "ttft_ms": 266.7,
+        "ttft_ms_sdk": 143.798,
+        "input_tokens": 496,
+        "output_tokens": 274,
+        "token_count_source": "sdk",
+        "throughput_tps": 255.3171663521793,
+        "backend_actual": "gpu",
+        "end_to_end_ms": 1436.2
+      }
+    }
+  },
+  {
+    "ruta": "/api/sucursal/consulta",
+    "segundos": 0.595,
+    "respuesta": {
+      "cubierto": true,
+      "pasos": [
+        "## RET-ISL-01 — Modo isla: retiro sin enlace al CORE",
+        "| Control | Regla ficticia |",
+        "| --- | --- |",
+        "| Formulario | Usar el formulario RET-ISL-01 para documentar el retiro en contingencia. |",
+        "| Tope | El tope es B/. 100.00 por cliente y por día. |",
+        "| Firmas | Se requiere doble firma: cajero y supervisor de turno. |",
+        "| Folio | Asignar un folio único ISLA-AAAAMMDD-SUC-SECUENCIA. |",
+        "1. Confirmar con el supervisor la caída del enlace al CORE y abrir el expediente local.",
+        "2. Verificar identidad con documento ficticio y constancia local vigente del saldo.",
+        "3. Consultar el acumulado local del cliente en el día antes de documentar el retiro.",
+        "4. Completar el formulario RET-ISL-01 con folio, hora, monto y motivo.",
+        "5. Obtener la doble firma del cajero y del supervisor de turno.",
+        "6. Guardar el formulario y la evidencia en el expediente local.",
+        "El tope es B/. 100.00 por cliente y por día, sumando todos los retiros documentados.",
+        "No se permite fraccionar retiros para superar el tope diario.",
+        "Sin constancia local vigente del saldo, abstenerse y escalar con EX-SAL-01.",
+        "Si no se puede comprobar el acumulado diario entre sucursales, no autorizar el retiro.",
+        "El asistente solo documenta: no autoriza ni ejecuta el retiro.",
+        "No se permiten transferencias internacionales ni apertura de cuentas en modo isla."
+      ],
+      "citas": [
+        {
+          "seccion": "RET-ISL-01 — Modo isla: retiro sin enlace al CORE",
+          "texto": "## RET-ISL-01 — Modo isla: retiro sin enlace al CORE\n\n| Control | Regla ficticia |\n| --- | --- |\n| Formulario | Usar el formulario RET-ISL-01 para documentar el retiro en contingencia. |\n| Tope | El tope es B/. 100.00 por cliente y por día. |\n| Firmas | Se requiere doble firma: cajero y supervisor de turno. |\n| Folio | Asignar un folio único ISLA-AAAAMMDD-SUC-SECUENCIA. |\n\n1. Confirmar con el supervisor la caída del enlace al CORE y abrir el expediente local.\n2. Verificar identidad con documento ficticio y constancia local vigente del saldo.\n3. Consultar el acumulado local del cliente en el día antes de documentar el retiro.\n4. Completar el formulario RET-ISL-01 con folio, hora, monto y motivo.\n5. Obtener la doble firma del cajero y del supervisor de turno.\n6. Guardar el formulario y la evidencia en el expediente local.\nEl tope es B/. 100.00 por cliente y por día, sumando todos los retiros documentados.\nNo se permite fraccionar retiros para superar el tope diario.\nSin constancia local vigente del saldo, abstenerse y escalar con EX-SAL-01.\nSi no se puede comprobar el acumulado diario entre sucursales, no autorizar el retiro.\nEl asistente solo documenta: no autoriza ni ejecuta el retiro.\nNo se permiten transferencias internacionales ni apertura de cuentas en modo isla.\n"
+        },
+        {
+          "seccion": "RET-ISL-01 — Modo isla: retiro sin enlace al CORE",
+          "texto": "B/. 100.00"
+        }
+      ],
+      "limite": "B/. 100.00",
+      "codigo": "RET-ISL-01",
+      "abstencion": null,
+      "ms": 588.8,
+      "id": "V-GPYM",
+      "limite_origen": "cita del modelo, verificada",
+      "modo": "delegado",
+      "modelo": "Qwen3-1.7B Q4_0",
+      "degradado": false,
+      "aviso": null,
+      "consulta": "El core no responde, un cliente quiere retirar efectivo. ¿Qué hago?",
+      "consultaId": "4b8e59cd-57cd-461c-afdf-19aea1198de7"
+    }
+  },
+  {
+    "ruta": "/api/consulta",
+    "segundos": 0.544,
+    "respuesta": {
+      "pregunta": "¿Qué clientes en Brasil tienen resonadores de más de siete años?",
+      "filtro": {
+        "country": "Brazil",
+        "city": null,
+        "customer_name": null,
+        "modality": "MR",
+        "manufacturer": null,
+        "age_min_gt": 7,
+        "age_max_lt": null,
+        "status": null,
+        "solo_incompletos": false,
+        "solo_sin_verificar": false,
+        "solo_corroborados": false,
+        "agrupar_por": "cliente"
+      },
+      "filas": [],
+      "grupos": [],
+      "total_unidades": 0,
+      "total_equipos": 0,
+      "ms": 541.1,
+      "id": "V-89BA",
+      "fila": {
+        "schema_version": 1,
+        "run_id": "2026-09-10-4d8ab9",
+        "timestamp_utc": "2026-09-10T02:29:14.761Z",
+        "host": "fedora",
+        "contenido_registrado": true,
+        "stage": "completion",
+        "request_id": "V-89BA",
+        "sdk_version": "0.18.2",
+        "model": "Qwen3-1.7B Q4_0",
+        "hardware_id": "par:49fa947201f36de0e6caf4020ac68b250d1f58d44e0292e217ada9aa0c135dbf",
+        "execution_mode": "delegated",
+        "prompt_sha256": "6dfefa5ef91d718e",
+        "prompt_chars": 1697,
+        "response_format": "json_schema",
+        "schema_name": "filtro",
+        "max_tokens": 300,
+        "temperature": null,
+        "status": "ok",
+        "ttft_ms": 240.6,
+        "ttft_ms_sdk": 144.87800000000001,
+        "input_tokens": 521,
+        "output_tokens": 72,
+        "token_count_source": "sdk",
+        "throughput_tps": 251.62419925840757,
+        "backend_actual": "gpu",
+        "end_to_end_ms": 541.1
+      },
+      "modo": "delegado",
+      "modelo": "Qwen3-1.7B Q4_0",
+      "degradado": false,
+      "aviso": null
+    }
+  }
+]

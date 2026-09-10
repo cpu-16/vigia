@@ -1,0 +1,38 @@
+{
+  "rutas": "",
+  "acceso_externo": false,
+  "equipos": {
+    "customer": {
+      "name": "Hospital DemoCare Pacific",
+      "city": null,
+      "country": null
+    },
+    "equipment": [
+      {
+        "modality_quote": "resonadores NovaMed",
+        "quantity_quote": "dos resonadores NovaMed",
+        "manufacturer_quote": "de siete años",
+        "model_quote": null,
+        "age_quote": "de siete años",
+        "modality": "MR",
+        "quantity": 2,
+        "manufacturer": "NovaMed",
+        "model": null,
+        "age_years_min": 7,
+        "age_years_max": 7,
+        "age_qualitative": "old",
+        "notes": null,
+        "verificado": {
+          "quantity": "cita",
+          "manufacturer": "texto",
+          "age": "cita"
+        }
+      }
+    ]
+  },
+  "banca": {
+    "codigo": "DOC-NAT-01",
+    "cubierto": true
+  },
+  "modo": "local"
+}

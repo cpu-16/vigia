@@ -19,6 +19,7 @@ import { QWEN3_600M_INST_Q4, QWEN3_1_7B_INST_Q4 } from '@qvac/sdk';
 import { cargar } from '../core/runtime.js';
 import { conRespaldo, SinRespaldo } from './respaldo.js';
 import { extraer } from '../equipos/extraer.js';
+import { aplicarRespuestas } from '../equipos/revision.js';
 import { preguntas } from '../equipos/reglas.js';
 import { Base } from '../equipos/almacen.js';
 import { llaveNodo, sellar } from '../core/sello.js';
@@ -108,6 +109,10 @@ export function crearServidor() {
     try {
       // Las mismas rutas que el servidor de la laptop: `/` es la portada del producto y la app
       // de campo vive en `/equipos`. Si no, la misma PWA se comporta distinto según quién la sirva.
+      if (req.method === 'GET' && ['/revision.js', '/reglas.js', '/esquema.js'].includes(url.pathname)) {
+        res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'no-cache' });
+        return res.end(await readFile(join(resolve('src/equipos'), url.pathname.slice(1))));
+      }
       if (req.method === 'GET' && url.pathname === '/') return archivo(res, 'inicio.html');
       if (req.method === 'GET' && (url.pathname === '/equipos' || url.pathname === '/app')) return archivo(res, 'index.html');
       if (req.method === 'GET' && /^\/[\w.-]+$/.test(url.pathname) && existsSync(join(APP, url.pathname.slice(1)))) return archivo(res, url.pathname.slice(1));
@@ -115,6 +120,7 @@ export function crearServidor() {
         return json(res, { nodo: HARDWARE, modo: modelos.delegado ? 'delegado' : (PROVEEDOR ? 'local (par caído)' : 'local'),
           modelo: (modelos.delegado ?? modelos.local)?.etiqueta, par: PROVEEDOR ? PROVEEDOR.slice(0, 16) + '…' : null,
           respaldo: !!modelos.local,   // si es false, este nodo depende del par: no tiene modelo a bordo
+          capacidades: { foto: false, voz: false, sucursal: false },
           sdk: '@qvac/sdk 0.18.2', node: process.version });
       if (req.method === 'POST' && url.pathname === '/api/guardar') {
         const { eventos, acta, error, codigo } = guardar(await cuerpoJson(req));
@@ -133,6 +139,7 @@ export function crearServidor() {
           return null;
         });
         if (!r) return;
+        r.borrador = aplicarRespuestas(r.borrador, respuestas);
         console.log(`▸ [${id}] ${r.modo} · ${Math.round(r.ms)} ms · ${r.borrador.equipment.map(g => `${g.quantity ?? '?'}×${g.modality}`).join(', ') || 'sin equipos'}`);
         return json(res, { id, borrador: r.borrador, descartes: r.descartes, ms: r.ms, modo: r.modo,
           modelo: r.modelo, degradado: r.degradado, aviso: r.aviso, fila: r.fila,
@@ -155,5 +162,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const donde = modelos.delegado ? `delegando al par ${PROVEEDOR.slice(0, 12)}…` : 'solo modelo a bordo';
   console.log(`▸ Nodo ${HARDWARE} · ${donde} · respaldo a bordo: ${modelos.local ? 'sí' : 'NO'}`);
   if (!modelos.delegado && !modelos.local) console.log('▸ ni par ni modelo a bordo: las capturas van a quedar pendientes');
-  crearServidor().listen(PUERTO, () => console.log(`▸ Puente en http://localhost:${PUERTO}`));
+  crearServidor().listen(PUERTO, process.env.ESCUCHAR ?? '127.0.0.1', () => console.log(`▸ Puente en http://localhost:${PUERTO}`));
 }

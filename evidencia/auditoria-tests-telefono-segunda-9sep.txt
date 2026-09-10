@@ -1,0 +1,23 @@
+✔ la revisión humana conserva respuestas y omite pendientes sin inferencia (44.713461ms)
+✔ foto de una unidad conserva cantidad total y no inventa antigüedad de instalación (7.663692ms)
+✔ placa contradictoria o de otro equipo conserva los datos originales (8.091462ms)
+✔ inventario no colapsa unidad identificada y resto del grupo (56.627462ms)
+✔ una serie no puede asignarse a dos unidades de la misma visita (4.650462ms)
+✔ cantidad inválida no se acepta como respuesta confirmada (6.061615ms)
+✔ una edad abierta confirmada no se reemplaza silenciosamente ni se pide otra vez (24.950769ms)
+✔ la caída del par en dos consultas recarga una vez y ambas responden local (62.693539ms)
+✔ una entrada demasiado larga no desconecta el par (9.48677ms)
+✔ el respaldo trata la respuesta vacía del par como caída, no como resultado (45.048ms)
+✔ un resultado útil del par no activa el respaldo (3.365615ms)
+✔ sin modelo a bordo, el nodo sigue solo delegado y lo dice en vez de morir (6.575692ms)
+▸ guardadas 2 observaciones en el teléfono · acta 7c83e33cbea3…
+✔ el nodo del teléfono guarda la observación y devuelve un acta que verifica en otro equipo (641.639692ms)
+﹣ delegación P2P real: el par autorizado ejecuta y una llave falsa no (2.836308ms) # SKIP
+ℹ tests 14
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 7294.816847

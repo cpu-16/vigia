@@ -66,6 +66,8 @@
   .secundarias{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:18px}
   .menor{appearance:none;-webkit-appearance:none;background:transparent;border:1px solid var(--raya);
          border-radius:99px;padding:9px 16px;font:500 13.5px system-ui;color:var(--tinta-suave);cursor:pointer}
+  .menor{min-height:44px}
+  .menor:disabled{opacity:.55;cursor:default}
   .menor:active{border-color:var(--tinta);color:var(--tinta)}
 
   textarea{width:100%;min-height:120px;padding:14px;border:1px solid var(--raya);border-radius:12px;
@@ -136,6 +138,19 @@
   .visto .frase{font:400 18px/1.45 var(--serif)}
   .visto .quien{display:block;margin-top:9px;font:500 11px system-ui;letter-spacing:.11em;
                 text-transform:uppercase;color:var(--tinta-suave)}
+
+  :focus-visible{outline:3px solid var(--accion);outline-offset:3px}
+  button:not(:disabled),summary,a{touch-action:manipulation}
+  button:disabled{cursor:default}
+  .ayuda{font-size:14px;color:var(--tinta-suave);max-width:68ch}
+  @media(hover:hover){.menor:hover,.filtros button:hover,.filtros a:hover,.continuar a:hover{border-color:var(--accion);color:var(--accion)}}
+  @media(prefers-reduced-motion:no-preference){
+    .hoja{animation:entrada-vigia 180ms ease-out both}
+    .menor,.filtros button,.filtros a,.continuar a{transition:background-color 140ms,color 140ms,border-color 140ms}
+    @keyframes entrada-vigia{from{opacity:.6}to{opacity:1}}
+  }
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
 </style>
 
 <div class="hoja">
@@ -194,9 +209,14 @@
     <div class="dicho" id="dicho"></div>
     <div id="filas"></div>
     <div id="dups"></div>
+    <div class="secundarias" style="margin:16px 0">
+      <button type="button" id="fotoRevisar" class="menor">Añadir foto del equipo</button>
+      <button type="button" id="guardarParcial" class="menor">Guardar con datos pendientes</button>
+    </div>
+    <div id="fotoRevision" role="status" aria-live="polite"></div>
     <div id="preg"></div>
     <details id="detalles">
-      <summary>Detalles técnicos</summary>
+      <summary>Última inferencia · detalles técnicos</summary>
       <div class="tec" id="tec"></div>
     </details>
   </section>
@@ -208,8 +228,10 @@
 </div>
 
 <script type="module">
+import { revision, incorporarPlaca } from "/revision.js";
 const $ = s => document.querySelector(s);
-const estado = { texto: '', borrador: null, respuestas: {}, id: null, directo: null, ms: 0, fila: null, dups: [] };
+const estado = { texto: '', borrador: null, respuestas: {}, id: null, directo: null, ms: 0, fila: null, dups: [], fuente: 'texto', foto: null, capturaId: crypto.randomUUID() };
+let procesandoCola = false, activoCola = null, guardando = false, fotoEnRevision = false, leyendoFoto = false, fotoPendienteRevision = null;
 
 // ── reloj y credencial ──
 const reloj = () => $('#ahora').textContent = new Date().toLocaleString('es-PA', { dateStyle: 'long', timeStyle: 'short' });
@@ -227,6 +249,15 @@ async function sondear() {
   try { const r = await fetch('/api/evidencia', { cache: 'no-store' });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const e = await r.json();
+    if (e.capacidades?.voz === false) {
+      $('#anillo').disabled = true; $('#anilloTexto').innerHTML = 'Usa una nota escrita<em>este nodo solo interpreta texto</em>';
+      $('#btnPreguntar').disabled = true; $('#btnPreguntar').title = 'Disponible en el nodo completo de Vigía';
+    }
+    if (e.capacidades?.foto === false) {
+      for (const id of ['#btnFoto','#fotoRevisar']) { if (!$(id)) continue; $(id).disabled = true; $(id).title = 'Este nodo del teléfono solo interpreta texto. Usa el enlace completo de Vigía para fotos.'; }
+      $('#btnFoto').textContent = 'Foto: usa el nodo con visión';
+      if ($('#fotoRevisar')) $('#fotoRevisar').textContent = 'Foto: usa el nodo con visión';
+    }
     // El nodo del teléfono contesta 200 aunque no pueda interpretar: `respaldo:false` es que no
     // tiene modelo a bordo, y con el par caído encima /api/extraer responde 503. Para la persona
     // eso es «sin nodo», y la captura tiene que ir a la cola en vez de perderse.
@@ -251,17 +282,36 @@ sondear(); setInterval(sondear, 5000);
 const db = () => new Promise((ok, err) => { const r = indexedDB.open('vigia', 1);
   r.onupgradeneeded = () => r.result.createObjectStore('cola', { keyPath: 'id', autoIncrement: true });
   r.onsuccess = () => ok(r.result); r.onerror = () => err(r.error); });
-async function encolar(item) { const d = await db(); return new Promise(ok => { const t = d.transaction('cola', 'readwrite'); t.objectStore('cola').add({ ...item, ts: Date.now() }); t.oncomplete = ok; }); }
-async function cola() { const d = await db(); return new Promise(ok => { const r = d.transaction('cola').objectStore('cola').getAll(); r.onsuccess = () => ok(r.result); }); }
-async function vaciar(id) { const d = await db(); return new Promise(ok => { const t = d.transaction('cola', 'readwrite'); t.objectStore('cola').delete(id); t.oncomplete = ok; }); }
+async function transaccion(modo, operar) {
+  const d = await db();
+  return new Promise((ok, err) => {
+    const t = d.transaction('cola', modo);
+    const r = operar(t.objectStore('cola'));
+    t.oncomplete = () => { d.close(); ok(r?.result); };
+    t.onabort = t.onerror = () => { d.close(); err(t.error ?? new Error('No se pudo guardar en este dispositivo')); };
+  });
+}
+async function encolar(item) {
+  // El original sigue en disco durante el procesamiento y la confirmación humana.
+  return transaccion('readwrite', c => c.add({ ...item, ts: Date.now(), capturaId: crypto.randomUUID() }));
+}
+const cola = () => transaccion('readonly', c => c.getAll());
+const vaciar = id => transaccion('readwrite', c => c.delete(id));
+async function conservarRevision() {
+  if (activoCola == null) return;
+  const item = (await cola()).find(i => i.id === activoCola);
+  if (item) await transaccion('readwrite', c => c.put({ ...item, revision: structuredClone(estado) }));
+}
 // El ciclo en tres pasos y en cuál estás ahora. Sin nodo no se bloquea nada: se captura igual,
 // se guarda aquí con su hora, y el paso 3 espera. Es el caso del sótano del hospital.
 function pintarPasos(pendientes) {
-  const vivo = pendientes ? (hayNodo ? 3 : 2) : 1;
+  const vivo = estado.borrador ? 3 : pendientes ? (hayNodo ? 3 : 2) : 1;
   for (const p of document.querySelectorAll('.paso')) p.classList.toggle('vivo', Number(p.dataset.p) === vivo);
-  $('#explica').innerHTML = hayNodo
+  $('#explica').innerHTML = estado.borrador
+    ? 'Revisa los datos. Puedes <b>añadir una foto o guardar con datos pendientes</b>.'
+    : hayNodo
     ? (pendientes ? `Hay nodo: <b>se pueden interpretar las ${pendientes} que quedaron guardadas</b>.`
-                  : 'Hay nodo a la vista: <b>lo que captures se interpreta aquí mismo</b>, sin salir a internet.')
+                  : 'Hay nodo a la vista: <b>lo que captures se interpreta en el nodo indicado arriba</b>, con QVAC.')
     : (pendientes ? `Sin nodo. <b>${pendientes} captura(s) esperando</b>: se interpretan solas en cuanto aparezca uno.`
                   : 'Sin nodo a la vista. <b>Captura igual</b>: se guarda aquí y se interpreta cuando vuelva.');
 }
@@ -270,7 +320,7 @@ const NOMBRE = { foto: 'Foto', audio: 'Dictado', texto: 'Nota' };
 const recorte = t => String(t ?? '').slice(0, 42).replace(/[<>&]/g, ' ');
 let urlsVivas = [];
 async function pintarPendientes() {
-  const c = await cola();
+  const c = (await cola()).filter(item => item.id !== activoCola);
   $('#pendientes').classList.toggle('oculto', !c.length);
   pintarPasos(c.length);
   urlsVivas.forEach(URL.revokeObjectURL); urlsVivas = [];
@@ -281,21 +331,36 @@ async function pintarPendientes() {
     return `<div class="item">${medio}<div><b>${NOMBRE[i.tipo] ?? i.tipo}</b>
       <small>${HORA(i.ts)}${i.texto ? ' · ' + recorte(i.texto) : ''}</small></div></div>`;
   }).join('');
-  $('#procesar').disabled = !hayNodo;
+  $('#procesar').disabled = !hayNodo || procesandoCola || !!estado.borrador;
   $('#procesar').textContent = hayNodo
     ? `Interpretar la más vieja${c.length > 1 ? ` · quedan ${c.length - 1}` : ''}` : 'Esperando un nodo…';
 }
 
-// Se procesa de a una porque cada visita se revisa y se confirma antes de guardarla. Sale de la
-// cola primero; si el nodo falla, cada camino la vuelve a encolar en vez de perderla.
+// Un solo procesamiento por pantalla; no se elimina nada hasta recibir el acta.
 async function procesarUno() {
-  const [item] = await cola();
-  if (!item || !hayNodo) return;
-  await vaciar(item.id);
-  await pintarPendientes();
-  if (item.tipo === 'foto') return verFoto(item.blob);
-  if (item.tipo === 'audio') return dictarBlob(item.blob);
-  estado.texto = item.texto; return revisar();
+  if (procesandoCola || !hayNodo || estado.borrador) return;
+  procesandoCola = true;
+  try {
+    const items = await cola();
+    const item = items.find(i => i.id === activoCola) ?? items[0];
+    if (!item) return;
+    activoCola = item.id;
+    Object.assign(estado, { respuestas: {}, directo: null, foto: null, capturaId: item.capturaId ?? crypto.randomUUID(),
+      fuente: item.tipo === 'audio' ? 'voz' : item.tipo === 'foto' ? 'foto' : 'texto' });
+    if (item.revision) {
+      Object.assign(estado, item.revision);
+      $('#texto').value = estado.texto;
+      if (estado.ultimaRevision) {
+        $('#p1').classList.add('oculto'); $('#p2').classList.remove('oculto'); $('#volver').classList.remove('oculto');
+        pintar(estado.ultimaRevision);
+        if (item.fotoRevision && !estado.foto?.confirmado_por_colaborador) { $('#fotoRevision').innerHTML = '<button class="menor" id="retomarFoto">Retomar foto guardada de esta visita</button>'; $('#retomarFoto').onclick = () => leerFotoRevision(item.fotoRevision); }
+        return;
+      }
+    }
+    if (item.tipo === 'foto') await verFoto(item.blob);
+    else if (item.tipo === 'audio') await dictarBlob(item.blob);
+    else { estado.texto = item.texto; $('#texto').value = item.texto; await revisar(); }
+  } finally { procesandoCola = false; await pintarPendientes(); }
 }
 $('#procesar').onclick = procesarUno;
 
@@ -321,18 +386,20 @@ $('#anillo').onclick = async () => {
 // dictarBlob(): lo transcribe el nodo. Si el nodo no está o falla, el audio vuelve a la cola;
 // antes una nota de voz pendiente quedaba guardada y nadie la volvía a mirar nunca.
 async function dictarBlob(blob) {
+  estado.fuente = 'voz';
   if (!hayNodo) { await encolar({ tipo: 'audio', blob });
     $('#anilloTexto').innerHTML = 'Guardado aquí<em>sin nodo a la vista</em>'; return pintarPendientes(); }
+  if (activoCola == null) activoCola = await encolar({ tipo: 'audio', blob });
   $('#anilloTexto').innerHTML = 'Transcribiendo…<em>un momento</em>';
   try {
     const r = await fetch('/api/dictar', { method: 'POST', body: blob });
     const t = await r.json();
     if (!r.ok || t.error) throw new Error(t.error ?? `HTTP ${r.status}`);
-    if (t.silencio) { $('#anilloTexto').innerHTML = 'No se oyó nada<em>acércate al micrófono</em>'; return; }
+    if (t.silencio) { await vaciar(activoCola); activoCola = null; $('#anilloTexto').innerHTML = 'No se oyó nada<em>acércate al micrófono</em>'; return; }
     $('#anilloTexto').innerHTML = 'Iniciar grabación<em>toca y cuenta la visita</em>';
     estado.texto = t.texto; return revisar();
   } catch {
-    await encolar({ tipo: 'audio', blob });
+    if (activoCola == null) await encolar({ tipo: 'audio', blob });
     $('#anilloTexto').innerHTML = 'No se pudo transcribir<em>queda guardado aquí</em>';
     return pintarPendientes();
   }
@@ -354,9 +421,9 @@ function pararOnda() { audioCtx?.close(); audioCtx = null; $('#onda').classList.
 $('#btnEscribir').onclick = () => { $('#texto').classList.toggle('oculto'); $('#texto').focus(); };
 const EJEMPLOS = [
   'Estoy en Hospital DemoCare Pacific, en Panamá. Tienen dos resonadores y un tomógrafo. Uno de los resonadores parece de unos ocho años.',
-  'At Hospital DemoCare Horizon I saw three MR systems. Two seem old and one looks much newer.',
-  'Clinica DemoCare Light has two CT scanners, both Orion Imaging, around eleven years old.',
-  'Estou no Hospital DemoCare Horizon em São Paulo. Eles têm três ressonâncias e dois tomógrafos.',
+  'En Hospital DemoCare Horizon vi tres resonadores. Dos parecen viejos y uno parece mucho más nuevo.',
+  'Clínica DemoCare Light tiene dos tomógrafos, ambos Orion Imaging, de unos once años.',
+  'Estoy en Hospital DemoCare Horizon, en São Paulo, Brasil. Tienen tres resonadores y dos tomógrafos.',
 ];
 $('#btnEjemplo').onclick = () => { $('#texto').classList.remove('oculto');
   $('#texto').value = EJEMPLOS[Math.floor(Math.random() * EJEMPLOS.length)]; $('#accion').disabled = false; };
@@ -370,20 +437,50 @@ $('#accion').onclick = async () => {
   await revisar();
 };
 $('#volver').onclick = () => { $('#p1').classList.remove('oculto'); $('#p2').classList.add('oculto');
-  $('#volver').classList.add('oculto'); $('#accion').textContent = 'Revisar la visita';
-  $('#texto').classList.remove('oculto'); $('#texto').value = estado.texto; };
+  $('#volver').classList.add('oculto'); $('#accion').textContent = 'Revisar la visita'; $('#accion').disabled = false;
+  $('#texto').classList.remove('oculto'); $('#texto').value = estado.texto;
+  $('#anillo').disabled = true; $('#btnFoto').disabled = true;
+  $('#aviso').textContent = 'Corrige el relato aquí. Al cambiarlo, los datos y la foto se revisarán de nuevo para evitar mezclarlos con otros equipos.'; };
 
 // La captura no se pierde ni se pinta a medias: entra a la misma cola de IndexedDB que ya procesa
 // «Procesar», la pantalla de captura se queda como estaba y se dice por qué, con las palabras del
 // nodo. Pasa cuando el teléfono no tiene par a la vista NI modelo a bordo (503).
 async function pendiente(texto, aviso) {
-  await encolar({ tipo: 'texto', texto });
+  if (activoCola == null) await encolar({ tipo: 'texto', texto });
+  else {
+    const item = (await cola()).find(i => i.id === activoCola);
+    if (item) await transaccion('readwrite', c => c.put({ ...item, texto, revision: structuredClone(estado) }));
+  }
   $('#aviso').innerHTML = `<div class="aviso"><b>Captura pendiente</b>${esc(aviso ?? 'El nodo no pudo interpretarla ahora. Queda guardada en el teléfono hasta que vuelva.')}</div>`;
   $('#accion').textContent = 'Revisar la visita'; $('#accion').disabled = false;
   await pintarPendientes();
 }
 
 async function revisar() {
+  if (estado.textoInterpretado && estado.textoInterpretado !== estado.texto) {
+    // Los índices de grupo pueden cambiar al reextraer: nunca reutilizar respuestas por índice.
+    estado.revisionAnterior = { texto: estado.textoInterpretado, borrador: estado.borrador,
+      respuestas: estado.respuestas, foto: estado.foto, directo: estado.directo };
+    Object.assign(estado, { borrador: null, respuestas: {}, foto: null, directo: null,
+      ultimaRevision: null, textoInterpretado: null, fuente: 'texto' });
+    const item = (await cola()).find(i => i.id === activoCola);
+    if (item) {
+      await transaccion('readwrite', c => c.put({ ...item, tipo: 'texto', texto: estado.texto,
+        original: item.original ?? { tipo: item.tipo, texto: item.texto, blob: item.blob }, revision: structuredClone(estado) }));
+      if (item.fotoRevision) {
+        $('#fotoRevision').innerHTML = '<p>Cambió el relato: confirma de nuevo a qué equipo corresponde la foto. La revisión anterior queda guardada.</p><button class="menor" id="retomarFoto">Revisar la foto conservada</button>';
+        $('#retomarFoto').onclick = () => leerFotoRevision(item.fotoRevision);
+      }
+    }
+  }
+  if (estado.borrador && estado.textoInterpretado === estado.texto) {
+    const r = { ...estado.ultimaRevision, ...revision(estado.borrador, estado.respuestas) };
+    estado.borrador = r.borrador; estado.ultimaRevision = r;
+    await conservarRevision(); await pintarPendientes(); $('#p1').classList.add('oculto'); $('#p2').classList.remove('oculto'); $('#volver').classList.remove('oculto'); pintar(r); return;
+  }
+  if (!hayNodo) return pendiente(estado.texto, avisoNodo);
+  if (activoCola == null) activoCola = await encolar({ tipo: 'texto', texto: estado.texto });
+  await conservarRevision();
   if (!hayNodo) return pendiente(estado.texto, avisoNodo);
   $('#aviso').innerHTML = '';
   $('#accion').disabled = true; $('#accion').textContent = 'Interpretando…';
@@ -397,9 +494,10 @@ async function revisar() {
   } catch { return pendiente(estado.texto); }
   if (!r?.borrador) return pendiente(estado.texto, r?.aviso ?? r?.error);
   if (r.degradado) { degradado = true; pintarNodo(); }
-  Object.assign(estado, { borrador: r.borrador, id: r.id, ms: r.ms, fila: r.fila, dups: r.duplicados ?? [] });
+  Object.assign(estado, { borrador: r.borrador, id: r.id, ms: r.ms, fila: r.fila, dups: r.duplicados ?? [], ultimaRevision: r, textoInterpretado: estado.texto });
+  await conservarRevision();
   $('#p1').classList.add('oculto'); $('#p2').classList.remove('oculto'); $('#volver').classList.remove('oculto');
-  pintar(r);
+  await pintarPendientes(); pintar(r);
 }
 
 const esc = s => String(s ?? '').replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
@@ -408,6 +506,7 @@ const esc = s => String(s ?? '').replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&
 // la hoja del reto. Aquí se traduce SOLO lo que se ve; la clase CSS sigue siendo el valor original.
 const ETIQUETA = { Confirmed: 'Confirmado', Reported: 'Reportado', Estimated: 'Estimado', Unknown: 'Desconocido',
                    High: 'Alta', Medium: 'Media', Low: 'Baja' };
+const CAMPO_ES = {site:'hospital',modality:'modalidad',manufacturer:'marca',model:'modelo',quantity:'cantidad',age:'antigüedad'};
 const MODALIDAD_ES = { MR: 'resonador magnético', CT: 'tomógrafo', Ultrasound: 'ecógrafo', 'X-Ray': 'equipo de rayos X',
                        'Patient Monitoring': 'monitor de paciente', 'Image Guided Therapy': 'equipo de terapia guiada por imagen' };
 
@@ -427,7 +526,7 @@ function pintar(r) {
       <small>${esc(lugar || 'ciudad y país por confirmar')}</small></div></div>` +
     (r.borrador.equipment ?? []).map((g, i) => {
       const est = g.quantity == null || !g.modality ? 'Unknown' : (estado.directo ? 'Confirmed' : (g.age_qualitative || !g.age_years_max ? 'Estimated' : 'Reported'));
-      const det = [g.manufacturer ?? 'marca desconocida', g.model, g.age_years_max ? `~${g.age_years_max} años` : g.age_qualitative ?? 'edad desconocida'].filter(Boolean).join(' · ');
+      const det = [g.manufacturer ?? 'marca desconocida', g.model, g.serial ? `serie ${g.serial}` : null, g.age_years_max ? `~${g.age_years_max} años` : g.age_years_min != null ? `al menos ${g.age_years_min} años` : g.age_qualitative ?? 'edad desconocida'].filter(Boolean).join(' · ');
       return `<div class="fila"><div class="cifra">${g.quantity ?? '?'}</div>
         <div class="que"><b>${esc(g.modality)}</b><small>${esc(det)}</small></div>
         <span class="sello ${est}">${ETIQUETA[est] ?? est}</span></div>`;
@@ -441,12 +540,13 @@ function pintar(r) {
 
   // duplicados, con la explicación campo por campo
   $('#dups').innerHTML = degradado + (r.duplicados ?? []).filter(d => d.veredicto !== 'nuevo').map(d => {
-    const suman = d.detalle.filter(x => x.bits > 0).map(x => `+${x.campo}`).join(' ');
-    const restan = d.detalle.filter(x => x.bits < 0).map(x => `−${x.campo}`).join(' ');
-    return `<div class="aviso"><b>Puede ser el mismo equipo (${Math.round(d.p * 100)} %)</b>
-      Ya está registrado: ${esc(d.contra)}.<br><small>${esc(suman)} ${esc(restan)}</small></div>`;
+    const suman = d.detalle.filter(x => x.bits > 0).map(x => CAMPO_ES[x.campo] ?? x.campo).join(', ');
+    const restan = d.detalle.filter(x => x.bits < 0).map(x => CAMPO_ES[x.campo] ?? x.campo).join(', ');
+    return `<div class="aviso"><b>Puede ser una visita ya registrada</b>
+      Ya está registrado: ${esc(d.contra)}.<br><small>Coincidencias del relato inicial: ${esc(suman)}${restan ? `. Diferencias: ${esc(restan)}` : ''}</small></div>`;
   }).join('');
 
+  $('#guardarParcial').disabled = !(r.borrador.customer?.name && r.borrador.equipment?.length);
   // una pregunta a la vez
   const q = (r.preguntas ?? [])[0];
   if (q) {
@@ -456,8 +556,11 @@ function pintar(r) {
       ${q.opciones?.length ? '' : '<input id="libre" placeholder="Escribe la respuesta">'}
       <div class="ops">${(q.opciones?.length ? q.opciones : ['Responder']).map(o => `<button data-v="${esc(o)}">${esc(o)}</button>`).join('')}
       ${q.opcional && !q.opciones?.includes('No sé') ? '<button data-v="No sé">No sé</button>' : ''}</div></div>`;
+    if ($('#libre')) $('#libre').oninput = () => $('#libre').setCustomValidity('');
     $('#preg').querySelectorAll('button').forEach(b => b.onclick = async () => {
       const v = b.dataset.v === 'Responder' ? $('#libre')?.value : b.dataset.v;
+      if (q.campo === 'quantity' && (!Number.isInteger(Number(v)) || Number(v) < 1)) { $('#libre').setCustomValidity('Escribe un número entero mayor que cero'); $('#libre').reportValidity(); return; }
+      $('#preg').querySelectorAll('button, input').forEach(el => el.disabled = true);
       if (q.campo === 'directo') { estado.directo = /vi/i.test(v); estado.respuestas[q.clave] = v; }
       else estado.respuestas[q.clave] = v;
       await revisar();
@@ -466,6 +569,11 @@ function pintar(r) {
   } else {
     $('#preg').innerHTML = '';
     $('#accion').textContent = 'Guardar visita'; $('#accion').disabled = !(r.borrador.customer?.name && r.borrador.equipment?.length);
+  }
+
+  if (leyendoFoto) {
+    $('#accion').disabled = true; $('#guardarParcial').disabled = true;
+    $('#preg').querySelectorAll('button, input').forEach(el => el.disabled = true);
   }
 
   $('#tec').textContent = [
@@ -483,10 +591,22 @@ const aB64url = s => { let bin = ''; for (const b of new TextEncoder().encode(s)
 
 async function guardar() {
   $('#accion').disabled = true; $('#accion').textContent = 'Guardando…';
-  const r = await fetch('/api/guardar', { method: 'POST', headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ borrador: estado.borrador, observador: $('#quien').value.trim() || 'sin nombre',
-      directo: estado.directo === true, fuente: 'voz', requestId: estado.id }) }).then(r => r.json());
-  if (r.error) { $('#accion').textContent = r.error; $('#accion').disabled = false; return; }
+  if (guardando) return;
+  guardando = true;
+  let r;
+  try {
+    const res = await fetch('/api/guardar', { method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ borrador: estado.borrador, observador: $('#quien').value.trim() || 'sin nombre',
+        directo: estado.directo === true, fuente: estado.fuente, foto: estado.foto, requestId: estado.capturaId }) });
+    r = await res.json();
+    if (!res.ok || !r.acta) throw new Error(r.error ?? 'No se recibió el acta');
+    if (activoCola != null) { await vaciar(activoCola); activoCola = null; }
+    await pintarPendientes();
+  } catch (e) {
+    $('#dups').textContent = 'No se confirmó el guardado. La visita sigue aquí. Reintenta cuando vuelva el nodo. ' + e.message;
+    $('#accion').textContent = 'Reintentar guardar'; $('#accion').disabled = false;
+    return;
+  } finally { guardando = false; }
   $('#p2').innerHTML = `<div class="dicho"><b>Visita guardada.</b><br>${r.eventos} observación(es) selladas.
     <div class="tec">acta ${r.acta.sello.hash.slice(0, 24)}…\nfirmada por ${esc(r.acta.sello.firmante)}</div></div>
     <div class="losas" style="grid-template-columns:1fr">
@@ -502,21 +622,72 @@ async function guardar() {
 // ── la foto: el modelo Psy lee la placa; si no hay placa, describe lo que ve ──
 // En campo casi nunca tienes la placa delante: tienes el equipo, en su sala, con gente pasando.
 // Por eso la misma foto sirve para las dos cosas y la app dice cuál de las dos pasó.
-$('#btnFoto').onclick = () => $('#archivoFoto').click();
-$('#archivoFoto').onchange = e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) verFoto(f); };
+$('#btnFoto').onclick = () => { fotoEnRevision = false; $('#archivoFoto').click(); };
+$('#fotoRevisar').onclick = () => { fotoEnRevision = true; $('#archivoFoto').click(); };
+$('#guardarParcial').onclick = async () => {
+  // Solo queda confirmar la procedencia; los campos sin dato permanecen desconocidos.
+  for (const q of estado.ultimaRevision?.preguntas ?? []) if (q.campo !== 'customer.name' && q.campo !== 'directo') estado.respuestas[q.clave] = 'No sé';
+  await revisar();
+};
+$('#archivoFoto').onchange = e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) fotoEnRevision ? leerFotoRevision(f) : verFoto(f); };
+
+async function leerFotoRevision(blob) {
+  const cont = $('#fotoRevision');
+  fotoPendienteRevision = blob; leyendoFoto = true; pintar(estado.ultimaRevision);
+  const item = (await cola()).find(i => i.id === activoCola);
+  if (item) await transaccion('readwrite', c => c.put({ ...item, fotoRevision: blob }));
+  $('#fotoRevisar').disabled = true; $('#accion').disabled = true; $('#guardarParcial').disabled = true;
+  cont.textContent = 'Leyendo la foto con VisionPsy… Tus respuestas se conservan.';
+  try {
+    const res = await fetch('/api/placa', { method: 'POST', body: blob });
+    const foto = await res.json();
+    if (!res.ok) throw new Error(foto.error ?? 'No se pudo leer la foto');
+    if (foto.modo !== 'placa') {
+      cont.innerHTML = `<div class="aviso"><b>No hay una placa legible</b>${esc(foto.descripcion ?? 'Acércate a la etiqueta.')}<br>La descripción es una pista; no cambia los datos confirmados.</div>`;
+      estado.foto = { ...estado.foto, escena: { descripcion: foto.descripcion, pistas: foto.pistas } }; await conservarRevision(); return;
+    }
+    const campos = Object.entries(foto.campos ?? {}).filter(([k]) => ['manufacturer','model','serial','modality'].includes(k));
+    cont.innerHTML = `<div class="placa-campos"><b>Esto leyó la foto</b><p>${campos.map(([k,v]) => `${esc(({manufacturer:'Marca',model:'Modelo',serial:'Serie',modality:'Tipo'})[k])}: ${esc(v)}`).join('<br>')}</p>
+      <label for="equipoFoto">¿A cuál de los equipos de esta visita corresponde?</label>
+      <select id="equipoFoto" style="width:100%;min-height:44px;font:inherit;margin:8px 0">${estado.borrador.equipment.map((g,i) => `<option value="${i}">${g.quantity ?? '?'} × ${esc(g.modality)}${g.model ? ' · ' + esc(g.model) : ''}</option>`).join('')}</select>
+      <p>Si elegiste un grupo, la placa se aplica a una sola unidad. Lo ya confirmado se conserva.</p>
+      <button class="menor" id="usarFoto">Confirmar datos de esta foto</button><p id="conflictoFoto" role="alert"></p></div>`;
+    const actual = estado.ultimaRevision?.preguntas?.[0]?.grupo;
+    if (actual != null) $('#equipoFoto').value = String(actual);
+    $('#usarFoto').onclick = async () => {
+      $('#usarFoto').disabled = true;
+      try {
+        const indice = Number($('#equipoFoto').value);
+        const r = incorporarPlaca(estado.borrador, foto, indice);
+        if (r.separada) estado.respuestas[`quantity:${indice}`] = 1;
+        estado.borrador = r.borrador; estado.fuente = 'foto';
+        estado.foto = { ...foto, confirmado_por_colaborador: true };
+        fotoPendienteRevision = null;
+        await revisar();
+        cont.textContent = r.separada ? 'Foto incorporada a una unidad. Las demás conservan sus datos pendientes.' : 'Foto incorporada. Conservamos las respuestas que ya habías confirmado.';
+      } catch (e) { $('#conflictoFoto').textContent = e.message; $('#usarFoto').disabled = false; }
+    };
+  } catch (e) {
+    cont.innerHTML = `<div class="aviso"><b>La foto queda guardada con esta visita</b>${esc(e.message)}<br><button class="menor" id="reintentarFoto">Reintentar lectura</button></div>`;
+    $('#reintentarFoto').onclick = () => leerFotoRevision(blob);
+  } finally { leyendoFoto = false; $('#fotoRevisar').disabled = false; pintar(estado.ultimaRevision); }
+}
 
 const sumarAlTexto = frase => {
   $('#texto').classList.remove('oculto');
   $('#texto').value = ($('#texto').value ? $('#texto').value + ' ' : '') + frase;
   $('#accion').disabled = false;
+  estado.texto = $('#texto').value; conservarRevision();
 };
 
 async function verFoto(blob) {
+  estado.fuente = 'foto';
   if (!hayNodo) {
     await encolar({ tipo: 'foto', blob });
     $('#placa').innerHTML = '<div class="aviso"><b>Foto guardada en el teléfono</b>No hay nodo a la vista. Se interpreta sola en cuanto aparezca uno.</div>';
     return pintarPendientes();
   }
+  if (activoCola == null) activoCola = await encolar({ tipo: 'foto', blob });
   const u = URL.createObjectURL(blob); urlsVivas.push(u);
   $('#placa').innerHTML = `<div class="visto"><img src="${u}" alt=""><div class="frase">Mirando la foto…</div></div>`;
   let res, r;
@@ -524,16 +695,17 @@ async function verFoto(blob) {
     res = await fetch('/api/placa', { method: 'POST', body: blob });
     r = await res.json();
   } catch {
-    await encolar({ tipo: 'foto', blob });
+    if (activoCola == null) await encolar({ tipo: 'foto', blob });
     $('#placa').innerHTML = '<div class="aviso"><b>El nodo no respondió</b>La foto queda guardada aquí y se reintenta después.</div>';
     return pintarPendientes();
   }
   if (!res.ok || r.error) {
-    await encolar({ tipo: 'foto', blob });
+    if (activoCola == null) await encolar({ tipo: 'foto', blob });
     $('#placa').innerHTML = `<div class="aviso"><b>No se pudo mirar</b>${esc(r?.aviso ?? r?.error ?? `el nodo respondió ${res.status}`)}<br><small>La foto queda guardada aquí.</small></div>`;
     return pintarPendientes();
   }
 
+  estado.foto = { modo: r.modo, campos: r.campos, origen: r.origen, confianza: r.confianza, transcripcion: r.transcripcion, descripcion: r.descripcion, requiereConfirmacion: true };
   // Sin placa legible el modelo no inventa una identidad: describe la escena y lo dice. Al reporte
   // entra solo la pista filtrada (modalidad, y marca solo si es del catálogo); la frase del modelo
   // se muestra como cita, porque una descripción puede traer una marca que no existe.
@@ -562,7 +734,8 @@ async function verFoto(blob) {
   // Lo leído entra a la frase como una observación más, para que siga el mismo camino.
   const partes = ['Un', r.campos.modality ?? 'equipo',
     r.campos.manufacturer ? `marca ${r.campos.manufacturer}` : null,
-    r.campos.model ? `modelo ${r.campos.model}` : null].filter(Boolean);
+    r.campos.model ? `modelo ${r.campos.model}` : null,
+    r.campos.serial ? `serie ${r.campos.serial}` : null].filter(Boolean);
   sumarAlTexto(`Placa leída: ${partes.join(' ')}.`);
 }
 
@@ -584,6 +757,6 @@ $('#btnPreguntar').onclick = async () => {
   } catch { $('#respuesta').innerHTML = '<div class="aviso">Sin nodo a la vista.</div>'; }
 };
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).then(r => r.update()).catch(() => {});
 </script>
 </html>

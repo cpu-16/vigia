@@ -157,6 +157,9 @@ export async function mirar(vista, imagen, { requestId, catalogo } = {}) {
 // y lo que entra al reporte sale de aquí, no de la frase cruda.
 export function pistasDeEscena(texto) {
   const t = sinAcentos(texto ?? '');
-  return { modality: normalizarModalidad(texto ?? ''),
+  let modality = normalizarModalidad(texto ?? '');
+  // Una pantalla de oficina no es un equipo de monitorización de pacientes.
+  if (modality === 'Patient Monitoring' && !/patient|paciente|vital|ecg|electrocardio|bedside|signos|cardiac/.test(t)) modality = null;
+  return { modality,
            manufacturer: MARCAS.find(m => t.includes(sinAcentos(m))) ?? null };
 }

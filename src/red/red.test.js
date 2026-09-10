@@ -96,7 +96,7 @@ test('resumen: rechaza cifras inventadas, null y atribuciones cambiadas',()=>{
   for(const resumen of ['999999 consultas','null',null,'Sin evidencia',`entropia: ${d.evidencia.longitud}`])assert.equal(validarCaso({resumen},d).resumen,respaldo(d).resumen);
 });
 test('flujo → alerta local y filas QoE: latencia medida',async()=>{
-  const dir=temporal();try{const filas=[];const r=await consumir(reproducir([...generar({familia:'tunnel',n:30})],{velocidad:1e9}),{archivoAlertas:join(dir,'alertas.jsonl'),guardarQoe:async f=>filas.push(...f)});assert.equal(r.consultas,30);assert.equal(r.alertas,1);assert.ok(filas.length);resultados.latencia_evento_alerta_ms=r.latencias_evento_alerta_ms;writeFileSync(new URL('./metricas.json',import.meta.url),JSON.stringify({fecha:new Date().toISOString(),lista_blanca:[...blanca],resultados},null,2));console.log('Evento → alerta local (ms)',r.latencias_evento_alerta_ms);}finally{rmSync(dir,{recursive:true,force:true});}
+  const dir=temporal();try{const filas=[];const r=await consumir(reproducir([...generar({familia:'tunnel',n:30})],{velocidad:1e9}),{archivoAlertas:join(dir,'alertas.jsonl'),guardarQoe:async f=>filas.push(...f)});assert.equal(r.consultas,30);assert.equal(r.alertas,1);assert.ok(filas.length);resultados.latencia_evento_alerta_ms=r.latencias_evento_alerta_ms;if(process.env.METRICAS_SALIDA)writeFileSync(process.env.METRICAS_SALIDA,JSON.stringify({fecha:new Date().toISOString(),lista_blanca:[...blanca],resultados},null,2));console.log('Evento → alerta local (ms)',r.latencias_evento_alerta_ms);}finally{rmSync(dir,{recursive:true,force:true});}
 });
 test('QVAC local real: seis casos con cifras ancladas', {skip:!process.env.PRUEBA_MODELO,timeout:600000},async()=>{
   process.env.RENDIMIENTO??=fileURLToPath(new URL('./rendimiento-modelo.jsonl',import.meta.url));
@@ -110,4 +110,13 @@ test('QVAC local real: seis casos con cifras ancladas', {skip:!process.env.PRUEB
     const desempate=await desempatar(modelo,{familia:'beacon',evidencia:{repeticiones:3,cv:0.2}});assert.ok(['amenaza','benigno','insuficiente'].includes(desempate));
     writeFileSync(new URL('./resultado-modelo.json',import.meta.url),JSON.stringify({fecha:new Date().toISOString(),salidas,desempate},null,2));
   }finally{await descargar(modelo);}
+});
+
+test('QoE conserva los valores y zonas que llegan del bus y marca solo los simulados', () => {
+  const e = { ...muestra[0], zona: 'zona-real', sitio: 'resolutor-local', latency_ms: 123, rcode: 'NXDOMAIN' };
+  const q = simular(e);
+  assert.equal(q.latency_ms, 123); assert.equal(q.rcode, 'NXDOMAIN');
+  assert.equal(q.zona, 'zona-real'); assert.equal(q.sitio, 'resolutor-local');
+  assert.deepEqual(q.synthetic_fields, []);
+  assert.deepEqual(simular({ ...e, latency_ms: undefined }).synthetic_fields, ['latency_ms']);
 });

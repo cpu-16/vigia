@@ -1,0 +1,14 @@
+{
+  "audio": "lab/voz/prueba-es.wav",
+  "tipo": "control de audio existente, no micrófono en vivo",
+  "origen": "https://fedora.taild88ec5.ts.net:8443",
+  "segundos_http": 1.22,
+  "respuesta": {
+    "texto": "El monitor MP4F de UCI Cama 3 marca error E330. Fuga a tierra 100 y 120 microamperios.",
+    "ms": 1205.6,
+    "segundos": 9.297125,
+    "pico": -0.5900297148655006,
+    "silencio": false,
+    "id": "V-626E"
+  }
+}

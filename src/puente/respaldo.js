@@ -77,3 +77,26 @@ export async function conRespaldo(texto, {
   const r = await extraerFn(local, texto, { requestId });
   return { ...r, modo: 'local', modelo: local.etiqueta, degradado: hayPar, aviso: hayPar ? aviso : null, recarga_ms };
 }
+
+// Política común para extracción, consultas y banca. Una entrada inválida no mata al par.
+export const falloDePar = e => e?.code === 'QVAC_SIN_RESPUESTA' || /timeout|timed out|connection|socket|peer|provider|network|ECONN|EPIPE|stream.*closed/i.test(String(e?.message ?? e));
+export function crearEjecutor({ obtenerModelo, cargarLocal, alCaer = () => {} }) {
+  let recarga = null;
+  return async operacion => {
+    let modelo = obtenerModelo();
+    try {
+      const r = await operacion(modelo);
+      return { ...r, modo: modelo.delegado ? 'delegado' : 'local', modelo: modelo.etiqueta,
+        degradado: !!recarga, aviso: recarga ? 'El par no respondió: esta respuesta se calculó en este nodo.' : null };
+    } catch (e) {
+      if (!modelo?.delegado || !falloDePar(e)) throw e;
+      alCaer();
+      // Varios usuarios pueden detectar la misma caída: solo uno descarga y recarga.
+      recarga ??= Promise.resolve().then(cargarLocal).catch(error => { recarga = null; throw error; });
+      modelo = await recarga;
+      const r = await operacion(modelo);
+      return { ...r, modo: 'local', modelo: modelo.etiqueta, degradado: true,
+        aviso: 'El par no respondió: esta respuesta se calculó en este nodo.' };
+    }
+  };
+}

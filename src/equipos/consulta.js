@@ -91,9 +91,16 @@ export async function consultar(modelo, pregunta, inventario, { requestId, hoy }
     responseFormat: { type: 'json_schema', json_schema: { name: 'filtro', schema: ESQUEMA_FILTRO, strict: true } },
     maxTokens: 300 });
   let filtro;
-  try { filtro = JSON.parse(sinThink(r.texto)); } catch { filtro = {}; }
+  filtro = interpretarFiltro(r.texto);
   const res = aplicar(filtro, inventario, { hoy });
   return { pregunta, filtro, ...res, ms: r.ms, id: r.id, fila: r.fila };
 }
 
 export { clasificarEdad };
+
+export function interpretarFiltro(texto) {
+  let filtro;
+  try { filtro = JSON.parse(sinThink(texto)); } catch { throw new Error('No se pudo interpretar la consulta. Reformula la pregunta.'); }
+  if (!filtro || Array.isArray(filtro) || typeof filtro !== 'object' || !Object.keys(filtro).length) throw new Error('El modelo devolvió un filtro inválido. Reformula la pregunta.');
+  return filtro;
+}

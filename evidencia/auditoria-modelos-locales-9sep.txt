@@ -1,0 +1,61 @@
+✔ modalidades y numerales en es/en/pt (2.779334ms)
+✔ validar: la guarda tumba lo que el reporte no dice (portugués incluido) (2.613232ms)
+✔ menciones: numeral + tipo en la misma cláusula, en tres idiomas (2.366487ms)
+✔ derivar: estado y confianza según la hoja del reto (0.435657ms)
+✔ preguntas: una a la vez, en el orden del reto, sin repetir las contestadas (0.301308ms)
+✔ duplicados: Fellegi-Sunter explica campo por campo y nunca fusiona sola (0.413467ms)
+[QVACRegistryClient] [INFO] Downloading blob directly {
+  coreKey: '4035e6638834...',
+  blockOffset: 246318,
+  blockLength: 16126,
+  byteLength: 1056782912
+}
+[QVACRegistryClient] [INFO] Cleared blob blocks from corestore { start: 246318, end: 262444, blocks: 0 }
+[QVACRegistryClient] [INFO] Blob download complete (direct)
+✓ 6641 ms · I am at Hospital DemoCare Pacific in Panama. They have two M…
+✓ 4877 ms · At Hospital DemoCare Horizon I saw three MR systems. Two see…
+✓ 5038 ms · Clinica DemoCare Light has two CT scanners, both Orion Imagi…
+✓ 3801 ms · Centro Medico DemoCare Valley has one MR and two CTs. I do n…
+✓ 3761 ms · Hospital DemoCare North has about six ultrasound units, most…
+✓ 7044 ms · Clinica DemoCare Andes has one very old CT and two MR system…
+✓ 6839 ms · Hospital DemoCare Park has one MR, maybe ten years old, plus…
+✓ 4026 ms · Clinica DemoCare Central has many ultrasound systems, maybe …
+✓ 7065 ms · Instituto DemoCare Lima has two old CTs and one recently ins…
+✓ 3981 ms · Hospital DemoCare Metro North has two MR systems. I know the…
+✓ 4155 ms · Estoy en Hospital DemoCare Pacific, en Panamá. Tienen dos re…
+✓ 4211 ms · Estou no Hospital DemoCare Horizon em São Paulo. Eles têm tr…
+✔ extraer: los 10 prompts oficiales + español + portugués con el modelo real (105104.277985ms)
+✔ la edad de una unidad no se atribuye a todos los equipos del grupo (0.542713ms)
+✔ guía sintética, longitud, secciones y búsqueda determinista (1.919682ms)
+✔ guardas: cita literal, monto respaldado y código existente (0.736273ms)
+✔ expediente: reinicio, estados, acta verificable, inmutabilidad y alteración (37.661655ms)
+✓ S01 5635 ms AHO-AP-01
+✓ S02 6209.3 ms RET-ISL-01
+✓ S03 5735.4 ms RET-ISL-01
+✓ S04 6557.2 ms RET-ISL-01
+✓ S05 6443.8 ms RET-ISL-01
+✓ S06 4956.7 ms CAJ-ARQ-01
+✗ S07 4282 ms CAJ-ARQ-01
+✓ S08 4499.1 ms DOC-NAT-01
+✓ S09 4624.8 ms DOC-EXT-01
+✓ S10 4661.9 ms DOC-JUR-01
+✓ S11 5137.6 ms DAT-PRI-01
+✓ S12 4276.8 ms EX-DOC-01
+✓ S13 6032.1 ms EX-SAL-01
+✓ S14 6150.9 ms ISL-REC-01
+✓ S15 4649.1 ms EX-CON-01
+✓ S16 5333.4 ms abstención
+✓ S17 5594.7 ms abstención
+✓ S18 2901.2 ms abstención
+✓ S19 2513.4 ms abstención
+✓ S20 6466 ms abstención
+Resultado: 19/20; abstenciones correctas: 5/5
+✔ modelo local: 20 casos, mínimo 16 aciertos y todas las abstenciones (105337.984563ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 210739.770816

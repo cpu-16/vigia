@@ -145,3 +145,18 @@ test('extraer: los 10 prompts oficiales + español + portugués con el modelo re
   await descargar(modelo);
   assert.ok(fallos.length <= 2, `fallaron ${fallos.length}/${CASOS.length}: ${fallos.join(' || ')}`);
 });
+
+test('la edad de una unidad no se atribuye a todos los equipos del grupo', () => {
+  const texto = 'Hay dos resonadores. Uno de los resonadores parece de unos ocho años.';
+  const r = validar({ customer: {}, equipment: [{ modality: 'MR', quantity: 2, quantity_quote: 'dos resonadores', age_quote: 'Uno de los resonadores parece de unos ocho años', age_years_min: 8, age_years_max: 8 }] }, texto);
+  assert.equal(r.borrador.equipment[0].quantity, 2);
+  assert.equal(r.borrador.equipment[0].age_years_max, null);
+  assert.match(r.borrador.equipment[0].notes, /ocho años/);
+});
+
+test('las respuestas de edad conservan intervalos y límites abiertos', async () => {
+  const { interpretarEdad } = await import('./reglas.js');
+  assert.deepEqual(interpretarEdad('3 a 7 años'), [3, 7]);
+  assert.deepEqual(interpretarEdad('Más de 10 años'), [11, null]);
+  assert.deepEqual(interpretarEdad('Nuevo (< 3 años)'), [0, 3]);
+});

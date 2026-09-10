@@ -1,0 +1,87 @@
+{
+  "fecha": "2026-09-09T22:06:22-0500",
+  "segundos": 44.0,
+  "consumidor_exit": 0,
+  "productor_exit": 0,
+  "wazuh_antes": 0,
+  "wazuh_despues": 62,
+  "wazuh_delta": 62,
+  "wazuh_familias": {
+    "dga": 45,
+    "typosquat": 12,
+    "tunnel": 1,
+    "beacon": 4
+  },
+  "wazuh_locations": [
+    "API-Webhook"
+  ],
+  "clickhouse_antes": 108,
+  "clickhouse_despues": 160,
+  "clickhouse_delta": 52,
+  "grafana": {
+    "results": {
+      "A": {
+        "status": 200,
+        "frames": [
+          {
+            "schema": {
+              "name": "A",
+              "refId": "A",
+              "meta": {
+                "typeVersion": [
+                  0,
+                  0
+                ],
+                "preferredVisualisationType": "table",
+                "executedQueryString": "SELECT zona, round(avg(score),1) AS score FROM red_qoe GROUP BY zona ORDER BY score"
+              },
+              "fields": [
+                {
+                  "name": "zona",
+                  "type": "string",
+                  "typeInfo": {
+                    "frame": "string"
+                  }
+                },
+                {
+                  "name": "score",
+                  "type": "number",
+                  "typeInfo": {
+                    "frame": "float64"
+                  }
+                }
+              ]
+            },
+            "data": {
+              "values": [
+                [
+                  "pacifico",
+                  "istmo",
+                  "otras",
+                  "canal"
+                ],
+                [
+                  60.1,
+                  80,
+                  85.5,
+                  89.3
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "salida": "/home/gar16/datos/HACKATHON-ISD-2026/hackpty/infra/red/salida/auditoria-qvac-9sep",
+  "qvac": {
+    "activado": true,
+    "casos": 62,
+    "explicaciones_verificadas": 45,
+    "respaldo_determinista": 17,
+    "metricas_registradas": 63,
+    "backends_de_inferencia": {
+      "gpu": 62
+    }
+  }
+}

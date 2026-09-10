@@ -42,8 +42,16 @@ export function preguntas(b, { yaContestadas = new Set() } = {}) {
     if (!g.manufacturer) add('manufacturer', i, `¿Sabes la marca?${n}`, [...MARCAS, 'No sé'], true);
     if (!num(g.age_years_min) && !g.age_qualitative) add('age', i, `¿Qué edad aproximada tienen?${n}`, ['Nuevo (< 3 años)', '3 a 7 años', '7 a 10 años', 'Más de 10 años', 'No sé'], true);
     else if (!num(g.age_years_min) && g.age_qualitative) add('age', i, `Dijiste «${g.age_qualitative === 'new' ? 'nuevo' : 'viejo'}»: ¿cuántos años, más o menos?${n}`, ['< 3', '3 a 7', '7 a 10', '> 10', 'No sé'], true);
-    if (g.manufacturer && !g.model) add('model', i, `¿Sabes el modelo del ${g.manufacturer}?${n}`, ['No sé'], true);
+    if (g.manufacturer && !g.model) add('model', i, `¿Sabes el modelo del ${g.manufacturer}?${n}`, [], true);
   });
   if (!q.length) add('directo', null, '¿Viste estos equipos tú directamente?', ['Sí, los vi', 'Me lo contaron'], false);
   return q;
+}
+
+export function interpretarEdad(valor) {
+  const t = String(valor).toLowerCase();
+  if (/nuevo|new|<\s*3/.test(t)) return [0, 3];
+  if (/m[aá]s de\s*10|>\s*10/.test(t)) return [11, null];
+  const m = t.match(/(\d+)\s*(?:a|-|to)\s*(\d+)/) ?? t.match(/(\d+)/);
+  return m ? [Number(m[1]), Number(m[2] ?? m[1])] : null;
 }

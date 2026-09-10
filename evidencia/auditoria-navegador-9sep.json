@@ -1,0 +1,21 @@
+{
+  "pruebas": [
+    "Dos capturas sin nodo conservadas por separado",
+    "Una captura procesada al reconectar; original permanece durante revisión",
+    "Revisión recuperada tras recargar sin repetir inferencia",
+    "Fallo de red permite reintentar con el mismo identificador; solo borra al recibir acta; fuente texto correcta",
+    "/ 390px: sin desborde",
+    "/equipos 390px: sin desborde",
+    "/sucursal 390px: sin desborde",
+    "/tablero 390px: sin desborde",
+    "/verificar 390px: sin desborde",
+    "/catalogo.html 390px: sin desborde",
+    "/ 1280px: sin desborde",
+    "/equipos 1280px: sin desborde",
+    "/sucursal 1280px: sin desborde",
+    "/tablero 1280px: sin desborde",
+    "/verificar 1280px: sin desborde",
+    "/catalogo.html 1280px: sin desborde"
+  ],
+  "errores_js": []
+}

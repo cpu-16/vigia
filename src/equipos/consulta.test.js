@@ -86,3 +86,9 @@ test('el modelo traduce la pregunta a filtros y el código ejecuta la consulta',
   console.log(`Filtros correctos: ${ok}/${PREGUNTAS.length}`);
   assert.ok(ok >= PREGUNTAS.length - 1, `${ok}/${PREGUNTAS.length}`);
 });
+
+test('un filtro inválido no devuelve todo el inventario', async () => {
+  const { interpretarFiltro } = await import('./consulta.js');
+  for (const texto of ['', 'no JSON', 'null', '[]', '{}']) assert.throws(() => interpretarFiltro(texto), /consulta|filtro/);
+  assert.deepEqual(interpretarFiltro('{"country":"Brazil"}'), { country: 'Brazil' });
+});

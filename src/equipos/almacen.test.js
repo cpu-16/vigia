@@ -67,8 +67,8 @@ test('Customer 360, agregados, renovaciones e incompletos', () => {
   assert.equal(b.cliente360('Hospital Inexistente'), null);
 
   const paises = b.agregado('country');
-  assert.deepEqual(paises.map(p => [p.clave, p.unidades]), [['Panama', 3], ['Brazil', 3]]);
-  assert.equal(paises.find(p => p.clave === 'Brazil').reemplazar, 3);
+  assert.deepEqual(paises.map(p => [p.clave, p.unidades]), [['Panamá', 3], ['Brasil', 3]]);
+  assert.equal(paises.find(p => p.clave === 'Brasil').reemplazar, 3);
   assert.deepEqual(b.agregado('modality').map(m => [m.clave, m.unidades]), [['MR', 5], ['CT', 1]]);
 
   const ren = b.renovaciones();
@@ -90,4 +90,17 @@ test('las observaciones son inmutables y la cadena se puede verificar', () => {
   const reabierta = new Base(ruta);
   assert.equal(reabierta.observaciones().length, 2);
   rmSync(ruta, { force: true });
+});
+
+test('reintentar una captura conserva los eventos incluso después de reiniciar', () => {
+  const b = nueva(), borrador = { customer: pacific, equipment: [grupo('MR', 2), grupo('CT', 1)] };
+  const meta = { requestId: 'captura-estable', observador: 'Ana', fuente: 'foto', foto: { campos: { serial: 'DEMO-123' } } };
+  const primero = b.guardar(borrador, meta);
+  assert.deepEqual(b.guardar(borrador, meta), primero);
+  const reabierta = new Base(ruta);
+  assert.deepEqual(reabierta.guardar(borrador, meta), primero);
+  assert.equal(reabierta.observaciones().length, 2);
+  assert.equal(reabierta.observaciones()[0].fuente, 'foto');
+  assert.equal(reabierta.observaciones()[0].foto.campos.serial, 'DEMO-123');
+  assert.throws(() => reabierta.guardar({ ...borrador, equipment: [grupo('MR', 9)] }, meta), /otros datos/);
 });
