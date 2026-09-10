@@ -4,7 +4,7 @@
 
 | Paquete | Versión | Licencia | Uso |
 |---|---|---|---|
-| `@qvac/sdk` | **0.18.2** (fijada) | ver paquete | Toda la inferencia: LLM, ASR, visión, embeddings, delegación P2P |
+| `@qvac/sdk` | **0.18.2** (fijada) | ver paquete | Toda la inferencia: LLM, ASR, TTS, visión, embeddings, delegación P2P |
 
 ### Pila P2P que arrastra el SDK (Holepunch / Pear)
 
@@ -29,8 +29,9 @@ ejecutan en las demostraciones. Se completa a medida que cada módulo los incorp
 |---|---|---|---|
 | `QWEN3_1_7B_INST_Q4` | Qwen3-1.7B Instruct | Q4_0 | Laptop (RTX 4060, Vulkan) como nodo y como proveedor P2P; Mac (M5 Max, Metal) como proveedor P2P en otra casa |
 | `QWEN3_600M_INST_Q4` | Qwen3-0.6B Instruct | Q4_0 | Teléfono (HONOR X6s, CPU Cortex-A53) como respaldo a bordo; hoy no carga en ese aparato, ver `evidencia/medicion-telefono-9sep.md` |
+| `TTS_MULTILINGUAL_SUPERTONIC2_Q8_0` | Supertonic 2 multilingüe, voz F1 en español | Q8_0 | Laptop (RTX 4060, Vulkan); lectura voluntaria en Philips y Sucursal |
 | `WHISPER_LARGE_V3_TURBO` | Whisper large-v3 turbo | — | Laptop (RTX 4060) |
-| `EMBEDDINGGEMMA_300M_Q8_0` | EmbeddingGemma 300M | Q8_0 | Laptop; recuperación semántica de la guía de sucursal |
+| `EMBEDDINGGEMMA_300M_Q8_0` | EmbeddingGemma 300M | Q8_0 | Laptop; experimento de recuperación semántica, no usado por la recuperación léxica actual de Sucursal |
 | `VISIONPSY_NANO_460M_MULTIMODAL_Q8_0` + `MMPROJ_VISIONPSY_NANO_460M_MULTIMODAL_Q8_0` | VisionPsy Nano 460M (Apache 2.0, familia Psy de QVAC) | Q8_0 | Laptop (RTX 4060, Vulkan); transcribe la placa del módulo Philips |
 
 ## Hardware declarado
@@ -39,7 +40,7 @@ ejecutan en las demostraciones. Se completa a medida que cada módulo los incorp
 |---|---|---|
 | Laptop | Fedora Linux, Intel + NVIDIA RTX 4060 8 GB (Vulkan), 31 GB RAM, Node 24.14.1 | Nodo de sitio, proveedor P2P para el teléfono, consumidor P2P de la Mac |
 | Teléfono | HONOR X6s, Android 14, 3.7 GB RAM, 8× Cortex-A53 | Captura; SDK local por Termux (Bare) |
-| Nodo remoto | MacBook Pro, Apple M5 Max (18 núcleos, GPU de 40), 128 GB, macOS 26.4, Metal, Node 24.14.1, en otra casa | Proveedor P2P del producto (`src/puente/proveedor.js`, Qwen3-1.7B), solo para el módulo Equipos |
+| Nodo remoto | MacBook Pro, Apple M5 Max (18 núcleos, GPU de 40), 128 GB, macOS 26.4, Metal, Node 24.14.1, en otra casa | Proveedor P2P del producto (`src/puente/proveedor.js`, Qwen3-1.7B), para lenguaje de Equipos y Sucursal |
 
 ## Otros
 

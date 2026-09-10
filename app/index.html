@@ -241,6 +241,7 @@
       <button type="button" id="guardarParcial" class="menor">Guardar con datos pendientes</button>
     </div>
     <div id="fotoRevision" role="status" aria-live="polite"></div>
+    <div id="lecturaVoz" style="margin:16px 0" hidden></div>
     <div id="preg"></div>
     <details id="detalles">
       <summary>Última inferencia · detalles técnicos</summary>
@@ -256,8 +257,10 @@
 </div>
 
 <script type="module">
+import { crearLectura } from "/lectura.js";
 import { revision, incorporarPlaca } from "/revision.js";
 const $ = s => document.querySelector(s);
+const lectura = crearLectura($('#lecturaVoz'));
 const estado = { texto: '', borrador: null, respuestas: {}, id: null, directo: null, ms: 0, fila: null, dups: [], fuente: 'texto', foto: null, capturaId: crypto.randomUUID() };
 let escrituraEdicion = Promise.resolve();
 let editandoRelato = false, aplicandoRelato = false, admiteFoto = true;
@@ -704,6 +707,8 @@ function pintar(r) {
   $('#guardarParcial').disabled = !(r.borrador.customer?.name && r.borrador.equipment?.length);
   // una pregunta a la vez
   const q = (r.preguntas ?? [])[0];
+  const resumenVoz = `${c.name ?? 'Hospital por confirmar'}. ` + (r.borrador.equipment ?? []).map(g => `${g.quantity ?? 'Cantidad desconocida'} ${MODALIDAD_ES[g.modality] ?? 'equipos'}. Marca: ${g.manufacturer ?? 'desconocida'}. Modelo: ${g.model ?? 'desconocido'}.`).join(' ');
+  lectura.actualizar(q?.texto ?? resumenVoz, q ? 'Escuchar pregunta' : 'Escuchar resumen', !editandoRelato && !leyendoFoto);
   $('#preg').dataset.clave = q?.clave ?? '';
   if (q) {
     const faltan = r.preguntas.length - 1;
@@ -771,12 +776,15 @@ async function guardarInterno() {
     $('#accion').textContent = 'Reintentar guardar'; $('#accion').disabled = false;
     return;
   } finally { guardando = false; }
+  lectura.actualizar('Visita guardada. Puedes verificar el acta o iniciar otra visita.', 'Escuchar confirmación');
   visitaGuardada = true; $('#fotoRevisar').classList.add('oculto'); $('#barra').classList.remove('en-revision');
+  const controlLectura = $('#lecturaVoz');
   $('#p2').innerHTML = `<div class="dicho"><b>Visita guardada.</b><br>${r.eventos} observación(es) selladas.
     <div class="tec">acta ${r.acta.sello.hash.slice(0, 24)}…\nfirmada por ${esc(r.acta.sello.firmante)}</div></div>
     <div class="losas" style="grid-template-columns:1fr">
       <a class="losa" style="color:inherit;text-decoration:none" href="/verificar#acta=${aB64url(JSON.stringify(r.acta))}"><span>✓</span>Verificar esta acta</a>
     </div>`;
+  $('#p2').append(controlLectura);
   // Si quedaron capturas esperando, el botón lleva a la siguiente en vez de dejarlas ahí.
   const quedan = (await cola()).length;
   $('#accion').textContent = quedan ? `Seguir con la siguiente (${quedan})` : 'Nueva visita';

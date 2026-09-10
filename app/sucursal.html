@@ -188,6 +188,8 @@
     <div id="listaAtenciones" role="status" aria-live="polite"></div>
   </details>
 
+  <div id="lecturaSucursal" style="margin:16px 0" hidden></div>
+
   <!-- 1 · preguntarle al agente -->
   <section id="p1">
     <div class="captura">
@@ -221,6 +223,7 @@
 </div>
 
 <script type="module">
+import { crearLectura } from "/lectura.js";
 const $ = s => document.querySelector(s);
 // Todo el contenido del modelo y de la guía entra por textContent. Nunca innerHTML.
 const el = (tag, props = {}, ...hijos) => {
@@ -237,6 +240,7 @@ const el = (tag, props = {}, ...hijos) => {
 };
 const limpiar = n => { while (n.firstChild) n.removeChild(n.firstChild); return n; };
 const ESTADOS = { abierto: 'Abierto', en_proceso: 'En proceso', cerrado: 'Cerrado' };
+const lecturaSucursal = crearLectura($('#lecturaSucursal'));
 const app = { texto: '', respuesta: null, consultaId: null, expediente: null, acta: null, modelo: '', vista: 'consulta' };
 
 let operacionesSucursal = 0;
@@ -375,6 +379,7 @@ $('#consulta').oninput = () => { if (app.vista === 'consulta') $('#accion').disa
 
 // ── la barra de abajo lleva SIEMPRE la acción del paso en que va el cajero ──
 function barra(vista) {
+  if (vista === 'consulta') lecturaSucursal.actualizar('');
   app.vista = vista;
   const b = $('#accion'), v = $('#volver');
   v.classList.toggle('oculto', vista === 'consulta');
@@ -432,6 +437,10 @@ const esAdvertencia = l => !esPaso(l) && !l.trim().startsWith('|') && !l.trim().
   && /^(no |sin |si |una |ninguna |abstenerse|el asistente|el cierre|cerrar )/i.test(l.trim());
 
 function pintarRespuesta(r) {
+  const vozRespuesta = r.cubierto
+    ? 'Guía de demostración. ' + (r.citas?.[0]?.seccion ?? '') + '. ' + (r.pasos ?? []).filter(l => esPaso(l) || esAdvertencia(l)).map(sinNumero).join(' ')
+    : 'La consulta no tiene respaldo en la guía. Puedes documentarla para seguimiento. No se ha autorizado ninguna transacción.';
+  lecturaSucursal.actualizar(vozRespuesta, 'Escuchar respuesta');
   const caja = limpiar($('#respuesta'));
   $('#p1').classList.add('oculto'); $('#p3').classList.add('oculto'); $('#p2').classList.remove('oculto');
   window.scrollTo({ top: 0 });
@@ -491,6 +500,9 @@ function pintarRespuesta(r) {
     el('pre', { class: 'seccion', text: r.citas?.[0]?.texto ?? '' })));
   tarjeta.append(el('p', { class: 'pie', text: pieTecnico(r) }));
   caja.append(tarjeta);
+  // Lee lo que muestra la tarjeta, incluidos el monto, su alcance y las advertencias.
+  const textoVisible = [...tarjeta.children].filter(n => !n.matches('.quien-responde, .dicho, .pie, details')).map(n => n.innerText).join('. ');
+  lecturaSucursal.actualizar('Guía de demostración. ' + textoVisible, 'Escuchar respuesta');
   barra('respuesta');
 }
 const lugarEjecucion = r => r.modo === 'delegado' ? 'en el par QVAC' : r.modo === 'local' ? 'en este nodo' : 'ejecución no informada';
@@ -523,6 +535,7 @@ const CAMPOS = [
 ];
 
 function pintarExpediente(exp) {
+  lecturaSucursal.actualizar(exp.estado === 'cerrado' ? 'Atención cerrada. El acta está disponible para verificar o descargar.' : '', 'Escuchar confirmación');
   const sinGuardar = {};
   if (app.expediente?.id === exp.id) for (const [campo] of CAMPOS) { const input = $(`#c-${campo}`); if (input && input.value !== String(app.expediente.datos?.[campo] ?? '')) sinGuardar[campo] = input.value; }
   app.expediente = exp;

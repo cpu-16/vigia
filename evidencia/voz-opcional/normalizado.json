@@ -1,0 +1,80 @@
+[
+  {
+    "modelo": "supertonic2-q8",
+    "solicitado": "gpu",
+    "frases": [
+      {
+        "texto": "Confirmaste tres resonadores. Queda pendiente la marca del tomógrafo.",
+        "texto_sintetizado": "Confirmaste tres resonadores. Queda pendiente la marca del tomógrafo.",
+        "archivo": "evidencia/voz-opcional/supertonic2-q8-gpu-normalizado-0.wav",
+        "ms": 192,
+        "duracion_s": 5.073718820861678,
+        "pico": 7572,
+        "clipping": 0,
+        "asr": {
+          "texto": "Confirmaste tres resonadores. Queda pendiente la marca del tomógrafo.",
+          "ms": 874,
+          "segundos": 5.07375,
+          "pico": -1.0601402473808685,
+          "silencio": false,
+          "id": "V-5963"
+        }
+      },
+      {
+        "texto": "El monto de B/. 80.00 es documental. Esta aplicación no autoriza retiros.",
+        "texto_sintetizado": "El monto de 80 balboas es documental. Esta aplicación no autoriza retiros.",
+        "archivo": "evidencia/voz-opcional/supertonic2-q8-gpu-normalizado-1.wav",
+        "ms": 145,
+        "duracion_s": 5.859047619047619,
+        "pico": 8312,
+        "clipping": 0,
+        "asr": {
+          "texto": "El monto de 80 balboas es documental. Esta aplicación no autoriza retiros.",
+          "ms": 883.2,
+          "segundos": 5.8590625,
+          "pico": -1.6640479338223477,
+          "silencio": false,
+          "id": "V-22DD"
+        }
+      },
+      {
+        "texto": "El equipo tiene entre siete y nueve años. La fecha de observación es el nueve de septiembre de dos mil veintiséis.",
+        "texto_sintetizado": "El equipo tiene entre siete y nueve años. La fecha de observación es el nueve de septiembre de dos mil veintiséis.",
+        "archivo": "evidencia/voz-opcional/supertonic2-q8-gpu-normalizado-2.wav",
+        "ms": 205,
+        "duracion_s": 8.516054421768708,
+        "pico": 9528,
+        "clipping": 0,
+        "asr": {
+          "texto": "El equipo tiene entre 7 y 9 años. La fecha de observación es el 9 de septiembre de 2026.",
+          "ms": 912.2,
+          "segundos": 8.5160625,
+          "pico": -1.2564056667540089,
+          "silencio": false,
+          "id": "V-EF29"
+        }
+      },
+      {
+        "texto": "¿Lo viste directamente o te lo contaron?",
+        "texto_sintetizado": "¿Lo viste directamente o te lo contaron?",
+        "archivo": "evidencia/voz-opcional/supertonic2-q8-gpu-normalizado-3.wav",
+        "ms": 102,
+        "duracion_s": 2.9419274376417235,
+        "pico": 9860,
+        "clipping": 0,
+        "asr": {
+          "texto": "¿Lo viste directamente o te lo contaron?",
+          "ms": 857.3,
+          "segundos": 2.9419375,
+          "pico": -10.271729445343878,
+          "silencio": false,
+          "id": "V-02EB"
+        }
+      }
+    ],
+    "carga_ms": 1449,
+    "vram_antes_mib": 4443,
+    "vram_cargado_mib": 4600,
+    "rss_arbol_max_mib": 819
+  }
+]

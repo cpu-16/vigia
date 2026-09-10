@@ -26,7 +26,7 @@ Caja ya dispone de [A.N.D.R.E.A.](https://www.cajadeahorros.com.pa/andrea/) para
 
 **Ovnicom:** el agente consumidor ya existe. Un RAG de procedimientos operativos puede orientar investigaciones futuras, pero no es necesario para detectar, explicar y enviar las señales actuales.
 
-**Voz de salida:** [QVAC soporta TTS](https://docs.qvac.tether.io/ai-capabilities/text-to-speech/). No se añadió un motor nuevo a esta demo. Puede aportar accesibilidad o uso con manos ocupadas; requiere validar calidad en español, consumo y control explícito de reproducción en espacios sensibles. No es obligatorio para estos tracks. Whisper sí transcribe mediante QVAC. No se afirma que una voz del navegador corra localmente ni que sea QVAC.
+**Voz de salida:** lectura opcional integrada con Supertonic 2 Q8 mediante QVAC en la RTX 4060. Philips permite escuchar preguntas y resúmenes; Sucursal lee la respuesta visible con su alcance y advertencias. No reproduce automáticamente y se puede detener. Se verificaron inteligibilidad mediante Whisper, reproducción en navegador y consumo; no se realizó una evaluación auditiva humana comparativa. [Mediciones y límites](../evidencia/voz-opcional/RESULTADOS.md). Sin acceso al nodo, la web conserva el texto y avisa de que la lectura no está disponible.
 
 No se añadió un agente autónomo que autorice pagos o cambios de inventario. Las acciones con consecuencias siguen siendo confirmaciones humanas. Los modelos y guardas tienen trabajos delimitados.
 

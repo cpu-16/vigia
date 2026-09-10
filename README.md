@@ -45,6 +45,10 @@ publica una URL HTTPS para que la interfaz se abra desde un navegador cualquiera
 clave de equipo (`CLAVE`). Un navegador no habla el DHT; los nodos sí, y es entre nodos donde
 ocurre el cómputo. Apagar Tailscale no cambia dónde se infiere: solo deja de haber URL pública.
 
+## Lectura en voz opcional
+
+Philips y Sucursal incluyen «Escuchar» y «Detener», con Supertonic 2 Q8 en la RTX 4060 mediante QVAC. Se carga al primer uso; la lectura no usa la Mac ni una API de inferencia en la nube. [Comparación de modelos y pruebas](evidencia/voz-opcional/RESULTADOS.md).
+
 ## Grabación y estado del producto
 
 [Guion de 4:50 listo para grabar](docs/GUION-GRABACION.md) · [Mejoras, investigación, RAG, voz y funcionamiento sin internet](docs/PRODUCTO-Y-LIMITES.md). La verificación final incluye cierre de Sucursal y comienzo de otra atención, exportación filtrada y acta verificada sin red.

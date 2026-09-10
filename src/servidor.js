@@ -9,6 +9,7 @@ import { tmpdir } from 'node:os';
 import { randomBytes } from 'node:crypto';
 import { QWEN3_1_7B_INST_Q4, QWEN3_600M_INST_Q4, WHISPER_LARGE_V3_TURBO } from '@qvac/sdk';
 import { cargar, descargar } from './core/runtime.js';
+import { crearSintesis } from './core/sintesis.js';
 import { cargarVoz, dictar } from './core/voz.js';
 import { llaveNodo, sellar, verificar } from './core/sello.js';
 import { RUTA as RUTA_RENDIMIENTO, RUN_ID, sinContenido } from './core/rendimiento.js';
@@ -22,6 +23,7 @@ import { Base } from './equipos/almacen.js';
 import { manejarSucursal, contextoSucursal } from './sucursal/http.js';
 import { crearEjecutor } from './puente/respaldo.js';
 
+const sintesis = crearSintesis();
 const PUERTO = Number(process.env.PUERTO ?? 7320);
 const APP = resolve('app');
 const PLACAS = resolve('fixtures/placas');
@@ -73,7 +75,7 @@ async function arrancar() {
 
 const json = (res, obj, code = 200) => { res.writeHead(code, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }); res.end(JSON.stringify(obj)); };
 const cuerpo = async (req, max = 12e6) => { const p = []; let n = 0; for await (const c of req) { n += c.length; if (n > max) throw new Error('cuerpo muy grande'); p.push(c); } return Buffer.concat(p); };
-const cuerpoJson = async req => JSON.parse((await cuerpo(req)).toString('utf8') || '{}');
+const cuerpoJson = async (req, max) => JSON.parse((await cuerpo(req, max)).toString('utf8') || '{}');
 const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8', '.webmanifest': 'application/manifest+json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg' };
 
@@ -221,6 +223,18 @@ const servidor = createServer(async (req, res) => {
     }
     if (req.method === 'GET' && ruta === '/api/sin-verificar') return json(res, sinVerificar(base.inventario()));
 
+    if (req.method === 'GET' && ruta === '/api/hablar') return json(res, sintesis.estado());
+    if (req.method === 'POST' && ruta === '/api/hablar') {
+      try {
+        const { texto } = await cuerpoJson(req, 4096);
+        const audio = await sintesis.hablar(texto);
+        if (res.destroyed) return;
+        res.writeHead(200, { 'content-type': 'audio/wav', 'cache-control': 'no-store', 'content-length': audio.wav.length,
+          'x-vigia-modelo': 'Supertonic2-Q8-GPU', 'x-vigia-ms': String(audio.ms), 'x-vigia-cache': String(audio.cache) });
+        return res.end(audio.wav);
+      } catch (e) { return json(res, { error: e.message }, e.status ?? 503); }
+    }
+
     // ── consulta ──
     if (req.method === 'GET' && ruta === '/api/inventario') return json(res, base.inventario());
     if (req.method === 'GET' && ruta === '/api/cliente360') return json(res, base.cliente360(url.searchParams.get('nombre') ?? ''));
@@ -272,6 +286,7 @@ function modelosPorTarea() {
       hardware: voz?.hardware ?? 'laptop-cpu', modo: vozLista ? 'local' : 'no cargado' },
     { tarea: 'lenguaje', modelo: llm?.etiqueta ?? MODELO_ETIQUETA,
       hardware: llm?.delegado ? `par ${PROVEEDOR.slice(0, 8)}… (otro equipo)` : (llm?.hardware ?? 'laptop-rtx4060'), modo },
+    { tarea: 'lectura', modelo: sintesis.estado().modelo, hardware: sintesis.estado().hardware, modo: sintesis.estado().cargado ? 'local' : 'local · carga al escuchar' },
     { tarea: 'visión', modelo: vista?.etiqueta ?? 'VisionPsy Nano 460M Q8_0',
       hardware: vista?.hardware ?? 'laptop-rtx4060', modo: vista ? 'local' : 'no cargado (arranca con VISION=1)' },
   ];
@@ -293,4 +308,4 @@ function dupsDe(b) {
 
 await arrancar();
 servidor.listen(PUERTO, process.env.ESCUCHAR ?? '127.0.0.1', () => console.log(`▸ Vigía en http://localhost:${PUERTO}  ·  tablero en /tablero`));
-process.on('SIGINT', async () => { if (llm) await descargar(llm); process.exit(0); });
+process.on('SIGINT', async () => { await sintesis.cerrar(); if (llm) await descargar(llm); process.exit(0); });

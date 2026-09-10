@@ -1,0 +1,17 @@
+## Hallazgo (1)
+
+**`app/lectura.js:31-32` + `src/core/sintesis.js:15` — una lectura larga se cae a mitad y no se reanuda cuando otro cliente pide voz.**
+
+Condición reproducible, sin edición de código:
+
+1. Pestaña A abre `/sucursal`, obtiene una respuesta larga (>450 caracteres → varios bloques) y pulsa **Escuchar**. El bloque 1 empieza a reproducirse; el bloque 2 no se pide hasta que termine (`await` de `onended`, línea 36-41), o sea segundos después.
+2. Durante esa ventana, pestaña B (u otro cajero contra el mismo nodo compartido) pulsa **Escuchar** sobre otro texto. `hablar()` ve `ocupado === true` y responde 429.
+3. Cuando A pide el bloque 2 mientras B todavía sintetiza, A recibe el 429 → `!r.ok` → `throw` → `catch` → `parar()`. La lectura de A **muere en el bloque 2** con «Lectura no disponible: El nodo está generando otra lectura…» y no reanuda sola: al volver a pulsar Escuchar arranca desde el bloque 1, no desde donde se cortó.
+
+El mismo 429 aparece con un solo usuario: **Detener** y volver a **Escuchar** enseguida, porque abortar el `fetch` no cancela la síntesis en el servidor — `ocupado` sigue en `true` hasta que la GPU termina, y el texto aún no está en cache.
+
+El 429 es la única respuesta que el cliente no reintenta ni encola.
+
+## Lo demás que revisé y no dio fallo
+
+`parar()`/`version` blindan el audio tardío y el cambio de contexto; `#lecturaVoz` sobrevive al `innerHTML` de `#p2` (`index.html:781-787`); el bloqueo por `editandoRelato`/`leyendoFoto` propaga bien a `permitido`; `crearWav` cuadra con el PCM real — leí `evidencia/voz-opcional/sin-red.wav`: 44.1 kHz mono 16-bit, pico −6824/+5306, no silencio.

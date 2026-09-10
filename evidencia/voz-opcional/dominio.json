@@ -1,0 +1,150 @@
+[
+  {
+    "modelo": "supertonic3-q8",
+    "solicitado": "gpu",
+    "frases": [
+      {
+        "texto": "Confirmaste tres resonadores. Queda pendiente la marca del tomógrafo.",
+        "archivo": "evidencia/voz-opcional/supertonic3-q8-gpu-dominio-0.wav",
+        "ms": 333,
+        "duracion_s": 5.266734693877551,
+        "pico": 13872,
+        "clipping": 0,
+        "asr": {
+          "texto": "Confirmaste tres resonadores. Queda pendiente la marca del tomógrafo.",
+          "ms": 876.3,
+          "segundos": 5.26675,
+          "pico": -1.2154545947866797,
+          "silencio": false,
+          "id": "V-321B"
+        }
+      },
+      {
+        "texto": "El monto de B/. 80.00 es documental. Esta aplicación no autoriza retiros.",
+        "archivo": "evidencia/voz-opcional/supertonic3-q8-gpu-dominio-1.wav",
+        "ms": 288,
+        "duracion_s": 6.554875283446712,
+        "pico": 11216,
+        "clipping": 0,
+        "asr": {
+          "texto": "El monto de eBay o Intensas es documental. Esta aplicación no autoriza retiros.",
+          "ms": 887.7,
+          "segundos": 6.554875,
+          "pico": -0.759627671093839,
+          "silencio": false,
+          "id": "V-B25C"
+        }
+      },
+      {
+        "texto": "El equipo tiene entre siete y nueve años. La fecha de observación es el nueve de septiembre de dos mil veintiséis.",
+        "archivo": "evidencia/voz-opcional/supertonic3-q8-gpu-dominio-2.wav",
+        "ms": 324,
+        "duracion_s": 8.095850340136055,
+        "pico": 11464,
+        "clipping": 0,
+        "asr": {
+          "texto": "El equipo tiene entre siete y nueve años. La fecha de observación es el 9 de septiembre de 2026.",
+          "ms": 917.8,
+          "segundos": 8.095875,
+          "pico": -0.8524075649402427,
+          "silencio": false,
+          "id": "V-EDDF"
+        }
+      },
+      {
+        "texto": "¿Lo viste directamente o te lo contaron?",
+        "archivo": "evidencia/voz-opcional/supertonic3-q8-gpu-dominio-3.wav",
+        "ms": 387,
+        "duracion_s": 2.614512471655329,
+        "pico": 9722,
+        "clipping": 0,
+        "asr": {
+          "texto": "¿Lo viste directamente o te lo contaron?",
+          "ms": 853.9,
+          "segundos": 2.6145,
+          "pico": -7.851580241905648,
+          "silencio": false,
+          "id": "V-AC47"
+        }
+      }
+    ],
+    "carga_ms": 1367,
+    "vram_antes_mib": 4443,
+    "vram_cargado_mib": 4673,
+    "rss_arbol_max_mib": 894
+  },
+  {
+    "modelo": "supertonic2-q8",
+    "solicitado": "gpu",
+    "frases": [
+      {
+        "texto": "Confirmaste tres resonadores. Queda pendiente la marca del tomógrafo.",
+        "archivo": "evidencia/voz-opcional/supertonic2-q8-gpu-dominio-0.wav",
+        "ms": 179,
+        "duracion_s": 5.073718820861678,
+        "pico": 7572,
+        "clipping": 0,
+        "asr": {
+          "texto": "Confirmaste tres resonadores. Queda pendiente la marca del tomógrafo.",
+          "ms": 874,
+          "segundos": 5.07375,
+          "pico": -1.0601402473808685,
+          "silencio": false,
+          "id": "V-0E58"
+        }
+      },
+      {
+        "texto": "El monto de B/. 80.00 es documental. Esta aplicación no autoriza retiros.",
+        "archivo": "evidencia/voz-opcional/supertonic2-q8-gpu-dominio-1.wav",
+        "ms": 185,
+        "duracion_s": 6.149954648526077,
+        "pico": 7076,
+        "clipping": 0,
+        "asr": {
+          "texto": "El monto de B. 80 taseros es documental. Esta aplicación no autoriza retiros.",
+          "ms": 906.2,
+          "segundos": 6.1499375,
+          "pico": -1.0284529771866864,
+          "silencio": false,
+          "id": "V-5FFE"
+        }
+      },
+      {
+        "texto": "El equipo tiene entre siete y nueve años. La fecha de observación es el nueve de septiembre de dos mil veintiséis.",
+        "archivo": "evidencia/voz-opcional/supertonic2-q8-gpu-dominio-2.wav",
+        "ms": 213,
+        "duracion_s": 8.516054421768708,
+        "pico": 9528,
+        "clipping": 0,
+        "asr": {
+          "texto": "El equipo tiene entre 7 y 9 años. La fecha de observación es el 9 de septiembre de 2026.",
+          "ms": 907,
+          "segundos": 8.5160625,
+          "pico": -1.2564056667540089,
+          "silencio": false,
+          "id": "V-51C4"
+        }
+      },
+      {
+        "texto": "¿Lo viste directamente o te lo contaron?",
+        "archivo": "evidencia/voz-opcional/supertonic2-q8-gpu-dominio-3.wav",
+        "ms": 113,
+        "duracion_s": 2.9419274376417235,
+        "pico": 9860,
+        "clipping": 0,
+        "asr": {
+          "texto": "¿Lo viste directamente o te lo contaron?",
+          "ms": 856.3,
+          "segundos": 2.9419375,
+          "pico": -10.271729445343878,
+          "silencio": false,
+          "id": "V-2C0F"
+        }
+      }
+    ],
+    "carga_ms": 1527,
+    "vram_antes_mib": 4443,
+    "vram_cargado_mib": 4600,
+    "rss_arbol_max_mib": 869
+  }
+]

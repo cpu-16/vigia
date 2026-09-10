@@ -1,0 +1,338 @@
+[
+  {
+    "modelo": "supertonic3-q8",
+    "solicitado": "cpu",
+    "frases": [
+      {
+        "texto": "¿Cuántos equipos viste? Puedes añadir una foto de la placa para completar el modelo y la serie.",
+        "archivo": "evidencia/voz-opcional/supertonic3-q8-cpu-0.wav",
+        "ms": 1540,
+        "duracion_s": 6.7332426303854875,
+        "pico": 11580,
+        "clipping": 0,
+        "asr": {
+          "texto": "¿Cuántos equipos viste? Puedes añadir una foto de la placa para completar el modelo y la serie.",
+          "ms": 1109.5,
+          "segundos": 6.73325,
+          "pico": -0.7327645201580529,
+          "silencio": false,
+          "id": "V-9673"
+        }
+      },
+      {
+        "texto": "La consulta no tiene respaldo en la guía. Puedes documentarla para seguimiento. No se ha autorizado ninguna transacción.",
+        "archivo": "evidencia/voz-opcional/supertonic3-q8-cpu-1.wav",
+        "ms": 2009,
+        "duracion_s": 8.937052154195012,
+        "pico": 13445,
+        "clipping": 0,
+        "asr": {
+          "texto": "La consulta no tiene respaldo en la guía, puedes documentarla para seguimiento, no se ha autorizado ninguna transacción.",
+          "ms": 915.8,
+          "segundos": 8.9370625,
+          "pico": -0.9719427439164291,
+          "silencio": false,
+          "id": "V-7457"
+        }
+      }
+    ],
+    "carga_ms": 1234,
+    "vram_antes_mib": 4443,
+    "vram_cargado_mib": 4443,
+    "rss_arbol_max_mib": 1334
+  },
+  {
+    "modelo": "supertonic3-q8",
+    "solicitado": "gpu",
+    "frases": [
+      {
+        "texto": "¿Cuántos equipos viste? Puedes añadir una foto de la placa para completar el modelo y la serie.",
+        "archivo": "evidencia/voz-opcional/supertonic3-q8-gpu-0.wav",
+        "ms": 5367,
+        "duracion_s": 6.733378684807256,
+        "pico": 11456,
+        "clipping": 0,
+        "asr": {
+          "texto": "¿Cuántos equipos viste? Puedes añadir una foto de la placa para completar el modelo y la serie.",
+          "ms": 1026,
+          "segundos": 6.733375,
+          "pico": -0.7929608442798554,
+          "silencio": false,
+          "id": "V-3353"
+        }
+      },
+      {
+        "texto": "La consulta no tiene respaldo en la guía. Puedes documentarla para seguimiento. No se ha autorizado ninguna transacción.",
+        "archivo": "evidencia/voz-opcional/supertonic3-q8-gpu-1.wav",
+        "ms": 2043,
+        "duracion_s": 8.938185941043084,
+        "pico": 13390,
+        "clipping": 0,
+        "asr": {
+          "texto": "La consulta no tiene respaldo en la guía, puedes documentarla para seguimiento, no se ha autorizado ninguna transacción.",
+          "ms": 908.3,
+          "segundos": 8.9381875,
+          "pico": -0.9328983249536593,
+          "silencio": false,
+          "id": "V-E124"
+        }
+      }
+    ],
+    "carga_ms": 1176,
+    "vram_antes_mib": 4443,
+    "vram_cargado_mib": 4673,
+    "rss_arbol_max_mib": 993
+  },
+  {
+    "modelo": "supertonic2-q4",
+    "solicitado": "cpu",
+    "frases": [
+      {
+        "texto": "¿Cuántos equipos viste? Puedes añadir una foto de la placa para completar el modelo y la serie.",
+        "archivo": "evidencia/voz-opcional/supertonic2-q4-cpu-0.wav",
+        "ms": 716,
+        "duracion_s": 6.718639455782313,
+        "pico": 9196,
+        "clipping": 0,
+        "asr": {
+          "texto": "¿Cuántos equipos viste? Puedes añadir una foto de la placa para completar el modelo y la serie.",
+          "ms": 1216.2,
+          "segundos": 6.718625,
+          "pico": -1.303092551141666,
+          "silencio": false,
+          "id": "V-1239"
+        }
+      },
+      {
+        "texto": "La consulta no tiene respaldo en la guía. Puedes documentarla para seguimiento. No se ha autorizado ninguna transacción.",
+        "archivo": "evidencia/voz-opcional/supertonic2-q4-cpu-1.wav",
+        "ms": 889,
+        "duracion_s": 8.652857142857142,
+        "pico": 8036,
+        "clipping": 0,
+        "asr": {
+          "texto": "La consulta no tiene respaldo en la guía. Puedes documentarla para seguimiento. No se ha autorizado ninguna transacción.",
+          "ms": 940.2,
+          "segundos": 8.652875,
+          "pico": -0.963645915602782,
+          "silencio": false,
+          "id": "V-A6B2"
+        }
+      }
+    ],
+    "carga_ms": 8007,
+    "vram_antes_mib": 4443,
+    "vram_cargado_mib": 4443,
+    "rss_arbol_max_mib": 1236
+  },
+  {
+    "modelo": "supertonic2-q4",
+    "solicitado": "gpu",
+    "frases": [
+      {
+        "texto": "¿Cuántos equipos viste? Puedes añadir una foto de la placa para completar el modelo y la serie.",
+        "archivo": "evidencia/voz-opcional/supertonic2-q4-gpu-0.wav",
+        "ms": 232,
+        "duracion_s": 6.7194557823129255,
+        "pico": 9216,
+        "clipping": 0,
+        "asr": {
+          "texto": "¿Cuántos equipos viste? Puedes añadir una foto de la placa para completar el modelo y la serie.",
+          "ms": 911.5,
+          "segundos": 6.7194375,
+          "pico": -1.3055567207069192,
+          "silencio": false,
+          "id": "V-D04F"
+        }
+      },
+      {
+        "texto": "La consulta no tiene respaldo en la guía. Puedes documentarla para seguimiento. No se ha autorizado ninguna transacción.",
+        "archivo": "evidencia/voz-opcional/supertonic2-q4-gpu-1.wav",
+        "ms": 208,
+        "duracion_s": 8.653401360544217,
+        "pico": 8264,
+        "clipping": 0,
+        "asr": {
+          "texto": "La consulta no tiene respaldo en la guía. Puedes documentarla para seguimiento. No se ha autorizado ninguna transacción.",
+          "ms": 918.2,
+          "segundos": 8.6534375,
+          "pico": -0.9447114438233613,
+          "silencio": false,
+          "id": "V-4912"
+        }
+      }
+    ],
+    "carga_ms": 1242,
+    "vram_antes_mib": 4443,
+    "vram_cargado_mib": 4600,
+    "rss_arbol_max_mib": 805
+  },
+  {
+    "modelo": "supertonic2-q8",
+    "solicitado": "cpu",
+    "frases": [
+      {
+        "texto": "¿Cuántos equipos viste? Puedes añadir una foto de la placa para completar el modelo y la serie.",
+        "archivo": "evidencia/voz-opcional/supertonic2-q8-cpu-0.wav",
+        "ms": 692,
+        "duracion_s": 6.727528344671202,
+        "pico": 9322,
+        "clipping": 0,
+        "asr": {
+          "texto": "¿Cuántos equipos viste? Puedes añadir una foto de la placa para completar el modelo y la serie.",
+          "ms": 1229.9,
+          "segundos": 6.7275625,
+          "pico": -1.3086379160702215,
+          "silencio": false,
+          "id": "V-FB1B"
+        }
+      },
+      {
+        "texto": "La consulta no tiene respaldo en la guía. Puedes documentarla para seguimiento. No se ha autorizado ninguna transacción.",
+        "archivo": "evidencia/voz-opcional/supertonic2-q8-cpu-1.wav",
+        "ms": 838,
+        "duracion_s": 8.656643990929705,
+        "pico": 7966,
+        "clipping": 0,
+        "asr": {
+          "texto": "La consulta no tiene respaldo en la guía. Puedes documentarla para seguimiento. No se ha autorizado ninguna transacción.",
+          "ms": 935.3,
+          "segundos": 8.656625,
+          "pico": -0.947371611157124,
+          "silencio": false,
+          "id": "V-4100"
+        }
+      }
+    ],
+    "carga_ms": 11210,
+    "vram_antes_mib": 4443,
+    "vram_cargado_mib": 4443,
+    "rss_arbol_max_mib": 1119
+  },
+  {
+    "modelo": "supertonic2-q8",
+    "solicitado": "gpu",
+    "frases": [
+      {
+        "texto": "¿Cuántos equipos viste? Puedes añadir una foto de la placa para completar el modelo y la serie.",
+        "archivo": "evidencia/voz-opcional/supertonic2-q8-gpu-0.wav",
+        "ms": 231,
+        "duracion_s": 6.727777777777778,
+        "pico": 9344,
+        "clipping": 0,
+        "asr": {
+          "texto": "¿Cuántos equipos viste? Puedes añadir una foto de la placa para completar el modelo y la serie.",
+          "ms": 939,
+          "segundos": 6.7278125,
+          "pico": -1.325295284640665,
+          "silencio": false,
+          "id": "V-EF9B"
+        }
+      },
+      {
+        "texto": "La consulta no tiene respaldo en la guía. Puedes documentarla para seguimiento. No se ha autorizado ninguna transacción.",
+        "archivo": "evidencia/voz-opcional/supertonic2-q8-gpu-1.wav",
+        "ms": 192,
+        "duracion_s": 8.65655328798186,
+        "pico": 7916,
+        "clipping": 0,
+        "asr": {
+          "texto": "La consulta no tiene respaldo en la guía. Puedes documentarla para seguimiento. No se ha autorizado ninguna transacción.",
+          "ms": 917.3,
+          "segundos": 8.6565625,
+          "pico": -1.1987020452737778,
+          "silencio": false,
+          "id": "V-8587"
+        }
+      }
+    ],
+    "carga_ms": 1364,
+    "vram_antes_mib": 4443,
+    "vram_cargado_mib": 4600,
+    "rss_arbol_max_mib": 957
+  },
+  {
+    "modelo": "supertonic3-q4",
+    "solicitado": "cpu",
+    "frases": [
+      {
+        "texto": "¿Cuántos equipos viste? Puedes añadir una foto de la placa para completar el modelo y la serie.",
+        "archivo": "evidencia/voz-opcional/supertonic3-q4-cpu-0.wav",
+        "ms": 1460,
+        "duracion_s": 6.7332426303854875,
+        "pico": 11007,
+        "clipping": 0,
+        "asr": {
+          "texto": "¿Cuántos equipos viste? Puedes añadir una foto de la placa para completar el modelo y la serie.",
+          "ms": 1211.8,
+          "segundos": 6.73325,
+          "pico": -0.748641289898519,
+          "silencio": false,
+          "id": "V-A9D5"
+        }
+      },
+      {
+        "texto": "La consulta no tiene respaldo en la guía. Puedes documentarla para seguimiento. No se ha autorizado ninguna transacción.",
+        "archivo": "evidencia/voz-opcional/supertonic3-q4-cpu-1.wav",
+        "ms": 2075,
+        "duracion_s": 8.937052154195012,
+        "pico": 10696,
+        "clipping": 0,
+        "asr": {
+          "texto": "La consulta no tiene respaldo en la guía. Puedes documentarla para seguimiento. No se ha autorizado ninguna transacción.",
+          "ms": 917.9,
+          "segundos": 8.9370625,
+          "pico": -0.7651260771520525,
+          "silencio": false,
+          "id": "V-0603"
+        }
+      }
+    ],
+    "carga_ms": 6886,
+    "vram_antes_mib": 4443,
+    "vram_cargado_mib": 4443,
+    "rss_arbol_max_mib": 1458
+  },
+  {
+    "modelo": "supertonic3-q4",
+    "solicitado": "gpu",
+    "frases": [
+      {
+        "texto": "¿Cuántos equipos viste? Puedes añadir una foto de la placa para completar el modelo y la serie.",
+        "archivo": "evidencia/voz-opcional/supertonic3-q4-gpu-0.wav",
+        "ms": 311,
+        "duracion_s": 6.733378684807256,
+        "pico": 12400,
+        "clipping": 0,
+        "asr": {
+          "texto": "¿Cuántos equipos viste? Puedes añadir una foto de la placa para completar el modelo y la serie.",
+          "ms": 917.9,
+          "segundos": 6.733375,
+          "pico": -0.7541327434754368,
+          "silencio": false,
+          "id": "V-B288"
+        }
+      },
+      {
+        "texto": "La consulta no tiene respaldo en la guía. Puedes documentarla para seguimiento. No se ha autorizado ninguna transacción.",
+        "archivo": "evidencia/voz-opcional/supertonic3-q4-gpu-1.wav",
+        "ms": 318,
+        "duracion_s": 8.938185941043084,
+        "pico": 10724,
+        "clipping": 0,
+        "asr": {
+          "texto": "La consulta no tiene respaldo en la guía. Puedes documentarla para seguimiento. No se ha autorizado ninguna transacción.",
+          "ms": 927.6,
+          "segundos": 8.9381875,
+          "pico": -0.8083662578662401,
+          "silencio": false,
+          "id": "V-B725"
+        }
+      }
+    ],
+    "carga_ms": 1286,
+    "vram_antes_mib": 4443,
+    "vram_cargado_mib": 4673,
+    "rss_arbol_max_mib": 907
+  }
+]

@@ -1,0 +1,1 @@
+{"ocupado_reintenta_mismo_bloque": true, "detener_cancela_reintentos": true, "sucursal_lee_monto_alcance_y_advertencia": true, "sin_reproduccion_automatica": true, "reproduccion_y_detener": true, "respuesta_tardia_no_reproduce": true, "cambiar_pregunta_detiene": true, "error_recuperable": true, "lectura_larga_completa": true, "errores_js": []}
