@@ -64,10 +64,70 @@ const cuerpoJson = async req => JSON.parse((await cuerpo(req)).toString('utf8') 
 const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8', '.webmanifest': 'application/manifest+json', '.svg': 'image/svg+xml', '.png': 'image/png' };
 
+// ── clave de equipo (opcional) ─────────────────────────────────────────────────────────────
+// Con `CLAVE` definida el nodo queda cerrado: TODA ruta —páginas y `/api/*`— exige la cookie
+// `vigia`. Es lo que permite publicar la app por el Funnel de Tailscale sin dejarla abierta.
+// Sin `CLAVE`, el nodo se comporta exactamente como antes: la laptop y el teléfono no cambian.
+// Sin excepción para `localhost` a propósito: una excepción por origen es justo lo que se cuela
+// por el túnel, porque al nodo la petición del Funnel le llega igual de local.
+const CLAVE = process.env.CLAVE || null;
+const GALLETA = CLAVE ? `vigia=${encodeURIComponent(CLAVE)}` : null;
+const conClave = req => (req.headers.cookie ?? '').split(';').some(c => c.trim() === GALLETA);
+
+// La página de entrada usa los mismos tokens de la app (papel cálido, tinta azul profunda,
+// turquesa solo para la acción); es una sola pantalla, así que va escrita aquí y no en `app/`.
+const paginaEntrar = (res, { aviso = null, code = 200 } = {}) => {
+  res.writeHead(code, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
+  res.end(`<!doctype html><html lang="es"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Vigía · entrar</title>
+<style>
+ :root{--papel:#F3EFE6;--papel-alto:#FBF9F4;--tinta:#16262E;--tinta-suave:#5C6B72;--raya:#DED7C7;
+       --accion:#0F7B85;--alerta:#9C4221;--serif:"Iowan Old Style",Georgia,"Times New Roman",serif}
+ *{box-sizing:border-box}
+ body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--papel);color:var(--tinta);
+      font:16px/1.55 system-ui,-apple-system,sans-serif;padding:24px}
+ form{background:var(--papel-alto);border:1px solid var(--raya);border-radius:16px;padding:30px 28px;
+      width:min(370px,100%);box-shadow:0 1px 0 var(--raya)}
+ h1{font:400 30px/1 var(--serif);margin:0 0 4px}
+ p{margin:0 0 22px;color:var(--tinta-suave);font-size:13.5px}
+ label{display:block;font:600 11px system-ui;letter-spacing:.12em;text-transform:uppercase;color:var(--tinta-suave);margin-bottom:7px}
+ input{width:100%;padding:12px 14px;font:16px system-ui;color:var(--tinta);background:var(--papel);
+       border:1px solid var(--raya);border-radius:10px}
+ input:focus{outline:2px solid var(--accion);outline-offset:1px;border-color:var(--accion)}
+ button{width:100%;margin-top:16px;padding:13px;font:600 15px system-ui;color:var(--papel-alto);
+        background:var(--accion);border:0;border-radius:10px;cursor:pointer}
+ button:hover{filter:brightness(1.08)}
+ .aviso{margin:14px 0 0;color:var(--alerta);font-size:13.5px}
+</style>
+<form method="post" action="/entrar">
+  <h1>Vigía</h1>
+  <p>Clave del equipo para entrar a este nodo.</p>
+  <label for="clave">Clave</label>
+  <input id="clave" name="clave" type="password" autocomplete="current-password" autofocus required>
+  <button type="submit">Entrar</button>
+  ${aviso ? `<p class="aviso">${aviso}</p>` : ''}
+</form>`);
+};
+
 const servidor = createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
   const ruta = url.pathname;
   try {
+    // ── puerta ──
+    if (CLAVE && !conClave(req)) {
+      if (req.method === 'GET' && ruta === '/entrar') return paginaEntrar(res);
+      if (req.method === 'POST' && ruta === '/entrar') {
+        const enviada = new URLSearchParams((await cuerpo(req, 4096)).toString('utf8')).get('clave');
+        if (enviada !== CLAVE) return paginaEntrar(res, { aviso: 'Esa no es la clave del equipo.', code: 401 });
+        res.writeHead(303, { location: '/', 'set-cookie': `${GALLETA}; Path=/; Max-Age=${30 * 24 * 3600}; HttpOnly; SameSite=Lax` });
+        return res.end();
+      }
+      // La app pide en JSON y las páginas se navegan: cada una recibe lo que sabe leer.
+      if (ruta.startsWith('/api/')) return json(res, { error: 'hace falta la clave del equipo' }, 401);
+      res.writeHead(303, { location: '/entrar' }); return res.end();
+    }
+    if (CLAVE && ruta === '/entrar') { res.writeHead(303, { location: '/' }); return res.end(); }
+
     // ── app ──
     if (req.method === 'GET' && (ruta === '/' || ruta === '/app')) return archivo(res, 'index.html');
     if (req.method === 'GET' && ruta === '/tablero') return archivo(res, 'tablero.html');
