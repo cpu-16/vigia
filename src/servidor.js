@@ -119,7 +119,7 @@ const paginaEntrar = (res, { aviso = null, code = 200 } = {}) => {
 </style>
 <form method="post" action="/entrar">
   <h1>Vigía</h1>
-  <p>${process.env.MODO_EVALUACION === '1' ? 'Acceso para evaluadores · ciberpty. Prueba con datos ficticios; la inferencia se ejecuta en la GPU de Fedora.' : 'Clave del equipo para entrar a este nodo.'}</p>
+  <p>${process.env.MODO_EVALUACION === '1' ? 'Acceso para evaluadores · ciberpty. Prueba con datos ficticios; la inferencia corre en un MacBook Pro M5 Max con Metal.' : 'Clave del equipo para entrar a este nodo.'}</p>
   <label for="clave">Clave</label>
   <input id="clave" name="clave" type="password" autocomplete="current-password" autofocus required>
   <button type="submit">Entrar</button>

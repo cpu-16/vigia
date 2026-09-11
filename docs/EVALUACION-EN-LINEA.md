@@ -15,18 +15,17 @@ El equipo facilita la clave por separado. La presentación, el catálogo y el ve
 
 ## Dónde ocurre la inferencia
 
-La instancia de evaluación ejecuta Qwen3, Whisper y VisionPsy mediante QVAC en **Fedora con RTX 4060**. Supertonic 2 carga al pedir lectura en voz. La Mac no se requiere para esta instancia; la delegación P2P permanece documentada en las otras pruebas. El frontend público está alojado en prox3. Nginx comunica las rutas de la app con el nodo HTTPS de Fedora; el proxy no ejecuta modelos.
+La instancia de evaluación ejecuta Qwen3-1.7B, Whisper large-v3 turbo y VisionPsy Nano mediante QVAC en un **MacBook Pro M5 Max de 128 GB, macOS 26.4, con Metal**. Supertonic 2 carga al pedir lectura en voz. El frontend público está alojado en prox3; nginx comunica las rutas de la app con el nodo por la red privada Tailscale y el proxy no ejecuta modelos. El nodo escucha solo en su dirección del tailnet, no en la red local donde está la máquina. Las mediciones de [MEDICIONES.md](MEDICIONES.md) se tomaron en la RTX 4060 y no se han repetido en este hardware.
 
 Los datos del jurado, su llave de firma y sus métricas se guardan por separado en el nodo, fuera del repositorio. El catálogo es sintético. Esta configuración no convierte el navegador de otro teléfono en un nodo QVAC local: sin conectividad al servidor no puede inferir. La prueba del HONOR en modo avión es una modalidad distinta, con Termux y modelos instalados.
 
 ## Operación del equipo
 
-Fedora debe estar encendida, con Internet y alimentación. `vigia-evaluacion.service` es un servicio de usuario habilitado, con reinicio al fallar. `vigia-no-suspender.service` evita la suspensión mientras está activo, hasta un máximo de 30 horas desde su inicio; no evita un corte de energía o de red. Tras reiniciar Fedora se requiere iniciar la sesión del usuario para arrancar sus servicios.
+La Mac debe estar encendida, con Internet y alimentación, y con la sesión del usuario iniciada. El agente `com.ciberpty.vigia` la arranca al iniciar sesión y la reinicia si falla. La máquina tiene la suspensión inhibida, lo que no evita un corte de energía o de red. Es un equipo prestado para la jornada de evaluación; el agente y sus archivos se retiran al terminar.
 
 ```bash
-systemctl --user status vigia-evaluacion.service
-journalctl --user -u vigia-evaluacion.service -n 30
-systemctl --user restart vigia-evaluacion.service
+ssh tutoria 'tail -20 ~/vigia/evaluacion.log'
+ssh tutoria 'launchctl kickstart -k gui/$(id -u)/com.ciberpty.vigia'   # reiniciar
 # Al terminar la evaluación:
 systemctl --user disable --now vigia-no-suspender.service
 ```
